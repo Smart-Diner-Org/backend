@@ -24,7 +24,8 @@ module.exports.authenticate=function(req,res){
             if(password==results[0].password){
                 res.json({
                     status:true,
-                    message:'successfully authenticated'
+                    message:'successfully authenticated',
+                    userData : results[0]
                 })
             }else{
                 res.json({
@@ -32,7 +33,6 @@ module.exports.authenticate=function(req,res){
                   message:"Email and password does not match"
                  });
             }
-         
         }
         else{
           res.json({
