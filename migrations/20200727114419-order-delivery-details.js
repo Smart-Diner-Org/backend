@@ -15,21 +15,18 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('customers', {
+	return db.createTable('order_delivery_details', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
 			autoIncrement: true
 		},
-		name: { type: 'string', notNull: true },
-		email: { type: 'string' },
-		mobile: { type: 'string', notNull: true },
-		password: { type: 'string' },
-		role_id: {
+		order_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey:{
-				name: 'customer_role_id_fk',
-				table: 'roles',
+				name: 'order_delivery_detail_order_id_fk',
+				table: 'orders',
 				rules: {
 					onDelete: 'CASCADE',
 					onUpdate: 'RESTRICT'
@@ -37,25 +34,39 @@ exports.up = function(db) {
 				mapping: 'id'
 			}
 		},
-		mobile_verification: { type: 'boolean', defaultValue: false, notNull: true },
-		remember_token: { type: 'string' },
-		otp_secret: { type: 'string'},
-		uuid: { type: 'string'},
+		delivery_agent_id: {
+			type: 'bigint',
+			foreignKey: {
+				name: 'order_delivery_detail_delivery_agent_id_fk',
+				table: 'customers',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'	
+				},
+				mapping: 'id'
+			}
+		},
+		delivered_time: 'datetime',
+		assigned_time: {
+			type: 'datetime',
+			notNull: true
+		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
-	})
-	.then(
+	}).then(
 		function(result) {
 			return true;
 		},
 		function(err) {
+			console.log("Error Occured...");
+			console.log(err);
 			return;
 		}
 	);
 };
 
 exports.down = function(db) {
-  return db.dropTable('customers');
+	return db.dropTable('order_delivery_details');
 };
 
 exports._meta = {

@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('customer_details', {
+	return db.createTable('orders', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
@@ -25,7 +25,7 @@ exports.up = function(db) {
 			type: 'bigint',
 			notNull: true,
 			foreignKey:{
-				name: 'customer_detail_customer_id_fk',
+				name: 'order_customer_id_fk',
 				table: 'customers',
 				rules: {
 					onDelete: 'CASCADE',
@@ -34,65 +34,82 @@ exports.up = function(db) {
 				mapping: 'id'
 			}
 		},
-		address: {
+		restuarant_branch_id: {
+			type: 'bigint',
+			foreignKey: {
+				name: 'order_branch_id_fk',
+				table: 'restaurant_branches',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'	
+				},
+				mapping: 'id'
+			}
+		},
+		description: 'text',
+		total_price: {
+			type: 'decimal',
+			notNull: true
+		},
+		stage_id: {
+			type: 'bigint',
+			foreignKey: {
+				name: 'order_stage_id_fk',
+				table: 'order_stages',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'	
+				},
+				mapping: 'id'
+			}
+		},
+		payment_status_id: {
+			type: 'bigint',
+			foreignKey: {
+				name: 'order_payment_status_id_fk',
+				table: 'payment_statuses',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'	
+				},
+				mapping: 'id'
+			}
+		},
+		mode_of_delivery_id: {
+			type: 'bigint',
+			foreignKey: {
+				name: 'order_mode_of_delivery_id_fk',
+				table: 'mode_of_deliveries',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'	
+				},
+				mapping: 'id'
+			}
+		},
+		delivery_address: {
 			type: 'text',
 			notNull: true
 		},
-		city_id: {
-			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_city_id_fk',
-				table: 'cities',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
-		},
-		state_id: {
-			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_state_id_fk',
-				table: 'states',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
-		},
-		primary: { type: 'boolean', defaultValue: true },
-		address_type: {
-			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_address_type_id_fk',
-				table: 'address_types',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
+		delivery_g_location: {
+			type: 'text'
 		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
-	})
-	.then(
+	}).then(
 		function(result) {
 			return true;
 		},
 		function(err) {
+			console.log("Error Occured...");
+			console.log(err);
 			return;
 		}
 	);
 };
 
 exports.down = function(db) {
-  return db.dropTable('customer_details');
+	return db.dropTable('orders');
 };
 
 exports._meta = {

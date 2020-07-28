@@ -15,36 +15,53 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('customers', {
+	return db.createTable('restaurant_coupons', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
 			autoIncrement: true
 		},
-		name: { type: 'string', notNull: true },
-		email: { type: 'string' },
-		mobile: { type: 'string', notNull: true },
-		password: { type: 'string' },
-		role_id: {
+		restuarant_id: {
 			type: 'bigint',
-			foreignKey:{
-				name: 'customer_role_id_fk',
-				table: 'roles',
+			foreignKey: {
+				name: 'restaurant_coupon_restaurant_id_fk',
+				table: 'restaurants',
 				rules: {
 					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
+					onUpdate: 'RESTRICT'	
 				},
 				mapping: 'id'
 			}
 		},
-		mobile_verification: { type: 'boolean', defaultValue: false, notNull: true },
-		remember_token: { type: 'string' },
-		otp_secret: { type: 'string'},
-		uuid: { type: 'string'},
+		code: {
+			type: 'int',
+			notNull: true
+		},
+		min_purchase: {
+			type: 'decimal',
+			notNull: true
+		},
+		status: {
+			type: 'boolean',
+			defaultValue: true,
+			notNull: true
+		},
+		description: 'string',
+		percentage: {
+			type: 'int',
+			notNull: true
+		},
+		discount_threshold_limit: {
+			type: 'decimal',
+			notNull: true
+		},
+		valid_till: {
+			type: 'datetime',
+			notNull: true
+		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
-	})
-	.then(
+	}).then(
 		function(result) {
 			return true;
 		},
@@ -55,7 +72,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('customers');
+	return db.dropTable('restaurant_coupons');
 };
 
 exports._meta = {

@@ -15,47 +15,41 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('customers', {
+	var deliveries = [['Door Delivery'], ['Pick From Store'], ['Having At Store']];
+	return db.createTable('mode_of_deliveries', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
 			autoIncrement: true
 		},
-		name: { type: 'string', notNull: true },
-		email: { type: 'string' },
-		mobile: { type: 'string', notNull: true },
-		password: { type: 'string' },
-		role_id: {
-			type: 'bigint',
-			foreignKey:{
-				name: 'customer_role_id_fk',
-				table: 'roles',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
+		name: {
+			type: 'string',
+			notNull: true
 		},
-		mobile_verification: { type: 'boolean', defaultValue: false, notNull: true },
-		remember_token: { type: 'string' },
-		otp_secret: { type: 'string'},
-		uuid: { type: 'string'},
+		status: {
+			type: 'boolean',
+			defaultValue: true,
+			notNull: true
+		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
-	})
-	.then(
+	}).then(
 		function(result) {
+			for(const index in deliveries) {  
+				db.insert('mode_of_deliveries', ['name'], deliveries[index]);
+			}
 			return true;
 		},
 		function(err) {
+			console.log("Error Occured...");
+			console.log(err);
 			return;
 		}
 	);
 };
 
 exports.down = function(db) {
-  return db.dropTable('customers');
+	return db.dropTable('mode_of_deliveries');
 };
 
 exports._meta = {

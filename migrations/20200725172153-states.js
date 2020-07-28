@@ -37,7 +37,7 @@ exports.up = function(db) {
 	.then(
   	function(result) {
 		for(const index in states) {  
-			db.insert('states', ['name', 'is_active'], values[index]);
+			db.insert('states', ['name', 'is_active'], states[index]);
 		}
 		return;
 	},

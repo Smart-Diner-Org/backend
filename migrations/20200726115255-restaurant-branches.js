@@ -15,73 +15,70 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('customer_details', {
+	return db.createTable('restaurant_branches', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
 			autoIncrement: true
 		},
-		customer_id: {
+		restaurant_id: {
 			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_customer_id_fk',
-				table: 'customers',
+			foreignKey: {
+				name: 'restaurant_branches_restaurant_id_fk',
+				table: 'restaurants',
 				rules: {
 					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
+					onUpdate: 'RESTRICT'	
 				},
 				mapping: 'id'
 			}
 		},
+		name: {
+			type: 'string',
+			notNull: true,
+		},
+		timings: 'text',
 		address: {
+			type: 'text',
+			notNull: true
+		},
+		g_location: {
 			type: 'text',
 			notNull: true
 		},
 		city_id: {
 			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_city_id_fk',
+			foreignKey: {
+				name: 'restaurant_branches_city_id_fk',
 				table: 'cities',
 				rules: {
 					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
+					onUpdate: 'RESTRICT'	
 				},
 				mapping: 'id'
 			}
 		},
 		state_id: {
 			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_state_id_fk',
+			foreignKey: {
+				name: 'restaurant_branches_state_id_fk',
 				table: 'states',
 				rules: {
 					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
+					onUpdate: 'RESTRICT'	
 				},
 				mapping: 'id'
 			}
 		},
-		primary: { type: 'boolean', defaultValue: true },
-		address_type: {
-			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'customer_detail_address_type_id_fk',
-				table: 'address_types',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
+		status: {
+			type: 'boolean',
+			defaultValue: true,
+			notNull: true
 		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
-	})
-	.then(
+  	})
+  	.then(
 		function(result) {
 			return true;
 		},
@@ -92,7 +89,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('customer_details');
+	return db.dropTable('restaurant_branches');
 };
 
 exports._meta = {

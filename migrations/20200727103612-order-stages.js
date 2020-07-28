@@ -15,30 +15,52 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  	return db.createTable('templates', {
-	  	id: {
-	  		type: 'bigint',
-	  		primaryKey : true,
-	  		autoIncrement: true
-	  	},
-		name: { type: 'string', notNull: true },
-		content: { type: 'text'},
-		status: { type: 'boolean', defaultValue: 1, notNull: true},
+	var stages = [
+		['Fresh'],
+		['Accepted'],
+		['Preparing'],
+		['Food Ready'],
+		['Food Picked'],
+		['Out for Delivery'],
+		['Delivered'],
+		['Completed'],
+		['Cancelled']
+	];
+	return db.createTable('order_stages', {
+		id: {
+			type: 'bigint',
+			primaryKey: true,
+			autoIncrement: true
+		},
+		name: {
+			type: 'string',
+			notNull: true
+		},
+		status: {
+			type: 'boolean',
+			defaultValue: true,
+			notNull: true
+		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	})
 	.then(
 		function(result) {
+			for(const index in stages) {  
+				db.insert('order_stages', ['name'], stages[index]);
+			}
 			return true;
 		},
 		function(err) {
+			console.log("error");
+			console.log(err);
 			return;
 		}
 	);
 };
 
 exports.down = function(db) {
-  return db.dropTable('templates');
+	return db.dropTable('order_stages');
 };
 
 exports._meta = {

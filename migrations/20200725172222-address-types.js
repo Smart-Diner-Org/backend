@@ -34,7 +34,7 @@ exports.up = function(db) {
 	.then(
   	function(result) {
 		for(const index in addressTypes) {  
-			db.insert('address_types', ['name', 'is_active'], values[index]);
+			db.insert('address_types', ['name', 'is_active'], addressTypes[index]);
 		}
 		return;
 	},
