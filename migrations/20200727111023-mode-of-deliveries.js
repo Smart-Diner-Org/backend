@@ -31,8 +31,8 @@ exports.up = function(db) {
 			defaultValue: true,
 			notNull: true
 		},
-		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
-		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
+		createdAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
+		updatedAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	}).then(
 		function(result) {
 			for(const index in deliveries) {  

@@ -23,7 +23,7 @@ exports.up = function(db) {
 		},
 		name: { type: 'string', notNull: true },
 		email: { type: 'string' },
-		mobile: { type: 'string', notNull: true },
+		mobile: { type: 'string', notNull: true, unique: true },
 		password: { type: 'string' },
 		role_id: {
 			type: 'bigint',
@@ -41,8 +41,8 @@ exports.up = function(db) {
 		remember_token: { type: 'string' },
 		otp_secret: { type: 'string'},
 		uuid: { type: 'string'},
-		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
-		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
+		createdAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
+		updatedAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	})
 	.then(
 		function(result) {
