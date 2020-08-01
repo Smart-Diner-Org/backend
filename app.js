@@ -7,6 +7,13 @@ var cors = require("cors");
 
 var app = express();
 
+app.use(
+  cors({
+      origin: '*',
+      credentials: true
+  })
+);
+
 // require('dotenv').config({path: __dirname + '/.env'})
 require("./routes/start")(app);
 
@@ -14,12 +21,9 @@ require("./routes/start")(app);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(
-	cors({
-		  origin: 'http://localhost:3000',
-    	credentials: true
-	})
-);
+
+
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

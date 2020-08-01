@@ -24,8 +24,8 @@ exports.up = function(db) {
 	name: { type: 'string', notNull: true },
 	content: { type: 'text', notNull: false },
 	status: { type: 'boolean', defaultValue: true, notNull: true},
-	createdAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
-	updatedAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
+	created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
+	updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
   })
   .then(
 		function(result) {

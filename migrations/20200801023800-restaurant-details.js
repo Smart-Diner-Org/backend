@@ -15,52 +15,54 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	var stages = [
-		['Fresh'],
-		['Accepted'],
-		['Preparing'],
-		['Food Ready'],
-		['Food Picked'],
-		['Out for Delivery'],
-		['Delivered'],
-		['Completed'],
-		['Cancelled']
-	];
-	return db.createTable('order_stages', {
+	return db.createTable('restaurant_details', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
 			autoIncrement: true
 		},
-		name: {
-			type: 'string',
-			notNull: true
+		restaurant_id: {
+			type: 'bigint',
+			foreignKey: {
+				name: 'restaurant_details_restaurant_id_fk',
+				table: 'restaurants',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'	
+				},
+				mapping: 'id'
+			}
 		},
-		status: {
-			type: 'boolean',
-			defaultValue: true,
-			notNull: true
+		facebook_link: {
+			type: 'string'
+		},
+		instagram_link: {
+			type: 'string'
+		},
+		youtube_link: {
+			type: 'string'
+		},
+		twitter_link: {
+			type: 'string'
+		},
+		linkedin_link: {
+			type: 'string'
 		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
-	})
-	.then(
+  	})
+  	.then(
 		function(result) {
-			for(const index in stages) {  
-				db.insert('order_stages', ['name'], stages[index]);
-			}
 			return true;
 		},
 		function(err) {
-			console.log("error");
-			console.log(err);
 			return;
 		}
 	);
 };
 
 exports.down = function(db) {
-	return db.dropTable('order_stages');
+	return db.dropTable('restaurant_details');
 };
 
 exports._meta = {

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
-var db = require('./../database/config');
+var db = require('./../config/database');
+var MenuCategory = require('./MenuCategory');
 
 const Menu = db.define('menus', {
 	restuarant_branch_id: {
@@ -43,6 +44,12 @@ const Menu = db.define('menus', {
 	// }
 },{
 	// timestamps: false
-})
+	underscored: true
+});
+
+Menu.belongsTo(MenuCategory, {
+	foreignKey: 'category_id',
+	as: 'category'
+});
 
 module.exports = Menu;

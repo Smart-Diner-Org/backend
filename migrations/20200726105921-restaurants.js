@@ -49,8 +49,8 @@ exports.up = function(db) {
 		logo: 'string',
 		tracker_enabled: { type: 'boolean', notNull: true },
 		status: { type: 'boolean', notNull: true, defaultValue: true },
-		createdAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
-		updatedAt: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
+		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
+		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	}).then(
 		function(result) {
 			return true;
