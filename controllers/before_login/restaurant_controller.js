@@ -44,7 +44,14 @@ module.exports.getRestaurantDetails = (req, res, next) => {
       },
       include:[
         { model: RestaurantDetail, required:true, as: 'restaurant_detail' },
-        { model: RestaurantBranch, required:true, as: 'restaurant_branches' }
+        { model: RestaurantBranch, required:true, as: 'restaurant_branches', include: [
+          {
+            model: Menu, required:true, as: 'restaurant_branch_menu',
+            include:[
+              { model: MenuCategory, required:true, as: 'category', duplicating: true }
+            ]
+          }
+        ]}
       ]
     }
   )

@@ -32,9 +32,9 @@ Restaurant.findAll({
     }
   };
   //Define all routes here
-  // router.get('/menu/get', cors(corsOptions), restaurantController.getRestaurantDetails);
+  router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
 })
 .catch(err => console.log(err))
 ;
-router.get('/menu/get', cors(corsOptions), restaurantController.getMenu);
+// router.get('/menu/get', cors(corsOptions), restaurantController.getMenu);
 module.exports = router;
