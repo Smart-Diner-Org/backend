@@ -48,6 +48,8 @@ exports.up = function(db) {
 		linkedin_link: {
 			type: 'string'
 		},
+		longitude: 'decimal',
+		latitude: 'decimal',
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
   	})

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
-const config = require("../config/auth.js");
-const dbModels = require("../models");
-const Customer = dbModels.Customer;
+const config = require("../config/auth.config");
+// const dbModels = require("../models");
+const Customer = require("../models/Customer");
 
 verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
@@ -18,20 +18,18 @@ verifyToken = (req, res, next) => {
         message: "Unauthorized!"
       });
     }
-    req.userId = decoded.id;
+    req.customerId = decoded.id;
     next();
   });
 };
 
 isAdmin = (req, res, next) => {
-  Customer.findByPk(req.userId).then(customer => {
-    customer.getRoles().then(roles => {
-      for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "Admin") {
+  Customer.findByPk(req.customerId).then(customer => {
+     customer.getRole().then(role => {
+        if (role.name === "Admin") {
           next();
           return;
         }
-      }
 
       res.status(403).send({
         message: "Require Admin Role!"
@@ -42,32 +40,28 @@ isAdmin = (req, res, next) => {
 };
 
 isSuperAdmin = (req, res, next) => {
-  Customer.findByPk(req.userId).then(customer => {
-    customer.getRoles().then(roles => {
-      for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "Super Admin") {
-          next();
-          return;
-        }
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      console.log(role);
+      if (role.name === "Super Admin") {
+        next();
+        return;
       }
 
       res.status(403).send({
-        message: "Require Moderator Role!"
+        message: "Require Super Admin Role!"
       });
     });
   });
 };
 
 isCustomer = (req, res, next) => {
-  Customer.findByPk(req.userId).then(customer => {
-    customer.getRoles().then(roles => {
-      for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "Customer") {
-          next();
-          return;
-        }
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Customer") {
+        next();
+        return;
       }
-
       res.status(403).send({
         message: "Require Customer Role!"
       });

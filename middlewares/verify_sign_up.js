@@ -1,17 +1,20 @@
-const models = require("../models");
-const Role = models.Role;
-const Customer = models.Customer;
+// const models = require("../models");
+const Role = require("../models/Role");
+const Customer = require("../models/Customer");
 var helper = require('./../helpers/general_helper');
 
 
 checkDuplicateMobileOrEmail = (req, res, next) => {
   // Mobile number
+  console.log("1 - "+req.body.roleId);
   if(helper.isMobileLoginRole(req.body.roleId)){
+    console.log("2");
     Customer.findOne({
       where: {
         mobile: req.body.mobile
       }
     }).then(customer => {
+      console.log("3");
       if (customer) {
         res.status(400).send({
           message: "Failed! Mobile number is already in use!"
@@ -22,11 +25,13 @@ checkDuplicateMobileOrEmail = (req, res, next) => {
     });
   }
   else{
+    console.log("4 - " + req.body.email);
     Customer.findOne({
       where: {
-        mobile: req.body.email
+        email: req.body.email
       }
     }).then(customer => {
+      console.log("5");
       if (customer) {
         res.status(400).send({
           message: "Failed! Email is already in use!"
