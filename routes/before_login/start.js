@@ -20,10 +20,8 @@ Restaurant.findAll({
     return menu.url; 
   });
   urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
-  console.log(urls);
   corsOptions = {
     origin: function (origin, callback) {
-      console.log(urls);
       if (urls.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
@@ -37,4 +35,5 @@ Restaurant.findAll({
 .catch(err => console.log(err))
 ;
 // router.get('/menu/get', cors(corsOptions), restaurantController.getMenu);
+// router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
 module.exports = router;

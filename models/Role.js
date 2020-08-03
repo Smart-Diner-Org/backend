@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
+var Customer = require('./Customer');
 
 const Role = db.define('roles', {
 	name: {
@@ -12,7 +13,7 @@ const Role = db.define('roles', {
 	underscored: true
 });
 
-// Restaurant.belongsTo(Role, {
+// Role.hasMany(Customer, {
 // 	foreignKey: 'role_id',
 // 	as: 'role'
 // });
