@@ -12,4 +12,6 @@ router.post(
   controller.signup
 );
 router.post("/signin", controller.signin);
+router.post("/verify_otp", controller.signinViaOtp);
+router.post("/resend_otp", controller.resendOtp);
 module.exports = router;

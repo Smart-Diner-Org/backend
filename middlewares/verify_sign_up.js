@@ -1,7 +1,7 @@
 // const models = require("../models");
 const Role = require("../models/Role");
 const Customer = require("../models/Customer");
-var helper = require('./../helpers/general_helper');
+var helper = require('./../helpers/general.helper');
 
 
 checkDuplicateMobileOrEmail = (req, res, next) => {

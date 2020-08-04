@@ -1,15 +1,13 @@
-// const dbModels = require("../models");
-const config = require("../config/auth.config");
 const Customer = require("../models/Customer");
 const Role = require("../models/Role");
-// const Customer = dbModels.Customer;
-// const Role = dbModels.Role;
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-var helper = require('./../helpers/general_helper');
-
-var jwt = require("jsonwebtoken");
+var helper = require('./../helpers/general.helper');
+var smsHelper = require('./../helpers/sms.helper');
+var accessTokenHelper = require('./../helpers/access_token.helper');
 var bcrypt = require("bcryptjs");
+const SendOtp = require('sendotp');
+const sendOtp = new SendOtp(process.env.OTP_API_KEY);
 
 exports.signup = (req, res) => {
   // Save User to Database
@@ -27,7 +25,16 @@ exports.signup = (req, res) => {
 
   Customer.create(dataToSave)
     .then(user => {
-      res.send({ message: "User was registered successfully!" });
+      //Trigger OTP to verify the mobile number
+      smsHelper.triggerOtp(user.mobile, function(smsStatus){
+        if(smsStatus){
+          return res.status(200).send({ message: "Successfully trigger OTP." });
+        }
+        else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
+      });
+
+      // res.send({ message: "User was registered successfully!" });
+
       /*if (req.body.roles) {
         Role.findAll({
           where: {
@@ -53,7 +60,6 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
-  // if(helper.isEmailLoginRole(req.body.roleId)){}
   if(req.body.email){
     Customer.findOne({
       where: {
@@ -64,7 +70,6 @@ exports.signin = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User Not found." });
       }
-
       var passwordIsValid = bcrypt.compareSync(
         req.body.password,
         user.password
@@ -76,10 +81,7 @@ exports.signin = (req, res) => {
           message: "Invalid Password!"
         });
       }
-
-      var token = jwt.sign({ id: user.id }, config.secret, {
-        expiresIn: 86400 // 24 hours
-      });
+      var token = accessTokenHelper.getJwtAccessToken(user.id);
       res.status(200).send({
         id: user.id,
         username: user.username,
@@ -101,17 +103,12 @@ exports.signin = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User Not found." });
       }
-      //Write code to trigger OTP to mobile and save it in DB
-      user.update({
-        otp: '123456'
-      })
-      .then(() => {
-        return res.status(200).send({ message: "Successfully trigger OTP." });
-      })
-      .catch(err => {
-        res.status(500).send({ message: err.message });
+      smsHelper.triggerOtp(user.mobile, function(smsStatus){
+        if(smsStatus){
+          return res.status(200).send({ message: "Successfully trigger OTP." });
+        }
+        else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
       });
-
     })
     .catch(err => {
       res.status(500).send({ message: err.message });
@@ -132,26 +129,46 @@ exports.signinViaOtp = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User Not found." });
       }
+      smsHelper.verifyOtp(user.mobile, req.body.otp, function(smsStatus, message){
+        if(smsStatus){
 
-      var otpIsValid = false;
-      if(user.otp === req.body.otp)
-        otpIsValid = true;
+          if(req.body.isMobileVerification){
+            user.update({'mobile_verification': true});
+          }
 
-      if (!otpIsValid) {
-        return res.status(401).send({
-          accessToken: null,
-          message: "Invalid OTP!"
-        });
-      }
+          var token = accessTokenHelper.getJwtAccessToken(user.id);
 
-      var token = jwt.sign({ id: user.id }, config.secret, {
-        expiresIn: 86400 // 24 hours
+          res.status(200).send({
+            id: user.id,
+            name: user.name,
+            mobile: user.mobile,
+            accessToken: token
+          });
+        }
+        else res.status(500).send({ message: message });
       });
-      res.status(200).send({
-        id: user.id,
-        username: user.username,
-        mobile: user.mobile,
-        accessToken: token
+    })
+    .catch(err => {
+      res.status(500).send({ message: err.message });
+    });
+};
+
+exports.resendOtp = (req, res) => {
+  Customer.findOne({
+      where: {
+        mobile: req.body.mobile
+      }
+    })
+    .then(user => {
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+      var retryVoice = false;
+      smsHelper.resendOtp(user.mobile, retryVoice, function(smsStatus, message){
+        if(smsStatus){
+          return res.status(200).send({ message: "Successfully retriggered OTP." });
+        }
+        else res.status(500).send({ message: message });
       });
     })
     .catch(err => {
