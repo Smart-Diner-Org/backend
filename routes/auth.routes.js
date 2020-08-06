@@ -3,6 +3,7 @@ var router = express.Router();
 const { verifySignUp } = require("../middlewares");
 const controller = require("../controllers/auth.controller");
 
+router.post('/check_for_account', [verifySignUp.checkForMobileAndRole],  controller.checkAccount);
 router.post(
   '/signup',
   [
@@ -12,6 +13,8 @@ router.post(
   controller.signup
 );
 router.post("/signin", controller.signin);
-router.post("/verify_otp", controller.signinViaOtp);
-router.post("/resend_otp", controller.resendOtp);
+router.post("/verify_otp", [verifySignUp.checkForMobileAndOtp], controller.verifyOtp);
+router.post("/resend_otp", [verifySignUp.checkForMobile], controller.resendOtp);
 module.exports = router;
+
+

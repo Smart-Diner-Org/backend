@@ -3,6 +3,32 @@ const Role = require("../models/Role");
 const Customer = require("../models/Customer");
 var helper = require('./../helpers/general.helper');
 
+checkForMobileAndRole = (req, res, next) => {
+  if(!req.body.roleId){
+    return res.status(404).send({ message: "Rold id is missing" });
+  }
+  if(!req.body.mobile){
+    return res.status(404).send({ message: "Mobile number is missing" });
+  }
+  next();
+};
+
+checkForMobileAndOtp = (req, res, next) => {
+  if(!req.body.otp){
+    return res.status(404).send({ message: "OTP id is missing" });
+  }
+  if(!req.body.mobile){
+    return res.status(404).send({ message: "Mobile number is missing" });
+  }
+  next();
+};
+
+checkForMobile = (req, res, next) => {
+  if(!req.body.mobile){
+    return res.status(404).send({ message: "Mobile number is missing" });
+  }
+  next();
+};
 
 checkDuplicateMobileOrEmail = (req, res, next) => {
   // Mobile number
@@ -87,7 +113,10 @@ checkRolesExisted = (req, res, next) => {
 
 const verifySignUp = {
   checkDuplicateMobileOrEmail: checkDuplicateMobileOrEmail,
-  checkRolesExisted: checkRolesExisted
+  checkRolesExisted: checkRolesExisted,
+  checkForMobileAndRole: checkForMobileAndRole,
+  checkForMobileAndOtp: checkForMobileAndOtp,
+  checkForMobile: checkForMobile
 };
 
 module.exports = verifySignUp;

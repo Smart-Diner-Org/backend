@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.addColumn('customers', 'otp', 'string')
+	return db.changeColumn('customers', 'name', {notNull: false})
   	.then(
   		function(result) {
 			return true;
@@ -25,11 +25,11 @@ exports.up = function(db) {
 			console.log(err);
 			return;
 		}
-  );
+  	);
 };
 
 exports.down = function(db) {
-	return db.removeColumn('customers', 'otp');
+	return db.changeColumn('customers', 'name', {notNull: true});
 };
 
 exports._meta = {

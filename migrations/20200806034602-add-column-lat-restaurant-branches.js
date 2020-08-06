@@ -15,9 +15,9 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.addColumn('customers', 'otp', 'string')
+	return db.addColumn('restaurant_branches', 'lat', 'decimal')
   	.then(
-  		function(result) {
+		function(result) {
 			return true;
 		},
 		function(err) {
@@ -25,11 +25,11 @@ exports.up = function(db) {
 			console.log(err);
 			return;
 		}
-  );
+	);
 };
 
 exports.down = function(db) {
-	return db.removeColumn('customers', 'otp');
+	return db.removeColumn('restaurant_branches', 'lat');
 };
 
 exports._meta = {

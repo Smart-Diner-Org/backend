@@ -9,10 +9,9 @@ const Op = Sequelize.Op;
 var _ = require('underscore');
 
 module.exports.getMenu = (req, res, next) => {
-  console.log("I have come here 2...");
   Menu.findAll({
     include:[
-      { model: MenuCategory, required:true, as: 'category' }
+      { model: MenuCategory, required: true, as: 'category' }
     ]
   })
   .then(menus => {

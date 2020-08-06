@@ -1,4 +1,5 @@
 const Customer = require("../models/Customer");
+const CustomerDetail = require("../models/CustomerDetail");
 const Role = require("../models/Role");
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -8,6 +9,30 @@ var accessTokenHelper = require('./../helpers/access_token.helper');
 var bcrypt = require("bcryptjs");
 const SendOtp = require('sendotp');
 const sendOtp = new SendOtp(process.env.OTP_API_KEY);
+var express = require('express');
+var app = express();
+
+exports.checkAccount= (req, res) => {
+  Customer.findOne({
+    where: {
+      mobile: req.body.mobile
+    }
+  })
+  .then(user => {
+    if (!user) {
+      // Should go to signup route
+      req.url = '/auth/signup';
+    }
+    else{
+      // Should go to signin route
+      req.url = '/auth/signin';
+    }
+    return req.app._router.handle(req, res);
+  })
+  .catch(err => {
+    res.status(500).send({ message: err.message });
+  });
+}
 
 exports.signup = (req, res) => {
   // Save User to Database
@@ -18,7 +43,8 @@ exports.signup = (req, res) => {
   };
   // if(helper.isEmailLoginRole(req.body.roleId)){
     dataToSave['email'] = req.body.email;
-    dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
+    if(dataToSave['password'])
+      dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
   // }
 
   console.log(dataToSave);
@@ -28,7 +54,7 @@ exports.signup = (req, res) => {
       //Trigger OTP to verify the mobile number
       smsHelper.triggerOtp(user.mobile, function(smsStatus){
         if(smsStatus){
-          return res.status(200).send({ message: "Successfully trigger OTP." });
+          return res.status(200).send({ message: "Successfully triggered OTP." });
         }
         else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
       });
@@ -68,7 +94,7 @@ exports.signin = (req, res) => {
     })
     .then(user => {
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.status(404).send({ message: "User not found." });
       }
       var passwordIsValid = bcrypt.compareSync(
         req.body.password,
@@ -101,7 +127,7 @@ exports.signin = (req, res) => {
     })
     .then(user => {
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.status(404).send({ message: "User not found." });
       }
       smsHelper.triggerOtp(user.mobile, function(smsStatus){
         if(smsStatus){
@@ -119,31 +145,44 @@ exports.signin = (req, res) => {
   }
 };
 
-exports.signinViaOtp = (req, res) => {
+exports.verifyOtp = (req, res) => {
+  console.log("Here 1");
   Customer.findOne({
       where: {
         mobile: req.body.mobile
-      }
+      },
+      include:[
+        { model: CustomerDetail, as: 'customer_detail', required: false }
+      ]
     })
     .then(user => {
+      console.log("Here 2");
+      console.log(user);
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.status(404).send({ message: "User not found." });
       }
+      console.log("Here 3");
+      // res.status(200).send({
+      //   user: user
+      // });
       smsHelper.verifyOtp(user.mobile, req.body.otp, function(smsStatus, message){
         if(smsStatus){
 
-          if(req.body.isMobileVerification){
+          if(!user.mobile_verification){
             user.update({'mobile_verification': true});
           }
 
           var token = accessTokenHelper.getJwtAccessToken(user.id);
-
           res.status(200).send({
-            id: user.id,
-            name: user.name,
-            mobile: user.mobile,
+            user: user,
             accessToken: token
           });
+          // res.status(200).send({
+          //   id: user.id,
+          //   name: user.name,
+          //   mobile: user.mobile,
+          //   accessToken: token
+          // });
         }
         else res.status(500).send({ message: message });
       });
@@ -161,7 +200,7 @@ exports.resendOtp = (req, res) => {
     })
     .then(user => {
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.status(404).send({ message: "User not found." });
       }
       var retryVoice = false;
       smsHelper.resendOtp(user.mobile, retryVoice, function(smsStatus, message){
