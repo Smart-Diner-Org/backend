@@ -1,17 +1,15 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
-var Menu = require('./Menu');
 
-const MenuCategory = db.define('menu_categories', {
+const City = db.define('cities', {
 	name: {
 		type: Sequelize.CHAR
 	},
-	status: {
+	is_active: {
 		type: Sequelize.BOOLEAN
 	}
 },{
-	// timestamps: false
 	underscored: true
 });
 
-module.exports = MenuCategory;
+module.exports = City;

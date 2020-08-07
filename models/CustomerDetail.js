@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
-// var RestaurantDetail = require('./RestaurantDetail')
+var City = require('./City');
+var State = require('./State');
 
 const CustomerDetail = db.define('customer_details', {
 	customer_id: {
@@ -29,6 +30,16 @@ const CustomerDetail = db.define('customer_details', {
 	}
 },{
 	underscored: true
+});
+
+CustomerDetail.belongsTo(City, {
+	foreignKey: 'city_id',
+	as: 'city'
+});
+
+CustomerDetail.belongsTo(State, {
+	foreignKey: 'state_id',
+	as: 'state'
 });
 
 module.exports = CustomerDetail;

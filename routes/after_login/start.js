@@ -1,6 +1,8 @@
 const express = require("express");
 var router = express.Router();
-var customerController = require('./../../controllers/after_login/customer.controller');
+// var customerController = require('./../../controllers/after_login/customer.controller');
+// var customerController = require('./../../controllers/after_login/customer.controller');
+const { customerController, orderController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
 var _ = require('underscore');
@@ -31,9 +33,17 @@ Restaurant.findAll({
   };
   //Define all routes here
   router.post('/customer/update_details', [
-    // cors(corsOptions), //Will enable before push
+    cors(corsOptions), //Will enable before push
     authJwt.verifyToken
     ], customerController.updateCustomerDetails);
+  router.post('/customer/fetch_details', [
+    cors(corsOptions), //Will enable before push
+    authJwt.verifyToken
+    ], customerController.fetchCustomerDetails);
+  router.post('/order/place_order', [
+    // cors(corsOptions), //Will enable before push
+    authJwt.verifyToken
+    ], orderController.placeOrder);
 })
 .catch(err => console.log(err))
 ;

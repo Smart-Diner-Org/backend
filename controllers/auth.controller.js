@@ -1,5 +1,7 @@
 const Customer = require("../models/Customer");
 const CustomerDetail = require("../models/CustomerDetail");
+var State = require('../models/State');
+var City = require('../models/City');
 const Role = require("../models/Role");
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -152,7 +154,12 @@ exports.verifyOtp = (req, res) => {
         mobile: req.body.mobile
       },
       include:[
-        { model: CustomerDetail, as: 'customer_detail', required: false }
+        { model: CustomerDetail, as: 'customer_detail', required: false,
+          include: [
+            { model: City, as: 'city' },
+            { model: State, as: 'state' }
+          ]
+        }
       ]
     })
     .then(user => {

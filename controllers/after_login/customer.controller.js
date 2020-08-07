@@ -3,10 +3,13 @@ var Customer = require('./../../models/Customer');
 // var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
 var CustomerDetail = require('./../../models/CustomerDetail');
+var State = require('./../../models/State');
+var City = require('./../../models/City');
 // var RestaurantBranch = require('./../../models/RestaurantBranch');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var _ = require('underscore');
+
 
 exports.updateCustomerDetails = (req, res) => {
 	Customer.findOne({
@@ -105,6 +108,35 @@ exports.updateCustomerDetails = (req, res) => {
 	.catch(err => {
       res.status(500).send({ message: err.message });
     });*/
+};
+
+exports.fetchCustomerDetails = (req, res) => {
+	Customer.findOne({
+		where: {
+			id: req.customerId
+		},
+		include:[
+			{ model: CustomerDetail, as: 'customer_detail', required: false,
+				include: [
+					{ model: City, as: 'city' },
+					{ model: State, as: 'state' }
+				]
+			}
+		]
+	})
+	.then(customer => {
+		if (!customer) {
+			return res.status(404).send({ message: "User not found." });
+		}
+		else{
+			res.status(200).send({
+				customer: customer
+			});
+		}
+	})
+	.catch(err => {
+
+	});
 };
 
 exports.userBoard = (req, res) => {

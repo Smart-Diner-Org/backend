@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
-var Menu = require('./Menu');
+// var Menu = require('./Menu');
 
-const MenuCategory = db.define('menu_categories', {
+const OrderStage = db.define('order_stages', {
 	name: {
 		type: Sequelize.CHAR
 	},
@@ -10,8 +10,7 @@ const MenuCategory = db.define('menu_categories', {
 		type: Sequelize.BOOLEAN
 	}
 },{
-	// timestamps: false
 	underscored: true
 });
 
-module.exports = MenuCategory;
+module.exports = OrderStage;
