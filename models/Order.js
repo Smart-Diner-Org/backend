@@ -1,7 +1,5 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
-// var Role = require('./Role');
-// var CustomerDetail = require('./CustomerDetail');
 
 const Order = db.define('orders', {
 	customer_id: {

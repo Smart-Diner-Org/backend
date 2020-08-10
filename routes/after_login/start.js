@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { customerController, orderController } = require("./../../controllers/after_login");
+const { customerController, orderController, paymentsController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
 var _ = require('underscore');
@@ -41,9 +41,17 @@ Restaurant.findAll({
     authJwt.verifyToken
     ], customerController.fetchCustomerDetails);
   router.post('/order/place_order', [
-    // cors(corsOptions), //Will enable before push
+    cors(corsOptions), //Will enable before push
     authJwt.verifyToken
     ], orderController.placeOrder);
+  router.post('/payment/create_request', [
+    cors(corsOptions), //Will enable before push
+    authJwt.verifyToken
+    ], paymentsController.createRequest);
+  router.post('/payment/webhook', [
+    // cors(corsOptions), //Will enable before push
+    // authJwt.verifyToken
+    ], paymentsController.paymentWebhook);
 })
 .catch(err => console.log(err))
 ;

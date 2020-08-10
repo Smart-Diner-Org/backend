@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
 var Menu = require('./Menu');
+var Restaurant = require('./Restaurant');
 
 const RestaurantBranch = db.define('restaurant_branches', {
 	restaurant_id: {
@@ -35,5 +36,6 @@ RestaurantBranch.hasMany(Menu, {
 	foreignKey: 'restuarant_branch_id',
 	as: 'restaurant_branch_menu'
 });
+// RestaurantBranch.belongsTo(Restaurant);
 
 module.exports = RestaurantBranch;

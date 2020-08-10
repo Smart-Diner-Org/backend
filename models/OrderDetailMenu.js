@@ -1,9 +1,14 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
-var Order = require('./Order');
-var Menu = require('./Menu');
+// var OrderDetail = require('./OrderDetail');
+// var Menu = require('./Menu');
 
 const OrderDetailMenu = db.define('order_details_menus', {
+	id: {
+		type: Sequelize.BIGINT,
+		autoIncrement: true,
+		primaryKey: true
+	},
 	order_detail_id: {
 		type: Sequelize.BIGINT
 	},
@@ -14,9 +19,13 @@ const OrderDetailMenu = db.define('order_details_menus', {
 	underscored: true
 });
 
-// OrderDetail.belongsTo(Order, {
+// OrderDetail.belongsToMany(Menu, {
 // 	foreignKey: 'order_id',
 // 	as: 'order'
+// });
+
+// OrderDetail.belongsToMany(Menu, {
+// 	through : OrderDetailMenu
 // });
 
 // OrderDetail.hasOne(Menu, {
