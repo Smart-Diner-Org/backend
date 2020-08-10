@@ -6,6 +6,8 @@ var ModeOfDelivery = require('./../../models/ModeOfDelivery');
 var constants = require('./../../config/constants');
 var CustomerDetail = require('./../../models/CustomerDetail');
 var RestaurantBranch = require('./../../models/RestaurantBranch');
+var OrderDetail = require('./../../models/OrderDetail');
+var OrderDetailMenu = require('./../../models/OrderDetailMenu');
 // const Sequelize = require('sequelize');
 // const Op = Sequelize.Op;
 // var _ = require('underscore');
@@ -30,6 +32,7 @@ exports.placeOrder = (req, res) => {
 		if(!req.body.menus || !Array.isArray(req.body.menus) || req.body.menus.length > 0){
 			return res.status(404).send({ message: "Items not added" });
 		}
+		var menus = req.body.menus;
 		RestaurantBranch.findOne({
 			where: {
 				id: req.body.restuarantBranchId
@@ -78,10 +81,20 @@ exports.placeOrder = (req, res) => {
 							lat: req.body.latitude,
 							long: req.body.longitude
 						};
-						Order.create(orderData);
-						arr.forEach(element => { 
-  console.log(element); 
-}); 
+						var createdOrder = Order.create(orderData);
+						// console.log("createdOrder...");
+						// console.log(createdOrder);
+						menus.forEach(menu => {
+							console.log(menu);
+							var orderDetails = {
+								order_id: createdOrder.id,
+								menu_id: menu.id,
+								quantity: menu.quantity,
+								price: menu.price,
+								price_original: menu.originalPrice
+							};
+
+						});
 					})
 					.catch(err => {
 						res.status(500).send({ message: err.message });
