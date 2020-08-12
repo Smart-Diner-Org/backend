@@ -23,7 +23,10 @@ const Order = db.define('orders', {
 	mode_of_delivery_id: {
 		type: Sequelize.BIGINT
 	},
-	delivery_address: {
+	delivery_address_one: {
+		type: Sequelize.TEXT
+	},
+	delivery_address_two: {
 		type: Sequelize.TEXT
 	},
 	delivery_g_location: {

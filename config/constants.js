@@ -8,5 +8,14 @@ module.exports = {
 		'admin': 2,
 		'deliveryAgent': 3,
 		'customer': 4
+	},
+	instamojo: {
+		paymentRequestStatus: {
+			pending: 'Pending'
+		},
+		paymentStatus: {
+			credit: 'Credit',
+			failed: 'Failed'
+		}
 	}
 }

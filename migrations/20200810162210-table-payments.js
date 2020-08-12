@@ -37,7 +37,8 @@ exports.up = function(db) {
 		payment_request_id: { type: 'text', notNull: true },
 		payment_id: { type: 'text' },
 		purpose: { type: 'text', notNull: true },
-		status: { type: 'string', notNull: true},
+		payment_request_status: { type: 'string', notNull: true },
+		payment_status: { type: 'string' },
 		payment_url_long: { type: 'text', notNull: true },
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }

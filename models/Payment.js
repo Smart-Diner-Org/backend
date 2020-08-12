@@ -5,13 +5,19 @@ const Payment = db.define('payments', {
 	order_id: {
 		type: Sequelize.BIGINT
 	},
+	payment_request_id: {
+		type: Sequelize.TEXT
+	},
 	payment_id: {
 		type: Sequelize.TEXT
 	},
 	purpose: {
 		type: Sequelize.TEXT
 	},
-	status: {
+	payment_request_status: {
+		type: Sequelize.STRING
+	},
+	payment_status: {
 		type: Sequelize.STRING
 	},
 	payment_url_long: {

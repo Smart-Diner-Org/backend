@@ -34,7 +34,11 @@ exports.up = function(db) {
 				mapping: 'id'
 			}
 		},
-		address: {
+		address_one: {
+			type: 'text',
+			notNull: true
+		},
+		address_two: {
 			type: 'text',
 			notNull: true
 		},

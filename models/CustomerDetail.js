@@ -8,7 +8,10 @@ const CustomerDetail = db.define('customer_details', {
 	customer_id: {
 		type: Sequelize.BIGINT
 	},
-	address: {
+	address_one: {
+		type: Sequelize.TEXT
+	},
+	address_two: {
 		type: Sequelize.TEXT
 	},
 	city_id: {

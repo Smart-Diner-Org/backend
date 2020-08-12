@@ -45,11 +45,11 @@ exports.placeOrder = (req, res) => {
 		if (!customer) {
 			return res.status(404).send({ message: "User not found." });
 		}
-		if(!customer.customer_detail || !customer.customer_detail.address){
+		if(!customer.customer_detail || !customer.customer_detail.address_one || !customer.customer_detail.address_two){
 			return res.status(404).send({ message: "Delivery address not found." });
 		}
 		if(!req.body.menus || !Array.isArray(req.body.menus) || !(req.body.menus.length > 0)){
-			return res.status(404).send({ message: "Items not added" });
+			return res.status(404).send({ message: "Menu items not added" });
 		}
 		var menus = req.body.menus;
 		RestaurantBranch.findOne({
@@ -68,21 +68,21 @@ exports.placeOrder = (req, res) => {
 			})
 			.then(orderStage => {
 				if (!orderStage) {
-					return res.status(404).send({ message: "Order is not found." });
+					return res.status(404).send({ message: "Order stage is not found." });
 				}
-				PaymentStatus.findAll({
-					attributes: ['name', 'id']
-				})
-				// PaymentStatus.findOne({
-				// 	where: {
-				// 		name: "Not Paid"
-				// 	}
+				// PaymentStatus.findAll({
+				// 	attributes: ['name', 'id']
 				// })
-				.then(paymentStatuses => {
-					if (!paymentStatuses) {
-						return res.status(404).send({ message: "Payment Status is not found." });
-					}
-					var paymentStatusId = helper.getPaymentStatusId(paymentStatuses, 'notPaid');
+				// // PaymentStatus.findOne({
+				// // 	where: {
+				// // 		name: "Not Paid"
+				// // 	}
+				// // })
+				// .then(paymentStatuses => {
+				// 	if (!paymentStatuses) {
+				// 		return res.status(404).send({ message: "Payment Status is not found." });
+				// 	}
+					var paymentStatusId = helper.getPaymentStatusId('notPaid');
 					ModeOfDelivery.findOne({
 						where: {
 							name: "Door Delivery"
@@ -90,7 +90,7 @@ exports.placeOrder = (req, res) => {
 					})
 					.then(modeOfDelivery => {
 						if (!modeOfDelivery) {
-							return res.status(404).send({ message: "Payment Status is not found." });
+							return res.status(404).send({ message: "Mode of delivery is not found." });
 						}
 						var orderData = {
 							customer_id: customer.id,
@@ -100,7 +100,8 @@ exports.placeOrder = (req, res) => {
 							stage_id: orderStage.id,
 							payment_status_id: paymentStatusId,
 							mode_of_delivery_id: modeOfDelivery.id,
-							delivery_address: customer.customer_detail.address,
+							delivery_address_one: customer.customer_detail.address_one,
+							delivery_address_two: customer.customer_detail.address_two,
 							lat: req.body.latitude,
 							long: req.body.longitude
 						};
@@ -141,7 +142,7 @@ exports.placeOrder = (req, res) => {
 								req.amount = req.body.total_price;
 								req.customer = customer;
 								req.restaurantData = restaurantData;
-								req.paymentStatuses = paymentStatuses;
+								// req.paymentStatuses = paymentStatuses;
 								console.log("gonna call payment");
 								PaymentsController.createRequest(req, res);
 							})
@@ -159,10 +160,10 @@ exports.placeOrder = (req, res) => {
 					.catch(err => {
 						res.status(500).send({ message: err.message });
 					});
-				})
-				.catch(err => {
-					res.status(500).send({ message: err.message });
-				});
+				// })
+				// .catch(err => {
+				// 	res.status(500).send({ message: err.message });
+				// });
 
 			})
 			.catch(err => {

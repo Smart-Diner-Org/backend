@@ -27,12 +27,13 @@ exports.updateCustomerDetails = (req, res) => {
 		console.log("customer data");
 		console.log(customer);
 		if(!customer.customer_detail){
-			if(!req.body.address || !req.body.cityId || !req.body.stateId){
+			if(!req.body.addressOne || !req.body.addressTwo || !req.body.cityId || !req.body.stateId){
 				return res.status(500).send({ message: "Address information is missing" });
 			}
 			var dataToCreate = {
 				customer_id : customer.id,
-				address : req.body.address,
+				address_one : req.body.addressOne,
+				address_two : req.body.addressTwo,
 				city_id : req.body.cityId,
 				state_id : req.body.stateId,
 				lat : req.body.latitude,
@@ -42,8 +43,10 @@ exports.updateCustomerDetails = (req, res) => {
 		}
 		else{
 			var dataToUpdate = {};
-			if(req.body.address)
-				dataToUpdate['address'] = req.body.address;
+			if(req.body.addressOne)
+				dataToUpdate['address_one'] = req.body.addressOne;
+			if(req.body.addressTwo)
+				dataToUpdate['address_two'] = req.body.addressTwo;
 			if(req.body.cityId)
 				dataToUpdate['city_id'] = req.body.cityId;
 			if(req.body.stateId)
@@ -61,53 +64,6 @@ exports.updateCustomerDetails = (req, res) => {
 	.catch(err => {
 		res.status(500).send({ message: err.message });
 	});
-
-	/*Customer.findById(req.customerId)
-    .then(user => {
-    	if (!user) {
-			return res.status(404).send({ message: "User not found." });
-		}
-		CustomerDetail.findOne({
-			where: {
-				customer_id: user.id
-			}
-		})
-		.then(customerDetail => {
-			if (!customerDetail) {
-				var dataToCreate = {
-					customer_id : user.id
-					address : req.body.address,
-					city_id : req.body.cityId
-					state_id : req.body.stateId,
-					lat : req.body.latitude,
-					long : req.body.longitude
-				};
-				CustomerDetail.create(dataToCreate)
-			}
-			else{
-				var dataToUpdate = {};
-				if(req.body.address)
-					dataToUpdate['address'] = req.body.address;
-				if(req.body.cityId)
-					dataToUpdate['city_id'] = req.body.cityId;
-				if(req.body.stateId)
-					dataToUpdate['state_id'] = req.body.stateId;
-				if(req.body.latitude)
-					dataToUpdate['lat'] = req.body.latitude;
-				if(req.body.longitude)
-					dataToUpdate['long'] = req.body.longitude;
-				customerDetail.update(dataToUpdate);
-			}
-			res.status(200).send({
-		        customerDetail: customerDetail
-			});
-	    })
-	    .catch(err => console.log(err));
-		// res.status(200).send("Public Content.");
-	})
-	.catch(err => {
-      res.status(500).send({ message: err.message });
-    });*/
 };
 
 exports.fetchCustomerDetails = (req, res) => {
