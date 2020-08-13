@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
+var Payment = require('./Payment');
+var Cancellation = require('./Cancellation');
 
 const Order = db.define('orders', {
 	customer_id: {
@@ -41,14 +43,17 @@ const Order = db.define('orders', {
 },{
 	underscored: true
 });
-
-// Customer.belongsTo(Role, {
-// 	foreignKey: 'role_id',
-// 	as: 'role'
-// });
-// Customer.hasOne(CustomerDetail, {
-// 	foreignKey: 'customer_id',
-// 	as: 'customer_detail'
-// });
+Order.hasMany(Payment, {
+	foreignKey: 'order_id',
+	as: 'payments'
+});
+Payment.belongsTo(Order, {
+	foreignKey: 'order_id',
+	as: 'order'
+});
+Order.hasOne(Cancellation, {
+	foreignKey: 'order_id',
+	as: 'order'
+});
 
 module.exports = Order;

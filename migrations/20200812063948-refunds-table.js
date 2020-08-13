@@ -15,18 +15,18 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('payments', {
+	return db.createTable('refunds', {
 		id: {
 			type: 'bigint',
 			primaryKey : true,
 			autoIncrement: true
 		},
-		order_id: {
+		payment_id: {
 			type: 'bigint',
 			notNull: true,
 			foreignKey:{
-				name: 'payments_order_id_fk',
-				table: 'orders',
+				name: 'refund_payment_id_fk',
+				table: 'payments',
 				rules: {
 					onDelete: 'CASCADE',
 					onUpdate: 'RESTRICT'
@@ -34,13 +34,13 @@ exports.up = function(db) {
 				mapping: 'id'
 			}
 		},
-		payment_request_id: { type: 'text', notNull: true },
-		payment_id: { type: 'text', unique: true },
-		purpose: { type: 'text', notNull: true },
-		amount: { type: 'decimal', notNull: true },
-		payment_request_status: { type: 'string', notNull: true },
-		payment_status: { type: 'string' },
-		payment_url_long: { type: 'text', notNull: true },
+		transaction_id: { type: 'text', notNull: true },
+		type: { type: 'string', notNull: true },
+		body: { type: 'text' },
+		status: { type: 'string', notNull: true },
+		refund_id: { type: 'text' },
+		refund_amount: { type: 'decimal', notNull: true },
+		total_amount: { type: 'decimal', notNull: true },
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	})
@@ -53,7 +53,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.dropTable('payments');
+	return db.dropTable('refunds');
 };
 
 exports._meta = {

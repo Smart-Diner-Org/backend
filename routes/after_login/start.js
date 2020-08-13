@@ -33,10 +33,10 @@ Restaurant.findAll({
   };
   //Define all routes here
   router.post('/customer/update_details', [
-    cors(corsOptions), //Will enable before push
+    // cors(corsOptions), //Will enable before push
     authJwt.verifyToken
     ], customerController.updateCustomerDetails);
-  router.post('/customer/fetch_details', [
+  router.get('/customer/fetch_details', [
     cors(corsOptions), //Will enable before push
     authJwt.verifyToken
     ], customerController.fetchCustomerDetails);
@@ -52,6 +52,10 @@ Restaurant.findAll({
     // cors(corsOptions), //Will enable before push
     // authJwt.verifyToken
     ], paymentsController.paymentWebhook);
+  router.post('/order/cancel', [
+    // cors(corsOptions), //Will enable before push
+    authJwt.verifyToken
+    ], orderController.cancelOrder);
 })
 .catch(err => console.log(err))
 ;

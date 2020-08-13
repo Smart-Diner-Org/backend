@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
+var Refund = require('./Refund');
 
 const Payment = db.define('payments', {
 	order_id: {
@@ -14,6 +15,9 @@ const Payment = db.define('payments', {
 	purpose: {
 		type: Sequelize.TEXT
 	},
+	amount: {
+		type: Sequelize.DECIMAL
+	},
 	payment_request_status: {
 		type: Sequelize.STRING
 	},
@@ -25,6 +29,16 @@ const Payment = db.define('payments', {
 	},
 },{
 	underscored: true
+});
+
+Payment.hasMany(Refund, {
+	foreignKey: 'payment_id',
+	as: 'payment'
+});
+
+Refund.belongsTo(Payment, {
+	foreignKey: 'payment_id',
+	as: 'payment'
 });
 
 module.exports = Payment;

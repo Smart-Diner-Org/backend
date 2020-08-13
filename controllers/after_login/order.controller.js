@@ -1,6 +1,7 @@
 var Customer = require('./../../models/Customer');
 var Order = require('./../../models/Order');
 var OrderStage = require('./../../models/OrderStage');
+var Payment = require('./../../models/Payment');
 var PaymentStatus = require('./../../models/PaymentStatus');
 var ModeOfDelivery = require('./../../models/ModeOfDelivery');
 var constants = require('./../../config/constants');
@@ -8,9 +9,11 @@ var CustomerDetail = require('./../../models/CustomerDetail');
 var RestaurantBranch = require('./../../models/RestaurantBranch');
 var Restaurant = require('./../../models/Restaurant');
 var OrderDetail = require('./../../models/OrderDetail');
+var Order = require('./../../models/Order');
 var OrderDetailMenu = require('./../../models/OrderDetailMenu');
 var PaymentsController = require('./payments.controller');
 var helper = require('./../../helpers/general.helper');
+var Cancellation = require("./../../models/Cancellation");
 // const Sequelize = require('sequelize');
 // const Op = Sequelize.Op;
 // var _ = require('underscore');
@@ -179,3 +182,109 @@ exports.placeOrder = (req, res) => {
 		res.status(500).send({ message: err.message });
 	});
 };
+
+exports.cancelOrder = (req, res) => {
+	var orderUpdateSuccess = false;
+	var orderUpdateError = 'Error during updateing order status';
+	var cancellationSuccess = false;
+	var cancellationError = 'Error during cancellation';
+
+	if(!req.body.orderId || !req.body.cancellationReason || !req.customerId){
+		res.status(404).send({ message: "Order id or cancellation reason or log in information missing. Please check." });
+	}
+
+	Customer.findByPk(req.customerId)
+	.then(customer => {
+		if (!customer) {
+			return res.status(404).send({ message: "User not found." });
+		}
+		Order.findOne({
+			where: {
+				id: req.body.orderId
+			},
+			include:[
+				{ model: Payment, as: 'payments', required: false }
+			]
+		})
+		.then(order => {
+			if(!order){
+				res.status(404).send({ message: "Order does not exist." });
+			}
+			helper.getOrderStatusId('cancelled', function(orderStatusId){
+				if(orderStatusId){
+					if(order.stage_id != orderStatusId){
+						order.update({ stage_id: orderStatusId });
+						orderUpdateSuccess = true;
+						var cancellationData = {
+							order_id: order.id,
+							cancellation_reason: req.body.cancellationReason,
+							time_of_cancellation: helper.getCurrentDate(),
+							customer_id: customer.id //Who did cancellation
+						};
+						Cancellation.create(cancellationData)
+						.then(cancellationObject => {
+							cancellationSuccess = true;
+							if(order.payments && order.payments.length > 0){
+								order.payments.forEach(payment => {
+									if(payment.payment_id && payment.payment_status == constants.instamojo.paymentStatus.credit){
+										PaymentsController.createRefund(null, null, {payment: payment, refundType: 'full', refundReason: req.body.cancellationReason}, function(refundCreationSuccess, refundCreationError){
+											if(!refundCreationSuccess)
+												return res.status(404).send({ message: refundCreationError });
+											else if(!cancellationSuccess)
+												return res.status(404).send({ message: cancellationError });
+											else if(!orderUpdateSuccess)
+												return res.status(404).send({ message: orderUpdateError });
+											else res.status(200).send({ message: 'Order cancelled successfully and refund initiated' });
+										});
+									}
+									else{
+										if(!cancellationSuccess)
+											return res.status(404).send({ message: cancellationError });
+										else if(!orderUpdateSuccess)
+											return res.status(404).send({ message: orderUpdateError });
+										else res.status(200).send({ message: 'Order cancelled successfully. No succes payment found.' });
+									}
+								});
+							}
+							else{
+								if(!orderUpdateSuccess)
+									return res.status(404).send({ message: orderUpdateError });
+								else if(!cancellationSuccess)
+									return res.status(404).send({ message: cancellationError });
+								else res.status(200).send({ message: 'Order cancelled successfully. no payment found' });
+							}
+						})
+						.catch(err => {
+							console.log("create cancellation failed");
+							console.log(err);
+							cancellationError = err;
+							res.status(500).send({ message: err })
+						});
+					}
+					else{
+						console.log("Could not cancel this order because the order has got cancelled already - " + req.body.orderId);
+						orderUpdateError = "Could not cancel this order because the order has got cancelled already";
+						return res.status(404).send({ message: orderUpdateError });
+					}
+				}
+				else{
+					console.log("order status id not found for the order - " + req.body.orderId);
+					orderUpdateError = "order status id not found for the order - " + req.body.orderId;
+					return res.status(404).send({ message: orderUpdateError });
+				}
+			});
+		})
+		.catch(err => {
+			console.log("Fetch order failed");
+			console.log(err);
+			res.status(500).send({ message: err })
+		});
+	})
+	.catch(err => {
+		console.log("Fetch customer failed");
+		console.log(err);
+		res.status(500).send({ message: err })
+	});
+};
+
+

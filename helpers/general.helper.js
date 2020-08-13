@@ -1,5 +1,6 @@
 var constants = require('./../config/constants');
 var PaymentStatus = require('./../models/PaymentStatus');
+var OrderStage = require('./../models/OrderStage');
 
 module.exports.isMobileLoginRole = (roleId) => {
 	return (roleId == constants.roles.customer) || (roleId == constants.roles.deliveryAgent);
@@ -51,4 +52,102 @@ module.exports.getPaymentStatusId = (statusName, cb) => {
 		console.log(e);
 		return cb(paymentStatusId);
 	}
+}
+
+module.exports.getOrderStatusId = (stageName, cb) => {
+	var orderStatusId = null;
+	try{
+		OrderStage.findAll({
+			attributes: ['name', 'id']
+		})
+		.then(orderStages => {
+			if (orderStages) {
+				var matchingName = null;
+				switch(stageName){
+					case 'fresh':
+						matchingName = 'Fresh';
+					break;
+					case 'accepted':
+						matchingName = 'Accepted';
+					break;
+					case 'preparing':
+						matchingName = 'Preparing';
+					break;
+					case 'foodReady':
+						matchingName = 'Food Ready';
+					break;
+					case 'foodPicked':
+						matchingName = 'Food Picked';
+					break;
+					case 'outForDelivery':
+						matchingName = 'Out for Delivery';
+					break;
+					case 'delivered':
+						matchingName = 'Delivered';
+					break;
+					case 'completed':
+						matchingName = 'Completed';
+					break;
+					case 'cancelled':
+						matchingName = 'Cancelled';
+					break;
+				}
+				orderStages.forEach(status => {
+					if(status["name"].trim() === matchingName.trim()){
+						orderStatusId = status["id"];
+					}
+				});
+			}
+			else{
+				console.log("Order Statuses are not found. Inside general helper function.");
+			}
+			return cb(orderStatusId);
+		})
+		.catch(err => {
+			console.log("Exception happened while getting Order statuses inside general helper function.");
+			return cb(orderStatusId);
+		});
+	}
+	catch (e) {
+		console.log("Exception happened inside general helper function.");
+		console.log(e);
+		return cb(orderStatusId);
+	}
+}
+
+module.exports.getCurrentDate = (format) => {
+	let date_ob = new Date();
+	// current date
+	// adjust 0 before single digit date
+	let date = ("0" + date_ob.getDate()).slice(-2);
+	// current month
+	let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+	// current year
+	let year = date_ob.getFullYear();
+	// current hours
+	let hours = date_ob.getHours();
+	// current minutes
+	let minutes = date_ob.getMinutes();
+	// current seconds
+	let seconds = date_ob.getSeconds();
+
+	switch(format){
+		case 'YYYY-MM-DD':
+			return (year + "-" + month + "-" + date);
+			break;
+		case 'HH:MM':
+			return (hours + ":" + minutes);
+			break;
+		case 'YYYY-MM-DD HH:MM:SS':
+		default:
+			return (year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
+			break;
+	}
+
+	// prints date in YYYY-MM-DD format
+	console.log(year + "-" + month + "-" + date);
+	// prints date & time in YYYY-MM-DD HH:MM:SS format
+	console.log(year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
+	// prints time in HH:MM format
+	console.log(hours + ":" + minutes);
 }

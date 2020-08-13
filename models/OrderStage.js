@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
-// var Menu = require('./Menu');
 
 const OrderStage = db.define('order_stages', {
 	name: {

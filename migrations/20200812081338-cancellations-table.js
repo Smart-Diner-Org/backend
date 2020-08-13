@@ -15,17 +15,17 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.createTable('payments', {
+	return db.createTable('cancellations', {
 		id: {
 			type: 'bigint',
-			primaryKey : true,
+			primaryKey: true,
 			autoIncrement: true
 		},
 		order_id: {
 			type: 'bigint',
 			notNull: true,
 			foreignKey:{
-				name: 'payments_order_id_fk',
+				name: 'cancellation_order_id_fk',
 				table: 'orders',
 				rules: {
 					onDelete: 'CASCADE',
@@ -34,13 +34,27 @@ exports.up = function(db) {
 				mapping: 'id'
 			}
 		},
-		payment_request_id: { type: 'text', notNull: true },
-		payment_id: { type: 'text', unique: true },
-		purpose: { type: 'text', notNull: true },
-		amount: { type: 'decimal', notNull: true },
-		payment_request_status: { type: 'string', notNull: true },
-		payment_status: { type: 'string' },
-		payment_url_long: { type: 'text', notNull: true },
+		cancellation_reason: {
+			type: 'text',
+			notNull: true
+		},
+		time_of_cancellation: {
+			type: 'datetime',
+			notNull: true
+		},
+		customer_id: { // Cancelled by
+			type: 'bigint',
+			notNull: true,
+			foreignKey:{
+				name: 'cancellation_customer_id_fk',
+				table: 'customers',
+				rules: {
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'
+				},
+				mapping: 'id'
+			}
+		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	})
@@ -53,7 +67,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.dropTable('payments');
+	return db.dropTable('cancellations');
 };
 
 exports._meta = {

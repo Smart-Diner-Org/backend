@@ -24,8 +24,16 @@ exports.updateCustomerDetails = (req, res) => {
 		if (!customer) {
 			return res.status(404).send({ message: "User not found." });
 		}
-		console.log("customer data");
-		console.log(customer);
+		var customerData = {};
+		if(req.body.name){
+			customerData['name'] = req.body.name;
+		}
+		if(req.body.email){
+			customerData['email'] = req.body.email;
+		}
+		if(customerData && (customerData["name"] || customerData["email"])){
+			customer.update(customerData);
+		}
 		if(!customer.customer_detail){
 			if(!req.body.addressOne || !req.body.addressTwo || !req.body.cityId || !req.body.stateId){
 				return res.status(500).send({ message: "Address information is missing" });
