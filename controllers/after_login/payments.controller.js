@@ -14,8 +14,8 @@ var headers = {
 exports.createRequest = (req, res) => {
 	var orderId = req.orderId;
 	var purpose = req.restaurantData.name + '_' + orderId;
-	// var redirect_url = 'https://da8e6720b73f.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
-	var redirect_url = req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	var redirect_url = 'https://746a0c77c2e4.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	// var redirect_url = req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
 	var webhook = process.env.BACKEND_API_URL + process.env.INSTAMOJO_WEBHOOK_END_POINT;
 	console.log("redirect_url url");
 	console.log(redirect_url);
@@ -79,7 +79,7 @@ updateOrderStatus = (req, res, data) => {
 		console.log("Parameter missing");
 		return;
 	}
-	var paymentStatusId = helper.getPaymentStatusId(data.status, function(paymentStatusId){
+	helper.getPaymentStatusId(data.status, function(paymentStatusId){
 		Order.findByPk(orderId)
 		.then(orderData => {
 			orderData.update({ 'payment_status_id' : paymentStatusId });
@@ -101,6 +101,10 @@ updateOrderStatus = (req, res, data) => {
 exports.paymentWebhook = (req, res) => {
 	console.log("Have reached webhook...");
 	console.log(req.body);
+	console.log("************ webhook body displayed ************");
+	console.log("************ webhook body displayed ************");
+	console.log("************ webhook body displayed ************");
+	console.log(req);
 	res.status(200).send({ message: 'success' });
 };
 

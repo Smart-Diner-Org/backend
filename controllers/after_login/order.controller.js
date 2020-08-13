@@ -85,83 +85,85 @@ exports.placeOrder = (req, res) => {
 				// 	if (!paymentStatuses) {
 				// 		return res.status(404).send({ message: "Payment Status is not found." });
 				// 	}
-					var paymentStatusId = helper.getPaymentStatusId('notPaid');
-					ModeOfDelivery.findOne({
-						where: {
-							name: "Door Delivery"
-						}
-					})
-					.then(modeOfDelivery => {
-						if (!modeOfDelivery) {
-							return res.status(404).send({ message: "Mode of delivery is not found." });
-						}
-						var orderData = {
-							customer_id: customer.id,
-							restuarant_branch_id: restuarantBranch.id,
-							description: req.body.description,
-							total_price: req.body.total_price,
-							stage_id: orderStage.id,
-							payment_status_id: paymentStatusId,
-							mode_of_delivery_id: modeOfDelivery.id,
-							delivery_address_one: customer.customer_detail.address_one,
-							delivery_address_two: customer.customer_detail.address_two,
-							lat: req.body.latitude,
-							long: req.body.longitude
-						};
-						Order.create(orderData)
-						.then(createdOrder => {
-							// console.log("createdOrder...");
-							// console.log(createdOrder);
-							menus.forEach(menu => {
-								// console.log(menu);
-								var orderDetailsData = {
-									order_id: createdOrder.id,
-									// menu_id: menu.id,
-									quantity: menu.quantity,
-									price: menu.price, //Discounted price
-									original_price: menu.originalPrice
-								};
-								var orderDetailMenuData = {
-									menu_id : menu.id
-								};
-								addOrderDetails(orderDetailsData, orderDetailMenuData);
-								// var orderDetail = OrderDetail.create(orderDetailsData);
-								// console.log("orderDetail...");
-								// console.log(orderDetail);
-								// var orderDetailMenuData = {
-								// 	order_detail_id : orderDetail.id,
-								// 	menu_id : menu.id
-								// };
-								// var orderDetailMenu = OrderDetailMenu.create(orderDetailMenuData);
-							});
-							console.log("checking restaurant");
-							console.log(restuarantBranch.restaurant_id);
-							Restaurant.findByPk(restuarantBranch.restaurant_id)
-							.then(restaurantData => {
-								console.log(restaurantData);
-								
-								req.orderId = createdOrder.id;
-								// req.orderObject = createdOrder;
-								req.amount = req.body.total_price;
-								req.customer = customer;
-								req.restaurantData = restaurantData;
-								// req.paymentStatuses = paymentStatuses;
-								console.log("gonna call payment");
-								PaymentsController.createRequest(req, res);
+					helper.getPaymentStatusId('notPaid', function(paymentStatusId){
+					
+						ModeOfDelivery.findOne({
+							where: {
+								name: "Door Delivery"
+							}
+						})
+						.then(modeOfDelivery => {
+							if (!modeOfDelivery) {
+								return res.status(404).send({ message: "Mode of delivery is not found." });
+							}
+							var orderData = {
+								customer_id: customer.id,
+								restuarant_branch_id: restuarantBranch.id,
+								description: req.body.description,
+								total_price: req.body.total_price,
+								stage_id: orderStage.id,
+								payment_status_id: paymentStatusId,
+								mode_of_delivery_id: modeOfDelivery.id,
+								delivery_address_one: customer.customer_detail.address_one,
+								delivery_address_two: customer.customer_detail.address_two,
+								lat: req.body.latitude,
+								long: req.body.longitude
+							};
+							Order.create(orderData)
+							.then(createdOrder => {
+								// console.log("createdOrder...");
+								// console.log(createdOrder);
+								menus.forEach(menu => {
+									// console.log(menu);
+									var orderDetailsData = {
+										order_id: createdOrder.id,
+										// menu_id: menu.id,
+										quantity: menu.quantity,
+										price: menu.price, //Discounted price
+										original_price: menu.originalPrice
+									};
+									var orderDetailMenuData = {
+										menu_id : menu.id
+									};
+									addOrderDetails(orderDetailsData, orderDetailMenuData);
+									// var orderDetail = OrderDetail.create(orderDetailsData);
+									// console.log("orderDetail...");
+									// console.log(orderDetail);
+									// var orderDetailMenuData = {
+									// 	order_detail_id : orderDetail.id,
+									// 	menu_id : menu.id
+									// };
+									// var orderDetailMenu = OrderDetailMenu.create(orderDetailMenuData);
+								});
+								console.log("checking restaurant");
+								console.log(restuarantBranch.restaurant_id);
+								Restaurant.findByPk(restuarantBranch.restaurant_id)
+								.then(restaurantData => {
+									console.log(restaurantData);
+									
+									req.orderId = createdOrder.id;
+									// req.orderObject = createdOrder;
+									req.amount = req.body.total_price;
+									req.customer = customer;
+									req.restaurantData = restaurantData;
+									// req.paymentStatuses = paymentStatuses;
+									console.log("gonna call payment");
+									PaymentsController.createRequest(req, res);
+								})
+								.catch(err => {
+									console.log("Throwing restaurant fetch error");
+									console.log(err);
+									res.status(500).send({ message: err.message });
+								});
 							})
 							.catch(err => {
-								console.log("Throwing restaurant fetch error");
-								console.log(err);
 								res.status(500).send({ message: err.message });
 							});
+							
 						})
 						.catch(err => {
 							res.status(500).send({ message: err.message });
 						});
-						
-					})
-					.catch(err => {
-						res.status(500).send({ message: err.message });
 					});
 				// })
 				// .catch(err => {
@@ -287,4 +289,26 @@ exports.cancelOrder = (req, res) => {
 	});
 };
 
+exports.getOrderStatus = (req, res) => {
+	if(req.params.id){
+		Order.findByPk(req.params.id)
+		.then(order => {
+			if(!order){
+				res.status(404).send({ message : 'Order not found'});
+			}
 
+			// if(req.params.payment_id && req.params.payment_request_id && payment_status)
+
+
+			res.status(200).send({
+				stage_id: order.stage_id,
+				deliveryAddressOne: order.delivery_address_one,
+				deliveryAddressTwo: order.delivery_address_two
+			});
+		})
+		.catch(err => {
+			res.status(500).send({ message : err});
+		});
+	}
+	else res.status(404).send({ message : 'Illegal request'});
+};

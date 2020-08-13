@@ -31,31 +31,17 @@ Restaurant.findAll({
       }
     }
   };
+
   //Define all routes here
-  router.post('/customer/update_details', [
-    // cors(corsOptions), //Will enable before push
-    authJwt.verifyToken
-    ], customerController.updateCustomerDetails);
-  router.get('/customer/fetch_details', [
-    cors(corsOptions), //Will enable before push
-    authJwt.verifyToken
-    ], customerController.fetchCustomerDetails);
-  router.post('/order/place_order', [
-    cors(corsOptions), //Will enable before push
-    authJwt.verifyToken
-    ], orderController.placeOrder);
-  router.post('/payment/create_request', [
-    cors(corsOptions), //Will enable before push
-    authJwt.verifyToken
-    ], paymentsController.createRequest);
+  router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
+  router.get('/customer/fetch_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.fetchCustomerDetails);
+  router.post('/order/place_order', [ cors(corsOptions), authJwt.verifyToken ], orderController.placeOrder);
+  router.post('/order/cancel', [ cors(corsOptions), authJwt.verifyToken ], orderController.cancelOrder);
+  router.post('/payment/create_request', [ cors(corsOptions), authJwt.verifyToken ], paymentsController.createRequest);
   router.post('/payment/webhook', [
-    // cors(corsOptions), //Will enable before push
+    // cors(corsOptions), //Its from instamojo, so we don't need cors middleware check
     // authJwt.verifyToken
     ], paymentsController.paymentWebhook);
-  router.post('/order/cancel', [
-    // cors(corsOptions), //Will enable before push
-    authJwt.verifyToken
-    ], orderController.cancelOrder);
 })
 .catch(err => console.log(err))
 ;

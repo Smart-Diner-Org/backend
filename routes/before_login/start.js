@@ -1,6 +1,7 @@
 const express = require("express");
 var router = express.Router();
 var restaurantController = require('./../../controllers/before_login/restaurant_controller');
+const { orderController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
 var _ = require('underscore');
@@ -30,10 +31,10 @@ Restaurant.findAll({
     }
   };
   //Define all routes here
+    // app.get('/:id', function(req, res){
   router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
+  router.get('/order/:id/status', cors(corsOptions), orderController.getOrderStatus);
+  // router.get('/order/:id/status', orderController.getOrderStatus);
 })
-.catch(err => console.log(err))
-;
-// router.get('/menu/get', cors(corsOptions), restaurantController.getMenu);
-// router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
+.catch(err => console.log(err));
 module.exports = router;
