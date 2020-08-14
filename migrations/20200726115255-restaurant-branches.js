@@ -23,6 +23,7 @@ exports.up = function(db) {
 		},
 		restaurant_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'restaurant_branches_restaurant_id_fk',
 				table: 'restaurants',
@@ -43,11 +44,11 @@ exports.up = function(db) {
 			notNull: true
 		},
 		g_location: {
-			type: 'text',
-			notNull: true
+			type: 'text'
 		},
 		city_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'restaurant_branches_city_id_fk',
 				table: 'cities',
@@ -60,6 +61,7 @@ exports.up = function(db) {
 		},
 		state_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'restaurant_branches_state_id_fk',
 				table: 'states',

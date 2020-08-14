@@ -32,15 +32,12 @@ checkForMobile = (req, res, next) => {
 
 checkDuplicateMobileOrEmail = (req, res, next) => {
   // Mobile number
-  console.log("1 - "+req.body.roleId);
   if(helper.isMobileLoginRole(req.body.roleId)){
-    console.log("2");
     Customer.findOne({
       where: {
         mobile: req.body.mobile
       }
     }).then(customer => {
-      console.log("3");
       if (customer) {
         res.status(400).send({
           message: "Failed! Mobile number is already in use!"
@@ -51,21 +48,27 @@ checkDuplicateMobileOrEmail = (req, res, next) => {
     });
   }
   else{
-    console.log("4 - " + req.body.email);
-    Customer.findOne({
-      where: {
-        email: req.body.email
-      }
-    }).then(customer => {
-      console.log("5");
-      if (customer) {
-        res.status(400).send({
-          message: "Failed! Email is already in use!"
-        });
-        return;
-      }
-      next();
-    });
+    if(req.body.email){
+      Customer.findOne({
+        where: {
+          email: req.body.email
+        }
+      }).then(customer => {
+        if (customer) {
+          res.status(400).send({
+            message: "Failed! Email is already in use!"
+          });
+          return;
+        }
+        next();
+      });
+    }
+    else {
+      res.status(400).send({
+        message: "Email id missing"
+      });
+      return;
+    }
   }
   // User.findOne({
   //   where: {

@@ -36,6 +36,7 @@ exports.up = function(db) {
 		},
 		delivery_agent_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'order_delivery_detail_delivery_agent_id_fk',
 				table: 'customers',

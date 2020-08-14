@@ -36,6 +36,7 @@ exports.up = function(db) {
 		},
 		menu_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'order_detail_menu_id_fk',
 				table: 'menus',

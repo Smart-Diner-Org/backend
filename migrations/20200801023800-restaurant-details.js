@@ -23,6 +23,7 @@ exports.up = function(db) {
 		},
 		restaurant_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'restaurant_details_restaurant_id_fk',
 				table: 'restaurants',

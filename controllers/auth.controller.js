@@ -41,11 +41,11 @@ exports.signup = (req, res) => {
   var dataToSave = {
     name: req.body.name,
     mobile: req.body.mobile,
-    role_id: req.body.role_id,
+    role_id: req.body.roleId,
   };
   // if(helper.isEmailLoginRole(req.body.roleId)){
     dataToSave['email'] = req.body.email;
-    if(dataToSave['password'])
+    if(req.body.password)
       dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
   // }
 

@@ -31,6 +31,7 @@ exports.up = function(db) {
 exports.down = function(db) {
 	return db.addColumn('order_details', 'menu_id', {
 		type: 'bigint',
+		// notNull: true,
 		foreignKey: {
 			name: 'order_detail_menu_id_fk',
 			table: 'menus',

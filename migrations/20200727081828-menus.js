@@ -23,6 +23,7 @@ exports.up = function(db) {
 		},
 		restuarant_branch_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'menu_restaurant_branch_id_fk',
 				table: 'restaurant_branches',
@@ -35,6 +36,7 @@ exports.up = function(db) {
 		},
 		category_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 			name: 'menu_category_id_fk',
 			table: 'menu_categories',
@@ -70,6 +72,7 @@ exports.up = function(db) {
 		},
 		menu_type: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 			name: 'menu_type_id_fk',
 			table: 'menu_types',

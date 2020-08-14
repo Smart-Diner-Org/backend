@@ -36,6 +36,7 @@ exports.up = function(db) {
 		},
 		restuarant_branch_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'order_branch_id_fk',
 				table: 'restaurant_branches',
@@ -53,6 +54,7 @@ exports.up = function(db) {
 		},
 		stage_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'order_stage_id_fk',
 				table: 'order_stages',
@@ -65,6 +67,7 @@ exports.up = function(db) {
 		},
 		payment_status_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'order_payment_status_id_fk',
 				table: 'payment_statuses',
@@ -77,6 +80,7 @@ exports.up = function(db) {
 		},
 		mode_of_delivery_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'order_mode_of_delivery_id_fk',
 				table: 'mode_of_deliveries',

@@ -36,6 +36,7 @@ exports.up = function(db) {
 		},
 		restuarant_branch_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'restaurant_employee_branch_id_fk',
 				table: 'restaurant_branches',

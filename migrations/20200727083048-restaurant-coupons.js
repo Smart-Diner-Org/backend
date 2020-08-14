@@ -23,6 +23,7 @@ exports.up = function(db) {
 		},
 		restuarant_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey: {
 				name: 'restaurant_coupon_restaurant_id_fk',
 				table: 'restaurants',

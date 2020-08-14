@@ -19,14 +19,15 @@ exports.up = function(db) {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
-			autoIncrement: true
+			autoIncrement: true,
 		},
-		name: { type: 'string', notNull: true },
+		name: { type: 'string'},
 		email: { type: 'string' },
 		mobile: { type: 'string', notNull: true, unique: true },
 		password: { type: 'string' },
 		role_id: {
 			type: 'bigint',
+			notNull: true,
 			foreignKey:{
 				name: 'customer_role_id_fk',
 				table: 'roles',

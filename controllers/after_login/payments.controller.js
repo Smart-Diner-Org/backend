@@ -14,8 +14,9 @@ var headers = {
 exports.createRequest = (req, res) => {
 	var orderId = req.orderId;
 	var purpose = req.restaurantData.name + '_' + orderId;
-	var redirect_url = 'https://746a0c77c2e4.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
-	// var redirect_url = req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	// var redirect_url = 'https://df02469f5398.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	var redirect_url = req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	redirect_url = redirect_url.replace("__id__", id);
 	var webhook = process.env.BACKEND_API_URL + process.env.INSTAMOJO_WEBHOOK_END_POINT;
 	console.log("redirect_url url");
 	console.log(redirect_url);

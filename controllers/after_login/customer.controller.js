@@ -47,7 +47,15 @@ exports.updateCustomerDetails = (req, res) => {
 				lat : req.body.latitude,
 				long : req.body.longitude
 			};
-			CustomerDetail.create(dataToCreate);
+			CustomerDetail.create(dataToCreate)
+			.then(customerDetails => {
+				res.status(200).send({
+					customerDetails: customerDetails
+				});
+			})
+			.catch(err => {
+				res.status(500).send({ message: err.message });
+			});
 		}
 		else{
 			var dataToUpdate = {};
@@ -63,11 +71,16 @@ exports.updateCustomerDetails = (req, res) => {
 				dataToUpdate['lat'] = req.body.latitude;
 			if(req.body.longitude)
 				dataToUpdate['long'] = req.body.longitude;
-			customer.customer_detail.update(dataToUpdate);
+			customer.customer_detail.update(dataToUpdate)
+			.then(customerDetails => {
+				res.status(200).send({
+					customerDetails: customerDetails
+				});
+			})
+			.catch(err => {
+				res.status(500).send({ message: err.message });
+			});
 		}
-		res.status(200).send({
-	        message: "Successfully updated the customer details"
-		});
 	})
 	.catch(err => {
 		res.status(500).send({ message: err.message });
