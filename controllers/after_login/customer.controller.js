@@ -25,6 +25,7 @@ exports.updateCustomerDetails = (req, res) => {
 			return res.status(404).send({ message: "User not found." });
 		}
 		var customerData = {};
+		var newCustomer = null;
 		if(req.body.name){
 			customerData['name'] = req.body.name;
 		}
@@ -32,7 +33,7 @@ exports.updateCustomerDetails = (req, res) => {
 			customerData['email'] = req.body.email;
 		}
 		if(customerData && (customerData["name"] || customerData["email"])){
-			customer.update(customerData);
+			newCustomer = customer.update(customerData);
 		}
 		if(!customer.customer_detail){
 			if(!req.body.addressOne || !req.body.addressTwo || !req.body.cityId || !req.body.stateId){
@@ -49,8 +50,12 @@ exports.updateCustomerDetails = (req, res) => {
 			};
 			CustomerDetail.create(dataToCreate)
 			.then(customerDetails => {
+				if(newCustomer)
+					newCustomer[customerDetails] = customerDetails;
+				else
+					customer[customerDetails] = customerDetails;
 				res.status(200).send({
-					customerDetails: customerDetails
+					customer: customer
 				});
 			})
 			.catch(err => {
@@ -73,8 +78,12 @@ exports.updateCustomerDetails = (req, res) => {
 				dataToUpdate['long'] = req.body.longitude;
 			customer.customer_detail.update(dataToUpdate)
 			.then(customerDetails => {
+				if(newCustomer)
+					newCustomer[customerDetails] = customerDetails;
+				else
+					customer[customerDetails] = customerDetails;
 				res.status(200).send({
-					customerDetails: customerDetails
+					customer: customer
 				});
 			})
 			.catch(err => {
