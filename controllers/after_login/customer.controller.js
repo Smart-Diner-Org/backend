@@ -1,15 +1,11 @@
 var Customer = require('./../../models/Customer');
-// var MenuCategory = require('./../../models/MenuCategory');
-// var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
 var CustomerDetail = require('./../../models/CustomerDetail');
 var State = require('./../../models/State');
 var City = require('./../../models/City');
-// var RestaurantBranch = require('./../../models/RestaurantBranch');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var _ = require('underscore');
-
 
 exports.updateCustomerDetails = (req, res) => {
 	Customer.findOne({
@@ -50,13 +46,7 @@ exports.updateCustomerDetails = (req, res) => {
 			};
 			CustomerDetail.create(dataToCreate)
 			.then(customerDetails => {
-				if(newCustomer)
-					newCustomer[customerDetails] = customerDetails;
-				else
-					customer[customerDetails] = customerDetails;
-				res.status(200).send({
-					customer: customer
-				});
+				this.fetchCustomerDetails(req, res);
 			})
 			.catch(err => {
 				res.status(500).send({ message: err.message });
@@ -78,13 +68,7 @@ exports.updateCustomerDetails = (req, res) => {
 				dataToUpdate['long'] = req.body.longitude;
 			customer.customer_detail.update(dataToUpdate)
 			.then(customerDetails => {
-				if(newCustomer)
-					newCustomer[customerDetails] = customerDetails;
-				else
-					customer[customerDetails] = customerDetails;
-				res.status(200).send({
-					customer: customer
-				});
+				this.fetchCustomerDetails(req, res);
 			})
 			.catch(err => {
 				res.status(500).send({ message: err.message });
@@ -121,7 +105,7 @@ exports.fetchCustomerDetails = (req, res) => {
 		}
 	})
 	.catch(err => {
-
+		res.status(500).send({ message: err.message });
 	});
 };
 

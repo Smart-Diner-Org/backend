@@ -37,17 +37,14 @@ exports.checkAccount= (req, res) => {
 }
 
 exports.signup = (req, res) => {
-  // Save User to Database
   var dataToSave = {
     name: req.body.name,
     mobile: req.body.mobile,
     role_id: req.body.roleId,
   };
-  // if(helper.isEmailLoginRole(req.body.roleId)){
-    dataToSave['email'] = req.body.email;
-    if(req.body.password)
-      dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
-  // }
+  dataToSave['email'] = req.body.email;
+  if(req.body.password)
+    dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
 
   console.log(dataToSave);
 
@@ -60,27 +57,6 @@ exports.signup = (req, res) => {
         }
         else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
       });
-
-      // res.send({ message: "User was registered successfully!" });
-
-      /*if (req.body.roles) {
-        Role.findAll({
-          where: {
-            name: {
-              [Op.or]: req.body.roles
-            }
-          }
-        }).then(roles => {
-          user.setRoles(roles).then(() => {
-            res.send({ message: "User was registered successfully!" });
-          });
-        });
-      } else {
-        // user role = 1
-        user.setRoles([1]).then(() => {
-          res.send({ message: "User was registered successfully!" });
-        });
-      }*/
     })
     .catch(err => {
       res.status(500).send({ message: err.message });
@@ -168,10 +144,6 @@ exports.verifyOtp = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User not found." });
       }
-      console.log("Here 3");
-      // res.status(200).send({
-      //   user: user
-      // });
       smsHelper.verifyOtp(user.mobile, req.body.otp, function(smsStatus, message){
         if(smsStatus){
 
@@ -181,15 +153,9 @@ exports.verifyOtp = (req, res) => {
 
           var token = accessTokenHelper.getJwtAccessToken(user.id);
           res.status(200).send({
-            user: user,
+            customer: user,
             accessToken: token
           });
-          // res.status(200).send({
-          //   id: user.id,
-          //   name: user.name,
-          //   mobile: user.mobile,
-          //   accessToken: token
-          // });
         }
         else res.status(500).send({ message: message });
       });

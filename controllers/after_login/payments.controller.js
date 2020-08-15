@@ -4,7 +4,6 @@ var Order = require('./../../models/Order');
 var request= require('request');
 var helper = require('./../../helpers/general.helper');
 var constants = require('../../config/constants');
-// var helper = require('./../../helpers/general.helper');
 
 var headers = {
 	'X-Api-Key': process.env.INSTAMOJO_API_KEY,
@@ -14,9 +13,9 @@ var headers = {
 exports.createRequest = (req, res) => {
 	var orderId = req.orderId;
 	var purpose = req.restaurantData.name + '_' + orderId;
-	// var redirect_url = 'https://df02469f5398.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
-	var redirect_url = req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
-	redirect_url = redirect_url.replace("__id__", id);
+	var redirect_url = 'https://b3bb3f62abf1.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	// var redirect_url = req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	redirect_url = redirect_url.replace("__id__", orderId);
 	var webhook = process.env.BACKEND_API_URL + process.env.INSTAMOJO_WEBHOOK_END_POINT;
 	console.log("redirect_url url");
 	console.log(redirect_url);

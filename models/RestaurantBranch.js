@@ -27,6 +27,21 @@ const RestaurantBranch = db.define('restaurant_branches', {
 	},
 	status: {
 		type: Sequelize.BOOLEAN
+	},
+	long: {
+		type: Sequelize.DECIMAL
+	},
+	lat: {
+		type: Sequelize.DECIMAL
+	},
+	email: {
+		type: Sequelize.CHAR
+	},
+	contact_number: {
+		type: Sequelize.CHAR
+	},
+	delivery_locations: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true

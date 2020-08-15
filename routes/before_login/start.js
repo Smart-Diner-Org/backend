@@ -23,6 +23,10 @@ Restaurant.findAll({
   urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
   corsOptions = {
     origin: function (origin, callback) {
+      console.log("urls");
+      console.log(urls);
+      console.log("origin");
+      console.log(origin);
       if (urls.indexOf(origin) !== -1) {
         callback(null, true)
       } else {

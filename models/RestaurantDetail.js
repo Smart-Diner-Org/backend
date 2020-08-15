@@ -20,6 +20,12 @@ const RestaurantDetail = db.define('restaurant_details', {
 	},
 	linkedin_link: {
 		type: Sequelize.CHAR
+	},
+	longitude: {
+		type: Sequelize.DECIMAL
+	},
+	latitude: {
+		type: Sequelize.DECIMAL
 	}
 },{
 	underscored: true

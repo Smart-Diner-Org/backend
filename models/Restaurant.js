@@ -25,6 +25,9 @@ const Restaurant = db.define('restaurants', {
 	},
 	url: {
 		type: Sequelize.CHAR
+	},
+	about: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true
