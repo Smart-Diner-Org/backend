@@ -61,9 +61,10 @@ module.exports.getRestaurantDetails = (req, res, next) => {
       message:'successfully fetched menus',
       restaurant : restaurant
     });
-      // res.sendStatus(200);
-    })
-    .catch(err => console.log(err))
+  })
+  .catch(err => {
+    console.log(err);
+  })
   ;
 }
 

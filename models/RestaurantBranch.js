@@ -51,6 +51,5 @@ RestaurantBranch.hasMany(Menu, {
 	foreignKey: 'restuarant_branch_id',
 	as: 'restaurant_branch_menu'
 });
-// RestaurantBranch.belongsTo(Restaurant);
 
 module.exports = RestaurantBranch;

@@ -2,6 +2,8 @@ const Sequelize = require('sequelize');
 var db = require('./../config/database');
 var Payment = require('./Payment');
 var Cancellation = require('./Cancellation');
+var Customer = require('./Customer');
+var RestaurantBranch = require('./RestaurantBranch');
 
 const Order = db.define('orders', {
 	customer_id: {
@@ -50,6 +52,18 @@ Order.hasMany(Payment, {
 Payment.belongsTo(Order, {
 	foreignKey: 'order_id',
 	as: 'order'
+});
+Order.belongsTo(Customer, {
+	foreignKey: 'customer_id',
+	as: 'customer'
+});
+Customer.hasMany(Order, {
+	foreignKey: 'customer_id',
+	as: 'orders'
+});
+Order.belongsTo(RestaurantBranch, {
+	foreignKey: 'restuarant_branch_id',
+	as: 'restuarant_branch'
 });
 Order.hasOne(Cancellation, {
 	foreignKey: 'order_id',

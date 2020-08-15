@@ -43,5 +43,9 @@ Customer.hasOne(CustomerDetail, {
 	foreignKey: 'customer_id',
 	as: 'customer_detail'
 });
+// Customer.hasMany(Order, {
+// 	foreignKey: 'customer_id',
+// 	as: 'orders'
+// });
 
 module.exports = Customer;

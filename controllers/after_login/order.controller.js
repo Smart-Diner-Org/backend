@@ -275,19 +275,62 @@ exports.cancelOrder = (req, res) => {
 exports.getOrderStatus = (req, res) => {
 	if(req.params.id){
 		Order.findByPk(req.params.id)
+		// Order.findOne({
+		// 	where: {
+		// 		id: req.params.id
+		// 	},
+		// 	iclude:[
+		// 		{ model: Customer, as: 'customer' },
+		// 		{ model: RestaurantBranch, as: 'restuarant_branch',
+		// 		// include: [
+		// 		// 	{ model: Restaurant, as: 'restaurant' }
+		// 		// ]
+		// 	}
+		// 	]
+		// })
 		.then(order => {
 			if(!order){
 				res.status(404).send({ message : 'Order not found'});
 			}
-
-			// if(req.params.payment_id && req.params.payment_request_id && payment_status)
-
-
-			res.status(200).send({
-				stage_id: order.stage_id,
-				deliveryAddressOne: order.delivery_address_one,
-				deliveryAddressTwo: order.delivery_address_two
+			Customer.findByPk(order.customer_id)
+			.then(customer => {
+				if(!customer){
+					res.status(404).send({ message : 'Customer not found'});
+				}
+				RestaurantBranch.findByPk(order.restuarant_branch_id)
+				.then(restuarantBranch => {
+					if(!restuarantBranch){
+						res.status(404).send({ message : 'Restuarant branch is not found'});
+					}
+					Restaurant.findByPk(restuarantBranch.restaurant_id)
+					.then(restuarant => {
+						if(!restuarant){
+							res.status(404).send({ message : 'Restuarant branch is not found'});
+						}
+						res.status(200).send({
+							name: customer.name,
+							stage_id: order.stage_id,
+							totalAmount: order.total_price,
+							deliveryAddressOne: order.delivery_address_one,
+							deliveryAddressTwo: order.delivery_address_two,
+							restuarantName: restuarant.name,
+							restaurantContactNumber: restuarantBranch.contact_number,
+							restuarantEmailId: restuarantBranch.email,
+							restuarantAddress: restuarantBranch.address
+						});
+					})
+					.catch(err => {
+						res.status(500).send({ message : err});
+					});
+				})
+				.catch(err => {
+					res.status(500).send({ message : err});
+				});
+			})
+			.catch(err => {
+				res.status(500).send({ message : err});
 			});
+			// if(req.params.payment_id && req.params.payment_request_id && payment_status)
 		})
 		.catch(err => {
 			res.status(500).send({ message : err});

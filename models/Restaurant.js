@@ -47,5 +47,9 @@ Restaurant.hasMany(RestaurantBranch, {
 	foreignKey: 'restaurant_id',
 	as: 'restaurant_branches'
 });
+RestaurantBranch.belongsTo(Restaurant, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant'
+});
 
 module.exports = Restaurant;
