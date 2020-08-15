@@ -72,6 +72,12 @@ exports.up = function(db) {
 				mapping: 'id'
 			}
 		},
+		contact_number: {
+			type: 'string',
+			notNull: true
+		},
+		email: 'string',
+		delivery_locations: 'text',
 		status: {
 			type: 'boolean',
 			defaultValue: true,

@@ -50,6 +50,7 @@ exports.up = function(db) {
 		logo: 'string',
 		tracker_enabled: { type: 'boolean', notNull: true },
 		status: { type: 'boolean', notNull: true, defaultValue: true },
+		about: 'text',
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	}).then(
