@@ -29,7 +29,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return null;
+	return db.removeColumn('restaurant_branches', 'delivery_locations');
 };
 
 exports._meta = {

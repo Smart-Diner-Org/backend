@@ -40,7 +40,8 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return null;
+	db.removeColumn('restaurant_branches', 'contact_number');
+	return db.removeColumn('restaurant_branches', 'email');
 };
 
 exports._meta = {
