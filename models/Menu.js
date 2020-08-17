@@ -36,6 +36,9 @@ const Menu = db.define('menus', {
 	coupon_valid: {
 		type: Sequelize.BOOLEAN
 	},
+	serving_measure: {
+		type: Sequelize.STRING
+	}
 	// created_at: {
 	// 	type: Sequelize.NOW
 	// },
