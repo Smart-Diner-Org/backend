@@ -1,7 +1,7 @@
 module.exports = {
 	whitelistWebsites: {
-		local : 'http://localhost:3000',
-		production : 'https://smartdiner.in'
+		local : 'localhost:3000',
+		production : 'smartdiner.in'
 	},
 	roles: {
 		'superAdmin': 1,

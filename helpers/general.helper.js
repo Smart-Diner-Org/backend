@@ -1,6 +1,7 @@
 var constants = require('./../config/constants');
 var PaymentStatus = require('./../models/PaymentStatus');
 var OrderStage = require('./../models/OrderStage');
+var _ = require('underscore');
 
 module.exports.isMobileLoginRole = (roleId) => {
 	return (roleId == constants.roles.customer) || (roleId == constants.roles.deliveryAgent);
@@ -150,4 +151,29 @@ module.exports.getCurrentDate = (format) => {
 	console.log(year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
 	// prints time in HH:MM format
 	console.log(hours + ":" + minutes);
+}
+
+module.exports.getCorsUrlsList = (restaurants) => {
+	var urls =  _.map(restaurants, function(menu) {
+		return menu.url.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
+	});
+	urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
+	return urls;
+}
+
+module.exports.getCorsFunction = (urls) => {
+	return {
+		origin: function (origin, callback) {
+			console.log("urls");
+			console.log(urls);
+			console.log("origin");
+			console.log(origin);
+			var ori = origin.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
+			if (urls.indexOf(ori) !== -1) {
+				callback(null, true)
+			} else {
+				callback(new Error('Not allowed by CORS'))
+			}
+		}
+	};
 }

@@ -5,8 +5,8 @@ var router = express.Router();
 const { customerController, orderController, paymentsController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
-var _ = require('underscore');
 const { authJwt } = require("../../middlewares");
+var helper = require('./../../helpers/general.helper');
 
 var cors = require("cors");
 var corsOptions;
@@ -17,20 +17,9 @@ Restaurant.findAll({
   },
   attributes: ['url']
 })
-.then((menus) => {
-  var urls =  _.map(menus, function(menu) {
-    return menu.url; 
-  });
-  urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
-  corsOptions = {
-    origin: function (origin, callback) {
-      if (urls.indexOf(origin) !== -1) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
-    }
-  };
+.then((restaurants) => {
+  var urls = helper.getCorsUrlsList(restaurants);
+  corsOptions = helper.getCorsFunction(urls);
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
