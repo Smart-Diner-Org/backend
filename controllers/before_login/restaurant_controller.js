@@ -8,6 +8,7 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var _ = require('underscore');
 const { URL } = require('url');
+var ContactRequest = require('./../../models/ContactRequest');
 
 module.exports.getMenu = (req, res, next) => {
   Menu.findAll({
@@ -28,7 +29,6 @@ module.exports.getMenu = (req, res, next) => {
 }
 
 module.exports.getRestaurantDetails = (req, res, next) => {
-  console.log("I have come here 3...");
   var hostname = (new URL(req.headers.origin)).hostname;
   // var hostname = 'localhost';
   if(hostname.includes('localhost')){
@@ -88,3 +88,45 @@ module.exports.getRestaurantUrls = (callback) => {
   .catch(err => console.log(err))
   ;
 }
+
+module.exports.saveContactRequest = (req, res, next) => {
+  if(!req.body.email || !req.body.name || !req.body.message)
+    return res.status(404).send({ message: "Parameter Missing." });
+
+  var hostname = (new URL(req.headers.origin)).hostname;
+  // var hostname = 'localhost';
+  if(hostname.includes('localhost')){
+    hostname = 'a3biriyani';
+  }
+  Restaurant.findOne(
+    {
+      where: {
+        status: true,
+        url: {
+          [Op.like]: '%' + hostname + '%'
+        }
+      }
+    })
+    .then(restaurant => {
+      if(!restaurant)
+        return res.status(404).send({ message: "Restaurant not found." });
+      ContactRequest.create({
+        restaurant_id: restaurant.id,
+        name: req.body.name,
+        email: req.body.email,
+        message: req.body.message
+      })
+      .then(contactRequest => {
+        return res.status(200).send({ message: "Successfully saved the contact request." });
+      })
+      .catch(err => {
+        console.log(err);
+        return res.status(500).send({ message: "Not able to save the contact request." });
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      return res.status(500).send({ message: "Not able to save the contact request." });
+    });
+}
+

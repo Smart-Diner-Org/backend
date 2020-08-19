@@ -316,7 +316,8 @@ exports.getOrderStatus = (req, res) => {
 							restuarantName: restuarant.name,
 							restaurantContactNumber: restuarantBranch.contact_number,
 							restuarantEmailId: restuarantBranch.email,
-							restuarantAddress: restuarantBranch.address
+							restuarantAddress: restuarantBranch.address,
+							createdDate: order.createdAt
 						});
 					})
 					.catch(err => {
