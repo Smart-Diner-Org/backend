@@ -2,7 +2,7 @@ var constants = require('./../config/constants');
 const SendOtp = require('sendotp');
 const otpMessage = 'Otp for your food order is {{otp}}, please do not share it with anybody';
 const sendOtp = new SendOtp(process.env.OTP_API_KEY, otpMessage);
-sendOtp.setOtpExpiry('1'); //minutes
+sendOtp.setOtpExpiry('5'); //minutes
 
 module.exports.triggerOtp = (mobile, cb) => {
 	var status = null;
