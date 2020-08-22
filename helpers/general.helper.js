@@ -168,6 +168,10 @@ module.exports.getCorsFunction = (urls) => {
 			console.log(urls);
 			console.log("origin");
 			console.log(origin);
+			if(!origin){
+				callback(new Error('Not allowed by CORS'));
+				return;
+			}
 			var ori = origin.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
 			if (urls.indexOf(ori) !== -1) {
 				callback(null, true)

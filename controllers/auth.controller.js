@@ -45,8 +45,6 @@ exports.signup = (req, res) => {
   if(req.body.password)
     dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
 
-  console.log(dataToSave);
-
   Customer.create(dataToSave)
     .then(user => {
       //Trigger OTP to verify the mobile number
@@ -63,7 +61,9 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
-  if(req.body.email){
+  if(req.body.email && req.body.roleId && helper.isEmailLoginRole(req.body.roleId)){
+    if(!req.body.password)
+      return res.status(404).send({ message: "Password is missing." });
     Customer.findOne({
       where: {
         email: req.body.email
@@ -123,7 +123,6 @@ exports.signin = (req, res) => {
 };
 
 exports.verifyOtp = (req, res) => {
-  console.log("Here 1");
   Customer.findOne({
       where: {
         mobile: req.body.mobile
@@ -138,8 +137,6 @@ exports.verifyOtp = (req, res) => {
       ]
     })
     .then(user => {
-      console.log("Here 2");
-      console.log(user);
       if (!user) {
         return res.status(404).send({ message: "User not found." });
       }

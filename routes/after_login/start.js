@@ -3,6 +3,7 @@ var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
 const { customerController, orderController, paymentsController } = require("./../../controllers/after_login");
+const { restaurantController } = require("./../../controllers/before_login");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
 const { authJwt } = require("../../middlewares");
@@ -29,8 +30,11 @@ Restaurant.findAll({
   router.post('/payment/create_request', [ cors(corsOptions), authJwt.verifyToken ], paymentsController.createRequest);
   router.post('/payment/webhook', [
     // cors(corsOptions), //Its from instamojo, so we don't need cors middleware check
-    // authJwt.verifyToken
     ], paymentsController.paymentWebhook);
+  router.post('/restaurant/get_details', [ 
+    cors(corsOptions), 
+    authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
+  router.post('/restaurant/get_orders', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
 })
 .catch(err => console.log(err))
 ;

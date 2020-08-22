@@ -1,10 +1,10 @@
 const express = require("express");
 var router = express.Router();
-var restaurantController = require('./../../controllers/before_login/restaurant_controller');
+var restaurantController = require('./../../controllers/before_login/restaurant.controller');
 const { orderController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
-var constants = require('./../../config/constants');
-var _ = require('underscore');
+// var constants = require('./../../config/constants');
+// var _ = require('underscore');
 var helper = require('./../../helpers/general.helper');
 
 
@@ -25,7 +25,6 @@ Restaurant.findAll({
   router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
   router.get('/order/:id/status', cors(corsOptions), orderController.getOrderStatus);
   router.post('/restaurant/save_contact_request', cors(corsOptions), restaurantController.saveContactRequest);
-  // router.get('/order/:id/status', orderController.getOrderStatus);
 })
 .catch(err => console.log(err));
 module.exports = router;

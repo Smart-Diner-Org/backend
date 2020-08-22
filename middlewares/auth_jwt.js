@@ -69,10 +69,24 @@ isCustomer = (req, res, next) => {
   });
 };
 
+canAccessRestaurantDetails = (req, res, next) => {
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Admin" || role.name === "Super Admin") {
+        next();
+        return;
+      }
+      return res.status(403).send({
+        message: "Required proper role to access. You are not allowed to access."
+      });
+    });
+  });
+}
 const authJwt = {
   verifyToken: verifyToken,
   isAdmin: isAdmin,
   isSuperAdmin: isSuperAdmin,
-  isCustomer: isCustomer
+  isCustomer: isCustomer,
+  canAccessRestaurantDetails: canAccessRestaurantDetails
 };
 module.exports = authJwt;

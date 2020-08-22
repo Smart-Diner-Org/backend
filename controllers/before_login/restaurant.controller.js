@@ -9,8 +9,9 @@ const Op = Sequelize.Op;
 var _ = require('underscore');
 const { URL } = require('url');
 var ContactRequest = require('./../../models/ContactRequest');
+var RestaurantEmployee = require('./../../models/RestaurantEmployee');
 
-module.exports.getMenu = (req, res, next) => {
+module.exports.getMenu = (req, res) => {
   Menu.findAll({
     include:[
       { model: MenuCategory, required: true, as: 'category' }
@@ -28,16 +29,55 @@ module.exports.getMenu = (req, res, next) => {
   ;
 }
 
-module.exports.getRestaurantDetails = (req, res, next) => {
+module.exports.getDetails = (req, res) => {
+  RestaurantEmployee.findOne({
+      where: {
+        status: true,
+        customer_id: req.customerId
+      },
+      include:[
+        // { model: RestaurantDetail, required:true, as: 'restaurant_detail' },
+        { model: RestaurantBranch, required: true, as: 'restaurant_branch', include: [
+          { model: Restaurant, required: true, as: 'restaurant' },
+          {
+            model: Menu, required:true, as: 'restaurant_branch_menu',
+            include:[
+              { model: MenuCategory, required:true, as: 'category', duplicating: true }
+            ]
+          }
+        ]}
+      ]
+    })
+    .then(restaurantEmployee => {
+      console.log(restaurantEmployee);
+      // // console.log(JSON.stringify(restaurant));
+      res.json({
+        status: true,
+        message:'successfully fetched restaurant info',
+        restaurantCustomer : restaurantEmployee
+      });
+    })
+    .catch(err => {
+      console.log("got error");
+      console.log(err);
+    });
+}
+/*
+This function will be called in from FE when we load the web page by matching the website url. That time login does not required.
+*/
+module.exports.getRestaurantDetails = (req, res) => {
   var hostname = (new URL(req.headers.origin)).hostname;
   // var hostname = 'localhost';
   if(hostname.includes('localhost')){
     hostname = 'a3biriyani';
   }
+
   Restaurant.findOne(
     {
       where: {
         status: true,
+        // [Op.or]: [{authorId: 12}, {authorId: 13}],
+        // [Op.or]: [{url: { [Op.like]: '%' + hostname + '%' } }, { customer_id: req.customerId}]
         url: {
           [Op.like]: '%' + hostname + '%'
         }
@@ -59,7 +99,7 @@ module.exports.getRestaurantDetails = (req, res, next) => {
     // console.log(JSON.stringify(restaurant));
     res.json({
       status: true,
-      message:'successfully fetched menus',
+      message:'successfully fetched restaurant full details',
       restaurant : restaurant
     });
   })
