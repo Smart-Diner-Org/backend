@@ -9,8 +9,7 @@ var helper = require('./../helpers/general.helper');
 var smsHelper = require('./../helpers/sms.helper');
 var accessTokenHelper = require('./../helpers/access_token.helper');
 var bcrypt = require("bcryptjs");
-const SendOtp = require('sendotp');
-const sendOtp = new SendOtp(process.env.OTP_API_KEY);
+var constants = require('../config/constants');
 var express = require('express');
 var app = express();
 
@@ -51,7 +50,7 @@ exports.signup = (req, res) => {
   Customer.create(dataToSave)
     .then(user => {
       //Trigger OTP to verify the mobile number
-      smsHelper.triggerOtp(user.mobile, function(smsStatus){
+      smsHelper.triggerOtp(user.mobile, constants.countryDialCode.india, function(smsStatus){
         if(smsStatus){
           return res.status(200).send({ message: "Successfully triggered OTP." });
         }
@@ -107,7 +106,7 @@ exports.signin = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User not found." });
       }
-      smsHelper.triggerOtp(user.mobile, function(smsStatus){
+      smsHelper.triggerOtp(user.mobile, constants.countryDialCode.india, function(smsStatus){
         if(smsStatus){
           return res.status(200).send({ message: "Successfully trigger OTP." });
         }
@@ -144,7 +143,7 @@ exports.verifyOtp = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User not found." });
       }
-      smsHelper.verifyOtp(user.mobile, req.body.otp, function(smsStatus, message){
+      smsHelper.verifyOtp(user.mobile, constants.countryDialCode.india, req.body.otp, function(smsStatus, message){
         if(smsStatus){
 
           if(!user.mobile_verification){
@@ -176,7 +175,7 @@ exports.resendOtp = (req, res) => {
         return res.status(404).send({ message: "User not found." });
       }
       var retryVoice = false;
-      smsHelper.resendOtp(user.mobile, retryVoice, function(smsStatus, message){
+      smsHelper.resendOtp(user.mobile, constants.countryDialCode.india, retryVoice, function(smsStatus, message){
         if(smsStatus){
           return res.status(200).send({ message: "Successfully retriggered OTP." });
         }

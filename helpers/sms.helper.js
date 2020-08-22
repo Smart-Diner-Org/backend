@@ -1,12 +1,25 @@
 var constants = require('./../config/constants');
 const SendOtp = require('sendotp');
-const otpMessage = 'Otp for your food order is {{otp}}, please do not share it with anybody';
-const sendOtp = new SendOtp(process.env.OTP_API_KEY, otpMessage);
+const otpMessage = 'Otp to login is {{otp}}, please do not share it with anybody';
+
+switch(process.env.ENVIRONMENT){
+	case 'production':
+		var API_KEY = process.env.MSG_SERVICE_PRODUCTION_API_KEY;
+		var MESSAGE_SENDER = process.env.MSG_SERVICE_PRODUCTION_MESSAGE_SENDER;
+		break;
+	default:
+		var API_KEY = process.env.MSG_SERVICE_TESTING_API_KEY;
+		var MESSAGE_SENDER = process.env.MSG_SERVICE_TESTING_MESSAGE_SENDER;
+		break;
+}
+const sendOtp = new SendOtp(API_KEY, otpMessage);
+const sendSmsService = require('msg91-sdk').SendSmsService;
+const sendTransactionalSms = new sendSmsService(API_KEY, MESSAGE_SENDER, constants.messageRouteType.transactional);
 sendOtp.setOtpExpiry('5'); //minutes
 
-module.exports.triggerOtp = (mobile, cb) => {
+module.exports.triggerOtp = (mobile, countryDialCode, cb) => {
 	var status = null;
-	sendOtp.send('91' + mobile, process.env.MESSAGE_SENDER, function (error, data) {
+	sendOtp.send(countryDialCode + mobile, MESSAGE_SENDER, function (error, data) {
 		if(data.type == 'success')
 			status = true;
 		else{
@@ -19,8 +32,9 @@ module.exports.triggerOtp = (mobile, cb) => {
 		else return status;
 	});
 }
-module.exports.verifyOtp = (mobile, otp, cb) => {
-	sendOtp.verify('91' + mobile, otp, function (error, data) {
+
+module.exports.verifyOtp = (mobile, countryDialCode, otp, cb) => {
+	sendOtp.verify(countryDialCode + mobile, otp, function (error, data) {
 		if(data.type == 'success')
 			status = true;
 		else{
@@ -31,8 +45,9 @@ module.exports.verifyOtp = (mobile, otp, cb) => {
 		cb(status, data.message);
 	});
 }
-module.exports.resendOtp = (mobile, retryVoice, cb) => {
-	sendOtp.retry('91' + mobile, retryVoice, function (error, data) {
+
+module.exports.resendOtp = (mobile, countryDialCode, retryVoice, cb) => {
+	sendOtp.retry(countryDialCode + mobile, retryVoice, function (error, data) {
 		if(data.type == 'success')
 			status = true;
 		else{
@@ -41,5 +56,14 @@ module.exports.resendOtp = (mobile, retryVoice, cb) => {
 			status = false;
 		}
 		cb(status, data.message);
+	});
+}
+
+module.exports.triggerTransactionalSms = (mobileNumber, countryDialCode, messageContent, cb) => {
+	sendTransactionalSms.sendSMS(mobileNumber, messageContent, countryDialCode).then((error, data) => {
+	}).catch((error, data) => {
+		console.log("failed to send transactional message");
+		console.log(error);
+		console.log(data);
 	});
 }

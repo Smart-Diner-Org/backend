@@ -17,5 +17,14 @@ module.exports = {
 			credit: 'Credit',
 			failed: 'Failed'
 		}
+	},
+	messageRouteType: {
+		'transactional': 4,
+		'promotional': 1
+	},
+	countryDialCode: {
+		india: "91",
+		usa: "1",
+		uk: "44"
 	}
 }

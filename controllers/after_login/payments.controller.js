@@ -1,9 +1,13 @@
 var Payment = require('./../../models/Payment');
 var Refund = require('./../../models/Refund');
 var Order = require('./../../models/Order');
+var Customer = require('./../../models/Customer');
+var RestaurantBranch = require('./../../models/RestaurantBranch');
+var Restaurant = require('./../../models/Restaurant');
 var request= require('request');
 var helper = require('./../../helpers/general.helper');
 var constants = require('../../config/constants');
+var smsHelper = require('./../../helpers/sms.helper');
 
 var headers = {
 	'X-Api-Key': process.env.INSTAMOJO_API_KEY,
@@ -12,13 +16,19 @@ var headers = {
 
 exports.createRequest = (req, res) => {
 	var orderId = req.orderId;
-	var purpose = req.restaurantData.name + '_' + orderId;
-	// var redirect_url = 'https://b3bb3f62abf1.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
+	var purpose = req.restaurantData.name + ' Order Id - ' + orderId;
+	switch(process.env.ENVIRONMENT){
+		case 'production':
+			purpose = purpose;
+			break;
+		default:
+			purpose = process.env.ENVIRONMENT + ' - ' + purpose;
+			break;
+	}
+	// var redirect_url = 'https://cca9c3bb71c9.ngrok.io' + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
 	var redirect_url = 'https://' + req.restaurantData.url + process.env.INSTAMOJO_REDIRECT_URL_END_POINT;
 	redirect_url = redirect_url.replace("__id__", orderId);
 	var webhook = process.env.BACKEND_API_URL + process.env.INSTAMOJO_WEBHOOK_END_POINT;
-	console.log("redirect_url url");
-	console.log(redirect_url);
 	var payload = {
 		purpose: purpose,
 		amount: req.amount,
@@ -32,6 +42,8 @@ exports.createRequest = (req, res) => {
 		allow_repeated_payments: false,
 		// expires_at: 600 //seconds
 	};
+	if(req.customer.email)
+		payload['email'] = req.customer.email;
 	request.post(process.env.INSTAMOJO_PAYMENT_REQUEST, {
 		form: payload,
 		headers: headers
@@ -48,17 +60,14 @@ exports.createRequest = (req, res) => {
 			};
 			Payment.create(paymentDataToCreate)
 			.then(payment => {
-				console.log("check Here 3");
 				res.status(200).send({ 'paymentUrl' : paymentRequest.longurl });
 			})
 			.catch(err => {
-				console.log("check Here 4");
 				console.log(err);
 				updateOrderStatus(req, res, {error : err, status : 'paymentRequestFailed'});
 			});
 		}
 		else{
-			console.log("check Here 5");
 			updateOrderStatus(req, res, {error : body, status: 'paymentRequestFailed'});
 			// // Save the error somewhere / email the body
 		}
@@ -119,20 +128,40 @@ exports.checkPaymentStatus = (req = null, res = null, payment = null) => {
 						payment.update({payment_request_status : paymentDetails.status});
 					}
 					if(paymentDetails.payments && paymentDetails.payments.length > 0){
-						payment.update({
-							payment_id : paymentDetails.payments[0].payment_id,
-							payment_status : paymentDetails.payments[0].status
+						Order.findOne({
+							where: {
+								id : payment.order_id
+							},
+							include:[
+								{ model: Customer, as: 'customer', required: false },
+								{ model: RestaurantBranch, as: 'restuarant_branch', required: false,
+									include: [ { model: Restaurant, as: 'restaurant', required: false } ] }
+							]
+						})
+						.then(orderFound => {
+							if(!orderFound || !orderFound.customer || !orderFound.restuarant_branch || !orderFound.restuarant_branch.restaurant){
+								console.log("Could not found the order or customer or restaurant or restaurant branch to update");
+								return;
+							}
+							payment.update({
+								payment_id : paymentDetails.payments[0].payment_id,
+								payment_status : paymentDetails.payments[0].status
+							});
+							var status;
+							switch(paymentDetails.payments[0].status){
+								case constants.instamojo.paymentStatus.credit:
+									status = 'paid';
+								break;
+								case constants.instamojo.paymentStatus.failed:
+									status = 'paymentFailed';
+								break;
+							}
+							updateOrderStatus(req, res, { error : body, status: status, orderId: payment.order_id, });
+							smsHelper.triggerTransactionalSms(orderFound.customer.mobile, constants.countryDialCode.india, "You have successfully placed your order. You can check the status of your order here " + orderFound.restuarant_branch.restaurant.url + "/order/" + payment.order_id + "/status", null);
+						})
+						.catch(err => {
+							console.log("got error in finding the order while updating the payments");
 						});
-						var status;
-						switch(paymentDetails.payments[0].status){
-							case constants.instamojo.paymentStatus.credit:
-								status = 'paid';
-							break;
-							case constants.instamojo.paymentStatus.failed:
-								status = 'paymentFailed';
-							break;
-						}
-						updateOrderStatus(req, res, { error : body, status: status, orderId: payment.order_id  });
 					}
 				}
 				else{
