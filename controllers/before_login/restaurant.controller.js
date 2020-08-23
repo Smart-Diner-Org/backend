@@ -1,6 +1,10 @@
 var Menu = require('./../../models/Menu');
 var MenuCategory = require('./../../models/MenuCategory');
+var Customer = require('./../../models/Customer');
 var Restaurant = require('./../../models/Restaurant');
+var Order = require('./../../models/Order');
+var OrderDetailMenu = require('./../../models/OrderDetailMenu');
+var OrderDetail = require('./../../models/OrderDetail');
 var constants = require('./../../config/constants');
 var RestaurantDetail = require('./../../models/RestaurantDetail');
 var RestaurantBranch = require('./../../models/RestaurantBranch');
@@ -36,7 +40,7 @@ module.exports.getDetails = (req, res) => {
         customer_id: req.customerId
       },
       include:[
-        // { model: RestaurantDetail, required:true, as: 'restaurant_detail' },
+        { model: Customer, required: true, as: 'customer' },
         { model: RestaurantBranch, required: true, as: 'restaurant_branch', include: [
           { model: Restaurant, required: true, as: 'restaurant' },
           {
@@ -54,14 +58,49 @@ module.exports.getDetails = (req, res) => {
       res.json({
         status: true,
         message:'successfully fetched restaurant info',
-        restaurantCustomer : restaurantEmployee
+        restaurantEmployee : restaurantEmployee
       });
     })
     .catch(err => {
       console.log("got error");
       console.log(err);
+      res.status(500).send({ message: err.message });
     });
 }
+
+module.exports.getOrdersForBranch = (req, res) => {
+  if(req.body.branchId){
+    Order.findAll({
+      where: {
+        restuarant_branch_id: req.body.branchId
+      },
+      include:[
+        { model: OrderDetailMenu, required: true, as: 'order_detail_menus',
+          include:[
+            { model: OrderDetail, required:true, as: 'order_detail'},
+            { model: Menu, required:true, as: 'menu'}
+          ]
+        }
+      ]
+    })
+    .then(orders => {
+      res.json({
+        status: true,
+        message:'successfully fetched orders',
+        orders : orders
+      });
+    })
+    .catch(err => {
+      console.log("got error");
+      console.log(err);
+      res.status(500).send({ message: err.message });
+    });
+  }
+  else{
+    return res.status(404).send({ message: "Branch id not found" });
+  }
+}
+
 /*
 This function will be called in from FE when we load the web page by matching the website url. That time login does not required.
 */

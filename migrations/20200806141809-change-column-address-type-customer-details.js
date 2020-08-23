@@ -29,7 +29,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.changeColumn('customer_details', 'address_type', { notNull: true });
+	return db.changeColumn('customer_details', 'address_type', { notNull: false });
 };
 
 exports._meta = {

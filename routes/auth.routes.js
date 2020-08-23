@@ -22,14 +22,14 @@ Restaurant.findAll({
 	router.post(
 	'/signup',
 	[
-		cors(corsOptions),
+		// cors(corsOptions),
 		verifySignUp.checkDuplicateMobileOrEmail,
 		verifySignUp.checkRolesExisted
 	],
 	controller.signup
 	);
 	router.post("/signin", 
-		cors(corsOptions), 
+		// cors(corsOptions), 
 		controller.signin);
 	router.post("/verify_otp", [cors(corsOptions), verifySignUp.checkForMobileAndOtp], controller.verifyOtp);
 	router.post("/resend_otp", [cors(corsOptions), verifySignUp.checkForMobile], controller.resendOtp);

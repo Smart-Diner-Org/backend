@@ -99,29 +99,17 @@ exports.placeOrder = (req, res) => {
 						};
 						Order.create(orderData)
 						.then(createdOrder => {
-							// console.log("createdOrder...");
-							// console.log(createdOrder);
 							menus.forEach(menu => {
-								// console.log(menu);
 								var orderDetailsData = {
-									order_id: createdOrder.id,
-									// menu_id: menu.id,
 									quantity: menu.quantity,
 									price: menu.price, //Discounted price
 									original_price: menu.originalPrice
 								};
 								var orderDetailMenuData = {
+									order_id: createdOrder.id,
 									menu_id : menu.id
 								};
 								addOrderDetails(orderDetailsData, orderDetailMenuData);
-								// var orderDetail = OrderDetail.create(orderDetailsData);
-								// console.log("orderDetail...");
-								// console.log(orderDetail);
-								// var orderDetailMenuData = {
-								// 	order_detail_id : orderDetail.id,
-								// 	menu_id : menu.id
-								// };
-								// var orderDetailMenu = OrderDetailMenu.create(orderDetailMenuData);
 							});
 							console.log("checking restaurant");
 							console.log(restuarantBranch.restaurant_id);
@@ -130,11 +118,9 @@ exports.placeOrder = (req, res) => {
 								console.log(restaurantData);
 								
 								req.orderId = createdOrder.id;
-								// req.orderObject = createdOrder;
 								req.amount = req.body.total_price;
 								req.customer = customer;
 								req.restaurantData = restaurantData;
-								// req.paymentStatuses = paymentStatuses;
 								console.log("gonna call payment");
 								PaymentsController.createRequest(req, res);
 							})

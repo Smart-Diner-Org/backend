@@ -157,7 +157,13 @@ exports.checkPaymentStatus = (req = null, res = null, payment = null) => {
 								break;
 							}
 							updateOrderStatus(req, res, { error : body, status: status, orderId: payment.order_id, });
+
+							//Triggering msg to customer who placed the order
 							smsHelper.triggerTransactionalSms(orderFound.customer.mobile, constants.countryDialCode.india, "You have successfully placed your order. You can check the status of your order here " + orderFound.restuarant_branch.restaurant.url + "/order/" + payment.order_id + "/status", null);
+
+							//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
+							smsHelper.triggerTransactionalSms(orderFound.restuarant_branch.contact_number, constants.countryDialCode.india, "Hello " + orderFound.restuarant_branch.restaurant.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.", null);
+							orderFound.restuarant_branch
 						})
 						.catch(err => {
 							console.log("got error in finding the order while updating the payments");

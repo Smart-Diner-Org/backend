@@ -73,10 +73,12 @@ exports.signin = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User not found." });
       }
-      var passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password
-      );
+      var passwordIsValid = false;
+      if(user.password)
+        passwordIsValid = bcrypt.compareSync(
+          req.body.password,
+          user.password
+        );
 
       if (!passwordIsValid) {
         return res.status(401).send({
@@ -86,6 +88,7 @@ exports.signin = (req, res) => {
       }
       var token = accessTokenHelper.getJwtAccessToken(user.id);
       res.status(200).send({
+        message: 'Login Success!',
         id: user.id,
         username: user.username,
         email: user.email,

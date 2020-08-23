@@ -60,7 +60,7 @@ return db.createTable('contact_requests', {
 };
 
 exports.down = function(db) {
-  return null;
+  return db.dropTable('contact_requests');
 };
 
 exports._meta = {

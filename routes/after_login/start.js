@@ -31,10 +31,8 @@ Restaurant.findAll({
   router.post('/payment/webhook', [
     // cors(corsOptions), //Its from instamojo, so we don't need cors middleware check
     ], paymentsController.paymentWebhook);
-  router.post('/restaurant/get_details', [ 
-    cors(corsOptions), 
-    authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
-  router.post('/restaurant/get_orders', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
+  router.post('/restaurant/get_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
+  router.post('/restaurant/get_branch_orders', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getOrdersForBranch);
 })
 .catch(err => console.log(err))
 ;

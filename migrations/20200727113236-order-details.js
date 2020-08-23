@@ -21,32 +21,6 @@ exports.up = function(db) {
 			primaryKey: true,
 			autoIncrement: true
 		},
-		order_id: {
-			type: 'bigint',
-			notNull: true,
-			foreignKey:{
-				name: 'order_detail_order_id_fk',
-				table: 'orders',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
-		},
-		menu_id: {
-			type: 'bigint',
-			notNull: true,
-			foreignKey: {
-				name: 'order_detail_menu_id_fk',
-				table: 'menus',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'	
-				},
-				mapping: 'id'
-			}
-		},
 		quantity: {
 			type: 'int',
 			notNull: true
