@@ -12,6 +12,7 @@ var OrderDetail = require('./../../models/OrderDetail');
 var Order = require('./../../models/Order');
 var OrderDetailMenu = require('./../../models/OrderDetailMenu');
 var PaymentsController = require('./payments.controller');
+var RestaurantController = require('./restaurant.controller');
 var helper = require('./../../helpers/general.helper');
 var Cancellation = require("./../../models/Cancellation");
 // const Sequelize = require('sequelize');
@@ -154,13 +155,59 @@ exports.placeOrder = (req, res) => {
 	});
 };
 
+exports.updateOrderStage = (req, res) => {
+	if(!req.params.orderId || !req.customerId || !req.body.stageId){
+		res.status(404).send({ message: "Order id or Stage Id or log in information missing. Please check." });
+	}
+
+	Customer.findByPk(req.customerId)
+	.then(customer => {
+		if (!customer) {
+			return res.status(404).send({ message: "User not found." });
+		}
+		Order.findOne({
+			where: {
+				id: req.params.orderId
+			},
+			include:[
+				{ model: Payment, as: 'payments', required: false }
+			]
+		})
+		.then(order => {
+			if(!order){
+				res.status(404).send({ message: "Order does not exist." });
+			}
+			order.update({ stage_id: req.body.stageId })
+			.then(order => {
+				req.params.branchId = order.restuarant_branch_id;
+				RestaurantController.getOrdersForBranch(req, res);
+			})
+			.catch(err => {
+				console.log("Update order failed");
+				console.log(err);
+				res.status(500).send({ message: err })
+			});
+		})
+		.catch(err => {
+			console.log("Fetch order failed");
+			console.log(err);
+			res.status(500).send({ message: err })
+		});
+	})
+	.catch(err => {
+		console.log("Fetch customer failed");
+		console.log(err);
+		res.status(500).send({ message: err })
+	});
+}
+
 exports.cancelOrder = (req, res) => {
 	var orderUpdateSuccess = false;
 	var orderUpdateError = 'Error during updateing order status';
 	var cancellationSuccess = false;
 	var cancellationError = 'Error during cancellation';
 
-	if(!req.body.orderId || !req.body.cancellationReason || !req.customerId){
+	if(!req.params.orderId || !req.body.cancellationReason || !req.customerId){
 		res.status(404).send({ message: "Order id or cancellation reason or log in information missing. Please check." });
 	}
 
@@ -171,7 +218,7 @@ exports.cancelOrder = (req, res) => {
 		}
 		Order.findOne({
 			where: {
-				id: req.body.orderId
+				id: req.params.orderId
 			},
 			include:[
 				{ model: Payment, as: 'payments', required: false }
@@ -205,7 +252,12 @@ exports.cancelOrder = (req, res) => {
 												return res.status(404).send({ message: cancellationError });
 											else if(!orderUpdateSuccess)
 												return res.status(404).send({ message: orderUpdateError });
-											else res.status(200).send({ message: 'Order cancelled successfully and refund initiated' });
+											else{
+												console.log('Order cancelled successfully and refund initiated');
+												// res.status(200).send({ message: 'Order cancelled successfully and refund initiated' });
+												req.params.branchId = order.restuarant_branch_id;
+												RestaurantController.getOrdersForBranch(req, res);
+											}
 										});
 									}
 									else{
@@ -213,7 +265,12 @@ exports.cancelOrder = (req, res) => {
 											return res.status(404).send({ message: cancellationError });
 										else if(!orderUpdateSuccess)
 											return res.status(404).send({ message: orderUpdateError });
-										else res.status(200).send({ message: 'Order cancelled successfully. No succes payment found.' });
+										else{
+											console.log('Order cancelled successfully. No success payment found.');
+											// res.status(200).send({ message: 'Order cancelled successfully. No succes payment found.' });
+											req.params.branchId = order.restuarant_branch_id;
+											RestaurantController.getOrdersForBranch(req, res);
+										}
 									}
 								});
 							}
@@ -222,7 +279,12 @@ exports.cancelOrder = (req, res) => {
 									return res.status(404).send({ message: orderUpdateError });
 								else if(!cancellationSuccess)
 									return res.status(404).send({ message: cancellationError });
-								else res.status(200).send({ message: 'Order cancelled successfully. no payment found' });
+								else{
+									console.log('Order cancelled successfully. no payment found');
+									// res.status(200).send({ message: 'Order cancelled successfully. no payment found' });
+									req.params.branchId = order.restuarant_branch_id;
+									RestaurantController.getOrdersForBranch(req, res);
+								}
 							}
 						})
 						.catch(err => {
@@ -233,14 +295,14 @@ exports.cancelOrder = (req, res) => {
 						});
 					}
 					else{
-						console.log("Could not cancel this order because the order has got cancelled already - " + req.body.orderId);
+						console.log("Could not cancel this order because the order has got cancelled already - " + req.params.orderId);
 						orderUpdateError = "Could not cancel this order because the order has got cancelled already";
 						return res.status(404).send({ message: orderUpdateError });
 					}
 				}
 				else{
-					console.log("order status id not found for the order - " + req.body.orderId);
-					orderUpdateError = "order status id not found for the order - " + req.body.orderId;
+					console.log("order status id not found for the order - " + req.params.orderId);
+					orderUpdateError = "order status id not found for the order - " + req.params.orderId;
 					return res.status(404).send({ message: orderUpdateError });
 				}
 			});
