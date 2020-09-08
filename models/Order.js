@@ -71,6 +71,10 @@ RestaurantBranch.hasMany(Order, {
 });
 Order.hasOne(Cancellation, {
 	foreignKey: 'order_id',
+	as: 'cancellation'
+});
+Cancellation.belongsTo(Order, {
+	foreignKey: 'order_id',
 	as: 'order'
 });
 

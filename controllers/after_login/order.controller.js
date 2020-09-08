@@ -322,20 +322,16 @@ exports.cancelOrder = (req, res) => {
 
 exports.getOrderStatus = (req, res) => {
 	if(req.params.id){
-		Order.findByPk(req.params.id)
-		// Order.findOne({
-		// 	where: {
-		// 		id: req.params.id
-		// 	},
-		// 	iclude:[
-		// 		{ model: Customer, as: 'customer' },
-		// 		{ model: RestaurantBranch, as: 'restuarant_branch',
-		// 		// include: [
-		// 		// 	{ model: Restaurant, as: 'restaurant' }
-		// 		// ]
-		// 	}
-		// 	]
-		// })
+		// Order.findByPk(req.params.id)
+		Order.findOne({
+			where: {
+				id: req.params.id
+			},
+			include:[
+				{ model: Cancellation, as: 'cancellation', required: false }
+			]
+		})
+
 		.then(order => {
 			if(!order){
 				res.status(404).send({ message : 'Order not found'});
@@ -365,7 +361,9 @@ exports.getOrderStatus = (req, res) => {
 							restaurantContactNumber: restuarantBranch.contact_number,
 							restuarantEmailId: restuarantBranch.email,
 							restuarantAddress: restuarantBranch.address,
-							createdDate: order.createdAt
+							createdDate: order.createdAt,
+							cancellationReason: order.cancellation ? order.cancellation.cancellation_reason : null,
+							cancellationDateTime: order.cancellation ? order.cancellation.time_of_cancellation : null
 						});
 					})
 					.catch(err => {
