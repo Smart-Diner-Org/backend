@@ -57,7 +57,7 @@ module.exports.getRestaurantDetails = (req, res) => {
         { model: RestaurantDetail, required:true, as: 'restaurant_detail' },
         { model: RestaurantBranch, required:true, as: 'restaurant_branches', include: [
           {
-            model: Menu, required:true, as: 'restaurant_branch_menu',
+            model: Menu, required:true, as: 'restaurant_branch_menu', where: { status: true },
             include:[
               { model: MenuCategory, required:true, as: 'category', duplicating: true }
             ]
