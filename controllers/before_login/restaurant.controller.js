@@ -40,7 +40,7 @@ module.exports.getRestaurantDetails = (req, res) => {
   var hostname = (new URL(req.headers.origin)).hostname;
   // var hostname = 'localhost';
   if(hostname.includes('localhost')){
-    hostname = 'a3biriyani';
+    hostname = 'testingfrontend.smartdiner.co';
   }
 
   Restaurant.findOne(
