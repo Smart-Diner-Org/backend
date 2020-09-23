@@ -20,7 +20,7 @@ sendOtp.setOtpExpiry('5'); //minutes
 module.exports.triggerOtp = (mobile, countryDialCode, cb) => {
 	var status = null;
 	sendOtp.send(countryDialCode + mobile, MESSAGE_SENDER, function (error, data) {
-		if(data.type == 'success')
+		if(data && data.type == 'success')
 			status = true;
 		else{
 			console.log("Send OTP Failed : ");

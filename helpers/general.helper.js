@@ -2,6 +2,10 @@ var constants = require('./../config/constants');
 var PaymentStatus = require('./../models/PaymentStatus');
 var OrderStage = require('./../models/OrderStage');
 var _ = require('underscore');
+var isProduction = process.env.ENVIRONMENT == 'production' ? true : false;
+// var isProduction = true;
+
+module.exports.isProduction = isProduction;
 
 module.exports.isMobileLoginRole = (roleId) => {
 	return (roleId == constants.roles.customer) || (roleId == constants.roles.deliveryAgent);

@@ -4,6 +4,7 @@ var Payment = require('./Payment');
 var Cancellation = require('./Cancellation');
 var Customer = require('./Customer');
 var RestaurantBranch = require('./RestaurantBranch');
+var OrderPreBookDetail = require('./OrderPreBookDetail');
 
 const Order = db.define('orders', {
 	customer_id: {
@@ -76,6 +77,14 @@ Order.hasOne(Cancellation, {
 Cancellation.belongsTo(Order, {
 	foreignKey: 'order_id',
 	as: 'order'
+});
+OrderPreBookDetail.belongsTo(Order, {
+	foreignKey: 'order_id',
+	as: 'order'
+});
+Order.hasOne(OrderPreBookDetail, {
+	foreignKey: 'order_id',
+	as: 'preBookingDetail'
 });
 
 module.exports = Order;

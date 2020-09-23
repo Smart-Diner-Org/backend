@@ -3,6 +3,7 @@ var db = require('./../config/database');
 var Customer = require('./Customer');
 var RestaurantDetail = require('./RestaurantDetail');
 var RestaurantBranch = require('./RestaurantBranch');
+var RestaurantWebsiteDetail = require('./RestaurantWebsiteDetail');
 
 const Restaurant = db.define('restaurants', {
 	customer_id: {
@@ -48,6 +49,14 @@ Restaurant.hasMany(RestaurantBranch, {
 	as: 'restaurant_branches'
 });
 RestaurantBranch.belongsTo(Restaurant, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant'
+});
+Restaurant.hasOne(RestaurantWebsiteDetail, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant_website_detail'
+});
+RestaurantWebsiteDetail.belongsTo(Restaurant, {
 	foreignKey: 'restaurant_id',
 	as: 'restaurant'
 });

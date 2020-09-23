@@ -15,6 +15,8 @@ var PaymentsController = require('./payments.controller');
 var RestaurantController = require('./restaurant.controller');
 var helper = require('./../../helpers/general.helper');
 var Cancellation = require("./../../models/Cancellation");
+var OrderPreBookDetail = require('./../../models/OrderPreBookDetail');
+var smsHelper = require('./../../helpers/sms.helper');
 // const Sequelize = require('sequelize');
 // const Op = Sequelize.Op;
 // var _ = require('underscore');
@@ -100,6 +102,22 @@ exports.placeOrder = (req, res) => {
 						};
 						Order.create(orderData)
 						.then(createdOrder => {
+							if(req.body.date_of_delivery){
+								var preBookData = {
+									'order_id': createdOrder.id,
+									'date_of_delivery': req.body.date_of_delivery, //Should be in the format of "YYYY-MM-DD"
+									'time_of_delivery': req.body.time_of_delivery ? req.body.time_of_delivery : null //Should be in the format of HH:MM. 24 hour clock
+								};
+								OrderPreBookDetail.create(preBookData)
+								.then(orderPreBook => {
+									console.log("Created orderPreBook successfully for teh order - " + createdOrder.id);
+								})
+								.catch(err => {
+									console.log("Throwing create orderPreBook error");
+									console.log(err);
+									res.status(500).send({ message: err.message });
+								});
+							}
 							menus.forEach(menu => {
 								var orderDetailsData = {
 									quantity: menu.quantity,
@@ -124,6 +142,36 @@ exports.placeOrder = (req, res) => {
 								req.restaurantData = restaurantData;
 								console.log("gonna call payment");
 								PaymentsController.createRequest(req, res);
+
+								//Triggering msg to customer who placed the order
+								smsHelper.triggerTransactionalSms(
+									customer.mobile,
+									constants.countryDialCode.india,
+									"We have got your order request. We will get back to you soon. Till then, please check your order status here " + restaurantData.url + "/order/" + createdOrder.id + "/status",
+									null
+								);
+
+								//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
+								smsHelper.triggerTransactionalSms(
+									restuarantBranch.contact_number,
+									constants.countryDialCode.india,
+									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+									null
+								);
+
+								//Triggering sms to Sethu and Sharmi
+								smsHelper.triggerTransactionalSms(
+									'8838064610',
+									constants.countryDialCode.india,
+									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+									null
+								);
+								smsHelper.triggerTransactionalSms(
+									'7904465474',
+									constants.countryDialCode.india,
+									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+									null
+								);
 							})
 							.catch(err => {
 								console.log("Throwing restaurant fetch error");

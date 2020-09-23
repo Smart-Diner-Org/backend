@@ -14,6 +14,7 @@ var _ = require('underscore');
 const { URL } = require('url');
 var ContactRequest = require('./../../models/ContactRequest');
 var RestaurantEmployee = require('./../../models/RestaurantEmployee');
+var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -62,7 +63,8 @@ module.exports.getRestaurantDetails = (req, res) => {
               { model: MenuCategory, required:true, as: 'category', duplicating: true }
             ]
           }
-        ]}
+        ]},
+        { model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
       ]
     }
   )
