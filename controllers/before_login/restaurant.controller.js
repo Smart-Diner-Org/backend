@@ -40,9 +40,9 @@ This function will be called in from FE when we load the web page by matching th
 module.exports.getRestaurantDetails = (req, res) => {
   var hostname = (new URL(req.headers.origin)).hostname;
   // var hostname = 'localhost';
-  if(hostname.includes('localhost')){
-    hostname = 'testingfrontend.smartdiner.co';
-  }
+  // if(hostname.includes('localhost')){
+  //   hostname = 'testingfrontend.smartdiner.co';
+  // }
 
   Restaurant.findOne(
     {
@@ -69,7 +69,6 @@ module.exports.getRestaurantDetails = (req, res) => {
     }
   )
   .then(restaurant => {
-    // console.log(JSON.stringify(restaurant));
     res.json({
       status: true,
       message:'successfully fetched restaurant full details',
