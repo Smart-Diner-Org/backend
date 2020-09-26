@@ -25,7 +25,13 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	slider_images: {
 		type: Sequelize.TEXT
-	} 
+	},
+	ga_tracking_id: {
+		type: Sequelize.TEXT
+	},
+	about_image: {
+		type: Sequelize.TEXT
+	}
 },{
 	underscored: true
 });
