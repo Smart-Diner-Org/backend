@@ -65,6 +65,12 @@ module.exports.getRestaurantDetails = (req, res) => {
           }
         ]},
         { model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
+      ],
+      order: [
+        [
+          {model: RestaurantBranch, as: 'restaurant_branches'},
+          {model: Menu, as: 'restaurant_branch_menu'}, 'id', 'ASC',
+        ]
       ]
     }
   )
