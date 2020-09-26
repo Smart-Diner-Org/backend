@@ -160,7 +160,7 @@ exports.placeOrder = (req, res) => {
 								);
 
 								//Triggering sms to Sethu and Sharmi
-								smsHelper.triggerTransactionalSms(
+								/*smsHelper.triggerTransactionalSms(
 									'8838064610',
 									constants.countryDialCode.india,
 									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
@@ -171,7 +171,7 @@ exports.placeOrder = (req, res) => {
 									constants.countryDialCode.india,
 									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
 									null
-								);
+								);*/
 							})
 							.catch(err => {
 								console.log("Throwing restaurant fetch error");
