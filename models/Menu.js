@@ -18,6 +18,9 @@ const Menu = db.define('menus', {
 	description: {
 		type: Sequelize.TEXT
 	},
+	short_description: {
+		type: Sequelize.TEXT
+	},
 	image: {
 		type: Sequelize.TEXT
 	},

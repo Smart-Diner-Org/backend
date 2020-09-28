@@ -25,6 +25,7 @@ Restaurant.findAll({
   router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
   router.get('/order/:id/status', cors(corsOptions), orderController.getOrderStatus);
   router.post('/restaurant/save_contact_request', cors(corsOptions), restaurantController.saveContactRequest);
+  router.post('/restaurant/save_subscription', cors(corsOptions), restaurantController.saveSubscription);
 })
 .catch(err => console.log(err));
 module.exports = router;

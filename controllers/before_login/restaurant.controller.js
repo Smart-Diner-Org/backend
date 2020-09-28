@@ -15,6 +15,7 @@ const { URL } = require('url');
 var ContactRequest = require('./../../models/ContactRequest');
 var RestaurantEmployee = require('./../../models/RestaurantEmployee');
 var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
+var Subscription = require('./../../models/Subscription');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -113,9 +114,9 @@ module.exports.saveContactRequest = (req, res, next) => {
 
   var hostname = (new URL(req.headers.origin)).hostname;
   // var hostname = 'localhost';
-  if(hostname.includes('localhost')){
-    hostname = 'a3biriyani';
-  }
+  // if(hostname.includes('localhost')){
+  //   hostname = 'testing.smartdiner.co';
+  // }
   Restaurant.findOne(
     {
       where: {
@@ -132,7 +133,8 @@ module.exports.saveContactRequest = (req, res, next) => {
         restaurant_id: restaurant.id,
         name: req.body.name,
         email: req.body.email,
-        message: req.body.message
+        message: req.body.message,
+        subject: req.body.subject ? req.body.subject : null
       })
       .then(contactRequest => {
         return res.status(200).send({ message: "Successfully saved the contact request." });
@@ -145,6 +147,44 @@ module.exports.saveContactRequest = (req, res, next) => {
     .catch(err => {
       console.log(err);
       return res.status(500).send({ message: "Not able to save the contact request." });
+    });
+}
+
+module.exports.saveSubscription = (req, res, next) => {
+  if(!req.body.email)
+    return res.status(404).send({ message: "Parameter Missing." });
+  var hostname = (new URL(req.headers.origin)).hostname;
+  // var hostname = 'localhost';
+  // if(hostname.includes('localhost')){
+  //   hostname = 'testing.smartdiner.co';
+  // }
+  Restaurant.findOne(
+    {
+      where: {
+        status: true,
+        url: {
+          [Op.like]: '%' + hostname + '%'
+        }
+      }
+    })
+    .then(restaurant => {
+      if(!restaurant)
+        return res.status(404).send({ message: "Restaurant not found." });
+      Subscription.create({
+        restaurant_id: restaurant.id,
+        email: req.body.email
+      })
+      .then(contactRequest => {
+        return res.status(200).send({ message: "Successfully saved the subscription request." });
+      })
+      .catch(err => {
+        console.log(err);
+        return res.status(500).send({ message: "Not able to save the subscription request." });
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      return res.status(500).send({ message: "Not able to save the subscription request." });
     });
 }
 

@@ -13,6 +13,9 @@ const ContactRequest = db.define('contact_requests', {
 	},
 	message: {
 		type: Sequelize.TEXT
+	},
+	subject: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true
