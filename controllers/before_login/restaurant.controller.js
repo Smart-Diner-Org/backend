@@ -16,6 +16,9 @@ var ContactRequest = require('./../../models/ContactRequest');
 var RestaurantEmployee = require('./../../models/RestaurantEmployee');
 var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
 var Subscription = require('./../../models/Subscription');
+var QuantityValue = require('./../../models/QuantityValue');
+var MeasureValue = require('./../../models/MeasureValue');
+var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -58,36 +61,88 @@ module.exports.getRestaurantDetails = (req, res) => {
       include:[
         { model: RestaurantDetail, required:true, as: 'restaurant_detail' },
         { model: RestaurantBranch, required:true, as: 'restaurant_branches', include: [
-          {
+          /*{
             model: Menu, required:true, as: 'restaurant_branch_menu', where: { status: true },
+            // include: { all: true, nested: true }
             include:[
               { model: MenuCategory, required:true, as: 'category', duplicating: true }
             ]
-          }
+          }*/
         ]},
         { model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
       ],
-      order: [
-        [
-          {model: RestaurantBranch, as: 'restaurant_branches'},
-          {model: Menu, as: 'restaurant_branch_menu'}, 'id', 'ASC',
-        ]
-      ]
+      // order: [
+      //   [
+      //     {model: RestaurantBranch, as: 'restaurant_branches'},
+      //     {model: Menu, as: 'restaurant_branch_menu'}, 'id', 'ASC',
+      //   ]
+      // ]
     }
   )
   .then(restaurant => {
-    res.json({
-      status: true,
-      message:'successfully fetched restaurant full details',
-      restaurant : restaurant
+    this.getMenuForBranch({ branchId: restaurant.restaurant_branches[0].id}, null, function(menus){
+      res.json({
+        status: true,
+        message:'successfully fetched restaurant full details',
+        restaurant : restaurant,
+        menus: menus
+      });
     });
   })
   .catch(err => {
     console.log(err);
-  })
-  ;
+    res.status(500).send({ message: err.message });
+  });
 }
 
+module.exports.getMenuForBranch = (req, res, cb = null) => {
+  if(req.branchId){
+    Menu.findAll({
+      where: {
+        'restuarant_branch_id': req.branchId,
+        'status': true
+      },
+      order: [
+        ['id', 'ASC'],
+        [
+          { model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price_list' }, 'id', 'ASC',
+        ]
+      ],
+      include:[
+        { model: MenuCategory, required: true, as: 'category' },
+        {
+          model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price_list', where: { status: true },
+          include:[
+            { model: QuantityValue, required: true, as: 'quantity_values' },
+            { model: MeasureValue, required: true, as: 'measure_values' }
+          ]
+        }
+      ]
+    })
+    .then(menus => {
+      if(cb){
+        return cb(menus);
+      }
+      else{
+        res.json({
+          status: true,
+          message:'successfully fetched menus',
+          menus : menus
+        });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ message: err.message });
+    });
+  }
+  else{
+    if(cb){
+      return cb(false);
+    }
+    else res.status(404).send({ message: 'Restaurant branch id is missing' });
+  }
+}
 module.exports.getRestaurantUrls = (callback) => {
   Restaurant.findAll({
     where: {

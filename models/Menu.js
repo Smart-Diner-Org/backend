@@ -1,6 +1,9 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
 var MenuCategory = require('./MenuCategory');
+var MenuQuantityMeasurePrice = require('./MenuQuantityMeasurePrice');
+var QuantityValue = require('./QuantityValue');
+var MeasureValue = require('./MeasureValue');
 
 const Menu = db.define('menus', {
 	restuarant_branch_id: {
@@ -57,5 +60,26 @@ Menu.belongsTo(MenuCategory, {
 	foreignKey: 'category_id',
 	as: 'category'
 });
+
+Menu.hasMany(MenuQuantityMeasurePrice, {
+	foreignKey: 'menu_id',
+	as: 'menu_quantity_measure_price_list'
+});
+
+MenuQuantityMeasurePrice.belongsTo(Menu, {
+	foreignKey: 'menu_id',
+	as: 'menu'
+});
+
+MenuQuantityMeasurePrice.belongsTo(QuantityValue, {
+	foreignKey: 'quantity_value_id',
+	as: 'quantity_values'
+});
+
+MenuQuantityMeasurePrice.belongsTo(MeasureValue, {
+	foreignKey: 'measure_value_id',
+	as: 'measure_values'
+});
+
 
 module.exports = Menu;
