@@ -18,6 +18,9 @@ const OrderDetailMenu = db.define('order_details_menus', {
 	},
 	menu_id: {
 		type: Sequelize.BIGINT
+	},
+	menu_quantity_measure_price_id: {
+		type: Sequelize.BIGINT
 	}
 },{
 	underscored: true

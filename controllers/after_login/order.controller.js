@@ -9,7 +9,8 @@ var CustomerDetail = require('./../../models/CustomerDetail');
 var RestaurantBranch = require('./../../models/RestaurantBranch');
 var Restaurant = require('./../../models/Restaurant');
 var OrderDetail = require('./../../models/OrderDetail');
-var Order = require('./../../models/Order');
+var Menu = require('./../../models/Menu');
+var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
 var OrderDetailMenu = require('./../../models/OrderDetailMenu');
 var PaymentsController = require('./payments.controller');
 var RestaurantController = require('./restaurant.controller');
@@ -25,6 +26,8 @@ addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
 	OrderDetail.create(orderDetailsData)
 	.then(orderDetail => {
 		orderDetailMenuData['order_detail_id'] = orderDetail.id;
+		console.log("************orderDetailMenuData**********");
+		console.log(orderDetailMenuData);
 		OrderDetailMenu.create(orderDetailMenuData)
 		.then(orderDetailMenu => {})
 		.catch(err => {
@@ -35,6 +38,85 @@ addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
 	.catch(err => {
 		console.log("Got error while adding OrderDetail.");
 		console.log(err.message);
+	});
+}
+
+verifyDiscountedPrice= (data, cb) => {
+	var foundMistake = false;
+	var count = 1;
+	var totalPriceFromDb = 0;
+	var menus = data.menus;
+	var totalPrice = parseInt(data.totalPrice);
+	menus.forEach((menu, index) => {
+		console.log("Menu");
+		console.log(menu);
+		Menu.findOne({
+			where: {
+				id: menu.id
+			},
+			include:[
+				{
+          			model: MenuQuantityMeasurePrice,
+          			required:true,
+          			as: 'menu_quantity_measure_price_list',
+          			where: { status: true, id: menu.selectedMenuQuantityMeasurePriceId }
+          		}
+			]
+		})
+		.then(menuFromDb => {
+			console.log("menuFromDb");
+			console.log(menuFromDb.menu_quantity_measure_price_list.length);
+			if(menuFromDb && menuFromDb.menu_quantity_measure_price_list && menuFromDb.menu_quantity_measure_price_list.length == 1){
+				var discountFromDb = parseInt(menuFromDb.discount);
+				var quantity = parseInt(menu.quantity)
+				var originalPriceFromDb = parseInt(menuFromDb.menu_quantity_measure_price_list[0].price);
+				var discountedPriceFromDb = originalPriceFromDb - ((discountFromDb/100) * originalPriceFromDb);
+				totalPriceFromDb += (discountedPriceFromDb * quantity);
+				console.log(discountedPriceFromDb);
+				console.log(parseInt(menu.price));
+				console.log(originalPriceFromDb);
+				console.log(parseInt(menu.originalPrice));
+				console.log(totalPriceFromDb);
+				if(!(discountedPriceFromDb == parseInt(menu.price) && originalPriceFromDb == parseInt(menu.originalPrice)))
+					foundMistake = true;
+			}
+			else{
+				foundMistake = true;
+			}
+			if(count == menus.length){
+				console.log("totalPriceFromDb - " + totalPriceFromDb);
+				console.log("totalPrice - " + totalPrice);
+				if(totalPriceFromDb !== totalPrice)
+					foundMistake = true;
+				console.log("Inside 1");
+				console.log("foundMistake... " + foundMistake);
+				if(cb){
+					cb(!foundMistake);
+					return;
+				}
+				return !foundMistake;
+			}
+			else{
+				console.log("Inside 2");
+				count++;
+			}
+		})
+		.catch(err => {
+			foundMistake = true;
+			if(count == menus.length){
+				console.log("Inside 3");
+				console.log("foundMistake... " + foundMistake);
+				if(cb){
+					cb(!foundMistake);
+					return;
+				}
+				return !foundMistake;
+			}
+			else{
+				console.log("Inside 4");
+				count++;
+			}
+		});
 	});
 }
 
@@ -100,89 +182,95 @@ exports.placeOrder = (req, res) => {
 							lat: req.body.latitude,
 							long: req.body.longitude
 						};
-						Order.create(orderData)
-						.then(createdOrder => {
-							if(req.body.date_of_delivery){
-								var preBookData = {
-									'order_id': createdOrder.id,
-									'date_of_delivery': req.body.date_of_delivery, //Should be in the format of "YYYY-MM-DD"
-									'time_of_delivery': req.body.time_of_delivery ? req.body.time_of_delivery : null //Should be in the format of HH:MM. 24 hour clock
-								};
-								OrderPreBookDetail.create(preBookData)
-								.then(orderPreBook => {
-									console.log("Created orderPreBook successfully for teh order - " + createdOrder.id);
+						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price}, function(isCorrect){ //This is to verify whether the calculated discount value in the UI is correct or not
+							if(isCorrect){
+								Order.create(orderData)
+								.then(createdOrder => {
+									if(req.body.date_of_delivery){
+										var preBookData = {
+											'order_id': createdOrder.id,
+											'date_of_delivery': req.body.date_of_delivery, //Should be in the format of "YYYY-MM-DD"
+											'time_of_delivery': req.body.time_of_delivery ? req.body.time_of_delivery : null //Should be in the format of HH:MM. 24 hour clock
+										};
+										OrderPreBookDetail.create(preBookData)
+										.then(orderPreBook => {
+											console.log("Created orderPreBook successfully for teh order - " + createdOrder.id);
+										})
+										.catch(err => {
+											console.log("Throwing create orderPreBook error");
+											console.log(err);
+											res.status(500).send({ message: err.message });
+										});
+									}
+									menus.forEach(menu => {
+										var orderDetailsData = {
+											quantity: menu.quantity,
+											price: menu.price, //Discounted price
+											original_price: menu.originalPrice
+										};
+										var orderDetailMenuData = {
+											order_id: createdOrder.id,
+											menu_quantity_measure_price_id: menu.selectedMenuQuantityMeasurePriceId
+										};
+										addOrderDetails(orderDetailsData, orderDetailMenuData);
+									});
+									console.log("checking restaurant");
+									console.log(restuarantBranch.restaurant_id);
+									Restaurant.findByPk(restuarantBranch.restaurant_id)
+									.then(restaurantData => {
+										console.log(restaurantData);
+										
+										req.orderId = createdOrder.id;
+										req.amount = req.body.total_price;
+										req.customer = customer;
+										req.restaurantData = restaurantData;
+										console.log("gonna call payment");
+										PaymentsController.createRequest(req, res);
+
+										//Triggering msg to customer who placed the order
+										smsHelper.triggerTransactionalSms(
+											customer.mobile,
+											constants.countryDialCode.india,
+											"We have got your order request. We will get back to you soon. Till then, please check your order status here " + restaurantData.url + "/order/" + createdOrder.id + "/status",
+											null
+										);
+
+										//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
+										smsHelper.triggerTransactionalSms(
+											restuarantBranch.contact_number,
+											constants.countryDialCode.india,
+											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+											null
+										);
+
+										//Triggering sms to Sethu and Sharmi
+										/*smsHelper.triggerTransactionalSms(
+											'8838064610',
+											constants.countryDialCode.india,
+											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+											null
+										);
+										smsHelper.triggerTransactionalSms(
+											'7904465474',
+											constants.countryDialCode.india,
+											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+											null
+										);*/
+									})
+									.catch(err => {
+										console.log("Throwing restaurant fetch error");
+										console.log(err);
+										res.status(500).send({ message: err.message });
+									});
 								})
 								.catch(err => {
-									console.log("Throwing create orderPreBook error");
-									console.log(err);
 									res.status(500).send({ message: err.message });
 								});
 							}
-							menus.forEach(menu => {
-								var orderDetailsData = {
-									quantity: menu.quantity,
-									price: menu.price, //Discounted price
-									original_price: menu.originalPrice
-								};
-								var orderDetailMenuData = {
-									order_id: createdOrder.id,
-									menu_id : menu.id
-								};
-								addOrderDetails(orderDetailsData, orderDetailMenuData);
-							});
-							console.log("checking restaurant");
-							console.log(restuarantBranch.restaurant_id);
-							Restaurant.findByPk(restuarantBranch.restaurant_id)
-							.then(restaurantData => {
-								console.log(restaurantData);
-								
-								req.orderId = createdOrder.id;
-								req.amount = req.body.total_price;
-								req.customer = customer;
-								req.restaurantData = restaurantData;
-								console.log("gonna call payment");
-								PaymentsController.createRequest(req, res);
-
-								//Triggering msg to customer who placed the order
-								smsHelper.triggerTransactionalSms(
-									customer.mobile,
-									constants.countryDialCode.india,
-									"We have got your order request. We will get back to you soon. Till then, please check your order status here " + restaurantData.url + "/order/" + createdOrder.id + "/status",
-									null
-								);
-
-								//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
-								smsHelper.triggerTransactionalSms(
-									restuarantBranch.contact_number,
-									constants.countryDialCode.india,
-									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
-									null
-								);
-
-								//Triggering sms to Sethu and Sharmi
-								/*smsHelper.triggerTransactionalSms(
-									'8838064610',
-									constants.countryDialCode.india,
-									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
-									null
-								);
-								smsHelper.triggerTransactionalSms(
-									'7904465474',
-									constants.countryDialCode.india,
-									"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
-									null
-								);*/
-							})
-							.catch(err => {
-								console.log("Throwing restaurant fetch error");
-								console.log(err);
-								res.status(500).send({ message: err.message });
-							});
-						})
-						.catch(err => {
-							res.status(500).send({ message: err.message });
+							else{
+								return res.status(404).send({ message: "Calculated discounted value is wrong. Please contact the restaurant." });
+							}
 						});
-						
 					})
 					.catch(err => {
 						res.status(500).send({ message: err.message });

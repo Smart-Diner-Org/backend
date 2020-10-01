@@ -11,6 +11,9 @@ const MenuQuantityMeasurePrice = db.define('menu_quantity_measure_prices', {
 	measure_value_id: {
 		type: Sequelize.BIGINT
 	},
+	price: {
+		type: Sequelize.DECIMAL
+	},
 	display_order: {
 		type: Sequelize.INTEGER
 	},
