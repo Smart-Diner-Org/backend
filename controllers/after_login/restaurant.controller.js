@@ -14,6 +14,7 @@ var _ = require('underscore');
 const { URL } = require('url');
 var ContactRequest = require('./../../models/ContactRequest');
 var RestaurantEmployee = require('./../../models/RestaurantEmployee');
+var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -83,7 +84,7 @@ module.exports.getOrdersForBranch = (req, res) => {
         { model: OrderDetailMenu, required: true, as: 'order_detail_menus',
           include:[
             { model: OrderDetail, required:true, as: 'order_detail'},
-            { model: Menu, required:true, as: 'menu'}
+            { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price'}
           ]
         }
       ]

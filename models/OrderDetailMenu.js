@@ -3,6 +3,7 @@ var db = require('./../config/database');
 var OrderDetail = require('./OrderDetail');
 var Menu = require('./Menu');
 var Order = require('./Order');
+var MenuQuantityMeasurePrice = require('./MenuQuantityMeasurePrice');
 
 const OrderDetailMenu = db.define('order_details_menus', {
 	id: {
@@ -46,15 +47,16 @@ OrderDetail.hasOne(OrderDetailMenu, {
 	as: 'order_detail_menu'
 });
 
-OrderDetailMenu.belongsTo(Menu, {
-	foreignKey: 'menu_id',
-	as: 'menu'
+OrderDetailMenu.belongsTo(MenuQuantityMeasurePrice, {
+	foreignKey: 'menu_quantity_measure_price_id',
+	as: 'menu_quantity_measure_price'
 });
 
-Menu.hasMany(OrderDetailMenu, {
-	foreignKey: 'menu_id',
+MenuQuantityMeasurePrice.hasMany(OrderDetailMenu, {
+	foreignKey: 'menu_quantity_measure_price_id',
 	as: 'order_detail_menus'
 });
+
 
 // OrderDetail.belongsToMany(Menu, {
 // 	through : OrderDetailMenu
