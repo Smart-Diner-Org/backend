@@ -84,7 +84,11 @@ module.exports.getOrdersForBranch = (req, res) => {
         { model: OrderDetailMenu, required: true, as: 'order_detail_menus',
           include:[
             { model: OrderDetail, required:true, as: 'order_detail'},
-            { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price'}
+            { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price',
+              include:[
+                { model: Menu, required:true, as: 'menu'}
+              ]
+            }
           ]
         }
       ]

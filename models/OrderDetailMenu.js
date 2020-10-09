@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
 var OrderDetail = require('./OrderDetail');
-var Menu = require('./Menu');
 var Order = require('./Order');
 var MenuQuantityMeasurePrice = require('./MenuQuantityMeasurePrice');
 
