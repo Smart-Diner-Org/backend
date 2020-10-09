@@ -18,6 +18,7 @@ var helper = require('./../../helpers/general.helper');
 var Cancellation = require("./../../models/Cancellation");
 var OrderPreBookDetail = require('./../../models/OrderPreBookDetail');
 var smsHelper = require('./../../helpers/sms.helper');
+var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway');
 // const Sequelize = require('sequelize');
 // const Op = Sequelize.Op;
 // var _ = require('underscore');
@@ -216,9 +217,19 @@ exports.placeOrder = (req, res) => {
 									});
 									console.log("checking restaurant");
 									console.log(restuarantBranch.restaurant_id);
-									Restaurant.findByPk(restuarantBranch.restaurant_id)
+									// Restaurant.findByPk(restuarantBranch.restaurant_id)
+									Restaurant.findOne({
+										where: {
+											id: restuarantBranch.restaurant_id
+										},
+										include:[
+											{ model: RestaurantPaymentGateway, as: 'restaurant_payments_gateways', required: false, where: { status: true} }
+										]
+									})
 									.then(restaurantData => {
-										console.log(restaurantData);
+										console.log("==============restaurantData=========");
+										console.log(restaurantData.restaurant_payments_gateways[0]);
+										console.log("==============end=========");
 										
 										req.orderId = createdOrder.id;
 										req.amount = req.body.total_price;

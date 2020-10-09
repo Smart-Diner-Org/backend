@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 var db = require('./../config/database');
 var Refund = require('./Refund');
+var PaymentGateway = require('./PaymentGateway');
 
 const Payment = db.define('payments', {
 	order_id: {
@@ -27,6 +28,9 @@ const Payment = db.define('payments', {
 	payment_url_long: {
 		type: Sequelize.TEXT
 	},
+	payment_gateway_id: {
+		type: Sequelize.BIGINT
+	}
 },{
 	underscored: true
 });
@@ -39,6 +43,11 @@ Payment.hasMany(Refund, {
 Refund.belongsTo(Payment, {
 	foreignKey: 'payment_id',
 	as: 'payment'
+});
+
+Payment.belongsTo(PaymentGateway, {
+	foreignKey: 'payment_gateway_id',
+	as: 'payment_gateway'
 });
 
 module.exports = Payment;
