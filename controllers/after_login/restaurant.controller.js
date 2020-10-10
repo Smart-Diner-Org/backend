@@ -15,6 +15,8 @@ const { URL } = require('url');
 var ContactRequest = require('./../../models/ContactRequest');
 var RestaurantEmployee = require('./../../models/RestaurantEmployee');
 var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
+var QuantityValue = require('./../../models/QuantityValue');
+var MeasureValue = require('./../../models/MeasureValue');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -86,7 +88,9 @@ module.exports.getOrdersForBranch = (req, res) => {
             { model: OrderDetail, required:true, as: 'order_detail'},
             { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price',
               include:[
-                { model: Menu, required:true, as: 'menu'}
+                { model: Menu, required:true, as: 'menu'},
+                { model: QuantityValue, required: true, as: 'quantity_values' },
+                { model: MeasureValue, required: true, as: 'measure_values' }
               ]
             }
           ]
