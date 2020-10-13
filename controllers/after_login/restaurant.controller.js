@@ -37,8 +37,6 @@ module.exports.getMenu = (req, res) => {
 }
 
 module.exports.getDetails = (req, res) => {
-  console.log("req.customerId");
-  console.log(req.customerId);
   RestaurantEmployee.findOne({
     where: {
       status: true,
@@ -73,7 +71,6 @@ module.exports.getDetails = (req, res) => {
 }
 
 module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
-  // if(req.params.menu_quantity_measure_price_id){
   if(req.params.orderId){
     OrderDetailMenu.findOne({
       where: {
