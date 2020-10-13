@@ -47,7 +47,8 @@ module.exports.getRestaurantDetails = (req, res) => {
   // if(hostname.includes('localhost')){
   //   hostname = 'testingfrontend.smartdiner.co';
   // }
-
+  console.log("hostname...");
+  console.log(hostname);
   Restaurant.findOne(
     {
       where: {

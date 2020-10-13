@@ -37,6 +37,8 @@ module.exports.getMenu = (req, res) => {
 }
 
 module.exports.getDetails = (req, res) => {
+  console.log("req.customerId");
+  console.log(req.customerId);
   RestaurantEmployee.findOne({
     where: {
       status: true,
@@ -57,7 +59,6 @@ module.exports.getDetails = (req, res) => {
   })
   .then(restaurantEmployee => {
     console.log(restaurantEmployee);
-    // // console.log(JSON.stringify(restaurant));
     res.json({
       status: true,
       message:'successfully fetched restaurant info',
@@ -69,6 +70,45 @@ module.exports.getDetails = (req, res) => {
     console.log(err);
     res.status(500).send({ message: err.message });
   });
+}
+
+module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
+  // if(req.params.menu_quantity_measure_price_id){
+  if(req.params.orderId){
+    OrderDetailMenu.findOne({
+      where: {
+        order_id: req.params.orderId
+      },
+      order: [
+        ['id', 'DESC'],
+        ['created_at', 'DESC'],
+      ],
+      include:[
+        { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price',
+          include:[
+            { model: Menu, required:true, as: 'menu' },
+            { model: QuantityValue, required: true, as: 'quantity_values' },
+            { model: MeasureValue, required: true, as: 'measure_values' }
+          ]
+        }
+      ]
+    })
+    .then(orderMenuDetails => {
+      res.json({
+        status: true,
+        message:'successfully fetched orders',
+        orderMenuDetails : orderMenuDetails
+      });
+    })
+    .catch(err => {
+      console.log("got error");
+      console.log(err);
+      res.status(500).send({ message: err.message });
+    });
+  }
+  else{
+    return res.status(404).send({ message: "Branch id not found" });
+  }
 }
 
 module.exports.getOrdersForBranch = (req, res) => {
@@ -86,13 +126,13 @@ module.exports.getOrdersForBranch = (req, res) => {
         { model: OrderDetailMenu, required: true, as: 'order_detail_menus',
           include:[
             { model: OrderDetail, required:true, as: 'order_detail'},
-            { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price',
-              include:[
-                { model: Menu, required:true, as: 'menu'},
-                { model: QuantityValue, required: true, as: 'quantity_values' },
-                { model: MeasureValue, required: true, as: 'measure_values' }
-              ]
-            }
+            // { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price',
+            //   include:[
+            //     { model: Menu, required:true, as: 'menu'},
+            //     { model: QuantityValue, required: true, as: 'quantity_values' },
+            //     { model: MeasureValue, required: true, as: 'measure_values' }
+            //   ]
+            // }
           ]
         }
       ]

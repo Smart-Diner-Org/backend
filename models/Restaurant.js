@@ -4,6 +4,7 @@ var Customer = require('./Customer');
 var RestaurantDetail = require('./RestaurantDetail');
 var RestaurantBranch = require('./RestaurantBranch');
 var RestaurantWebsiteDetail = require('./RestaurantWebsiteDetail');
+var RestaurantPaymentGateway = require('./RestaurantPaymentGateway');
 
 const Restaurant = db.define('restaurants', {
 	customer_id: {
@@ -57,6 +58,15 @@ Restaurant.hasOne(RestaurantWebsiteDetail, {
 	as: 'restaurant_website_detail'
 });
 RestaurantWebsiteDetail.belongsTo(Restaurant, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant'
+});
+
+Restaurant.hasMany(RestaurantPaymentGateway, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant_payments_gateways'
+});
+RestaurantPaymentGateway.belongsTo(Restaurant, {
 	foreignKey: 'restaurant_id',
 	as: 'restaurant'
 });
