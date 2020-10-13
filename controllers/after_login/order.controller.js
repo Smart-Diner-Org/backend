@@ -18,8 +18,8 @@ var helper = require('./../../helpers/general.helper');
 var Cancellation = require("./../../models/Cancellation");
 var OrderPreBookDetail = require('./../../models/OrderPreBookDetail');
 var smsHelper = require('./../../helpers/sms.helper');
-// const Sequelize = require('sequelize');
-// const Op = Sequelize.Op;
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 // var _ = require('underscore');
 
 addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
@@ -458,66 +458,100 @@ exports.cancelOrder = (req, res) => {
 
 exports.getOrderStatus = (req, res) => {
 	if(req.params.id){
-		// Order.findByPk(req.params.id)
-		Order.findOne({
+		var hostname = (new URL(req.headers.origin)).hostname;
+		Restaurant.findOne({
 			where: {
-				id: req.params.id
+				status: true,
+				url: {
+					[Op.like]: '%' + hostname + '%'
+				}
 			},
 			include:[
-				{ model: Cancellation, as: 'cancellation', required: false }
-			]
+				{ model: RestaurantBranch, required:true, as: 'restaurant_branches' }
+			],
 		})
-
-		.then(order => {
-			if(!order){
-				res.status(404).send({ message : 'Order not found'});
-			}
-			Customer.findByPk(order.customer_id)
-			.then(customer => {
-				if(!customer){
-					res.status(404).send({ message : 'Customer not found'});
-				}
-				RestaurantBranch.findByPk(order.restuarant_branch_id)
-				.then(restuarantBranch => {
-					if(!restuarantBranch){
-						res.status(404).send({ message : 'Restuarant branch is not found'});
+		.then(restuarant => {
+			if(restuarant){
+				var dataToSend = {
+					restuarantName: restuarant.name,
+					restaurantContactNumber: restuarant.restaurant_branches[0].contact_number,
+					restuarantEmailId: restuarant.restaurant_branches[0].email,
+					restuarantAddress: restuarant.restaurant_branches[0].address,
+					logo: restuarant.logo,
+				};
+				Order.findOne({
+					where: {
+						id: req.params.id
+					},
+					include:[
+						{ model: Cancellation, as: 'cancellation', required: false }
+					]
+				})
+				.then(order => {
+					if(!order){
+						dataToSend['message'] = 'Order not found';
+						return res.status(200).send(dataToSend);
 					}
-					Restaurant.findByPk(restuarantBranch.restaurant_id)
-					.then(restuarant => {
-						if(!restuarant){
-							res.status(404).send({ message : 'Restuarant branch is not found'});
+					Customer.findByPk(order.customer_id)
+					.then(customer => {
+						if(!customer){
+							dataToSend['message'] = 'Customer not found';
+							return res.status(200).send(dataToSend);
 						}
-						res.status(200).send({
-							name: customer.name,
-							stage_id: order.stage_id,
-							totalAmount: order.total_price,
-							deliveryAddressOne: order.delivery_address_one,
-							deliveryAddressTwo: order.delivery_address_two,
-							restuarantName: restuarant.name,
-							restaurantContactNumber: restuarantBranch.contact_number,
-							restuarantEmailId: restuarantBranch.email,
-							restuarantAddress: restuarantBranch.address,
-							createdDate: order.createdAt,
-							cancellationReason: order.cancellation ? order.cancellation.cancellation_reason : null,
-							cancellationDateTime: order.cancellation ? order.cancellation.time_of_cancellation : null
+						RestaurantBranch.findByPk(order.restuarant_branch_id)
+						.then(restuarantBranch => {
+							if(!restuarantBranch){
+								dataToSend['message'] = 'Restuarant branch is not found for the order';
+								return res.status(200).send(dataToSend);
+							}
+							// Restaurant.findByPk(restuarantBranch.restaurant_id)
+							// .then(restuarant => {
+								// if(!restuarant){
+								// 	res.status(404).send({ message : 'Restuarant branch is not found'});
+								// }
+								if(restuarant.id == restuarantBranch.restaurant_id){
+									dataToSend["name"] = customer.name;
+									dataToSend["stage_id"] = order.stage_id;
+									dataToSend["totalAmount"] = order.total_price;
+									dataToSend["deliveryAddressOne"] = order.delivery_address_one;
+									dataToSend["deliveryAddressTwo"] = order.delivery_address_two;
+									dataToSend["createdDate"] = order.createdAt;
+									dataToSend["cancellationReason"] = order.cancellation ? order.cancellation.cancellation_reason : null;
+									dataToSend["cancellationDateTime"] = order.cancellation ? order.cancellation.time_of_cancellation : null;
+									return res.status(200).send(dataToSend);
+								}
+								else{
+									dataToSend['message'] = 'Invalid Order';
+									return res.status(200).send(dataToSend);
+								}
+							// })
+							// .catch(err => {
+							// 	res.status(500).send({ message : err});
+							// });
+						})
+						.catch(err => {
+							return res.status(500).send({ message : err});
 						});
 					})
 					.catch(err => {
-						res.status(500).send({ message : err});
+						return res.status(500).send({ message : err});
 					});
+					// if(req.params.payment_id && req.params.payment_request_id && payment_status)
 				})
 				.catch(err => {
-					res.status(500).send({ message : err});
+					return res.status(500).send({ message : err});
 				});
-			})
-			.catch(err => {
-				res.status(500).send({ message : err});
-			});
-			// if(req.params.payment_id && req.params.payment_request_id && payment_status)
+			}
+			else{
+				return res.status(404).send({ message : 'Illegal request'});
+			}
 		})
-		.catch(err => {
-			res.status(500).send({ message : err});
+		.catch(err1 => {
+			console.log(err1);
+			return res.status(500).send({ message: err1.message });
 		});
 	}
-	else res.status(404).send({ message : 'Illegal request'});
+	else{
+		return res.status(404).send({ message : 'Illegal request'});
+	}
 };
