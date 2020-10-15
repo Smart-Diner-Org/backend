@@ -27,8 +27,6 @@ addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
 	OrderDetail.create(orderDetailsData)
 	.then(orderDetail => {
 		orderDetailMenuData['order_detail_id'] = orderDetail.id;
-		console.log("************orderDetailMenuData**********");
-		console.log(orderDetailMenuData);
 		OrderDetailMenu.create(orderDetailMenuData)
 		.then(orderDetailMenu => {})
 		.catch(err => {
@@ -47,10 +45,8 @@ verifyDiscountedPrice= (data, cb) => {
 	var count = 1;
 	var totalPriceFromDb = 0;
 	var menus = data.menus;
-	var totalPrice = parseInt(data.totalPrice);
+	var totalPrice = parseFloat(data.totalPrice);
 	menus.forEach((menu, index) => {
-		console.log("Menu");
-		console.log(menu);
 		Menu.findOne({
 			where: {
 				id: menu.id
@@ -65,32 +61,21 @@ verifyDiscountedPrice= (data, cb) => {
 			]
 		})
 		.then(menuFromDb => {
-			console.log("menuFromDb");
-			console.log(menuFromDb.menu_quantity_measure_price_list.length);
 			if(menuFromDb && menuFromDb.menu_quantity_measure_price_list && menuFromDb.menu_quantity_measure_price_list.length == 1){
-				var discountFromDb = parseInt(menuFromDb.discount);
-				var quantity = parseInt(menu.quantity)
-				var originalPriceFromDb = parseInt(menuFromDb.menu_quantity_measure_price_list[0].price);
+				var discountFromDb = parseFloat(menuFromDb.discount);
+				var quantity = parseFloat(menu.quantity)
+				var originalPriceFromDb = parseFloat(menuFromDb.menu_quantity_measure_price_list[0].price);
 				var discountedPriceFromDb = originalPriceFromDb - ((discountFromDb/100) * originalPriceFromDb);
 				totalPriceFromDb += (discountedPriceFromDb * quantity);
-				console.log(discountedPriceFromDb);
-				console.log(parseInt(menu.price));
-				console.log(originalPriceFromDb);
-				console.log(parseInt(menu.originalPrice));
-				console.log(totalPriceFromDb);
-				if(!(discountedPriceFromDb == parseInt(menu.price) && originalPriceFromDb == parseInt(menu.originalPrice)))
+				if(!(discountedPriceFromDb == parseFloat(menu.price) && originalPriceFromDb == parseFloat(menu.originalPrice)))
 					foundMistake = true;
 			}
 			else{
 				foundMistake = true;
 			}
 			if(count == menus.length){
-				console.log("totalPriceFromDb - " + totalPriceFromDb);
-				console.log("totalPrice - " + totalPrice);
 				if(totalPriceFromDb !== totalPrice)
 					foundMistake = true;
-				console.log("Inside 1");
-				console.log("foundMistake... " + foundMistake);
 				if(cb){
 					cb(!foundMistake);
 					return;
@@ -98,15 +83,12 @@ verifyDiscountedPrice= (data, cb) => {
 				return !foundMistake;
 			}
 			else{
-				console.log("Inside 2");
 				count++;
 			}
 		})
 		.catch(err => {
 			foundMistake = true;
 			if(count == menus.length){
-				console.log("Inside 3");
-				console.log("foundMistake... " + foundMistake);
 				if(cb){
 					cb(!foundMistake);
 					return;
@@ -114,7 +96,6 @@ verifyDiscountedPrice= (data, cb) => {
 				return !foundMistake;
 			}
 			else{
-				console.log("Inside 4");
 				count++;
 			}
 		});
@@ -215,27 +196,19 @@ exports.placeOrder = (req, res) => {
 										};
 										addOrderDetails(orderDetailsData, orderDetailMenuData);
 									});
-									console.log("checking restaurant");
-									console.log(restuarantBranch.restaurant_id);
-									// Restaurant.findByPk(restuarantBranch.restaurant_id)
 									Restaurant.findOne({
 										where: {
 											id: restuarantBranch.restaurant_id
 										},
 										include:[
-											{ model: RestaurantPaymentGateway, as: 'restaurant_payments_gateways', required: false, where: { status: true} }
+											{ model: RestaurantPaymentGateway, as: 'restaurant_payments_gateways', required: false, where: { status: true } }
 										]
 									})
 									.then(restaurantData => {
-										console.log("==============restaurantData=========");
-										console.log(restaurantData.restaurant_payments_gateways[0]);
-										console.log("==============end=========");
-										
 										req.orderId = createdOrder.id;
 										req.amount = req.body.total_price;
 										req.customer = customer;
 										req.restaurantData = restaurantData;
-										console.log("gonna call payment");
 										PaymentsController.createRequest(req, res);
 
 										//Triggering msg to customer who placed the order
@@ -367,8 +340,12 @@ exports.cancelOrder = (req, res) => {
 			where: {
 				id: req.params.orderId
 			},
-			include:[
-				{ model: Payment, as: 'payments', required: false }
+			include: [
+				{ model: Payment, as: 'payments', required: false,
+					include: [
+        				{ model: RestaurantPaymentGateway, required: true, as: 'restaurant_payment_gateway' }
+        			]
+        		}
 			]
 		})
 		.then(order => {

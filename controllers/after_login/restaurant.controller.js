@@ -72,7 +72,7 @@ module.exports.getDetails = (req, res) => {
 
 module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
   if(req.params.orderId){
-    OrderDetailMenu.findOne({
+    OrderDetailMenu.findAll({
       where: {
         order_id: req.params.orderId
       },
@@ -93,7 +93,7 @@ module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
     .then(orderMenuDetails => {
       res.json({
         status: true,
-        message:'successfully fetched orders',
+        message:'successfully fetched menu details',
         orderMenuDetails : orderMenuDetails
       });
     })

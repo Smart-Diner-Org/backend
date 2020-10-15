@@ -37,7 +37,6 @@ exports.up = function(db) {
 		payment_gateway_id: {
 			type: 'bigint',
 			notNull: true,
-			unique: true,
 			foreignKey: {
 				name: 'restaurant_payment_gateways_gateway_id_fk',
 				table: 'payment_gateways',
