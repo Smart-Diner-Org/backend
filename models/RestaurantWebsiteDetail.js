@@ -31,6 +31,9 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	about_image: {
 		type: Sequelize.TEXT
+	},
+	pre_order_info_image: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true
