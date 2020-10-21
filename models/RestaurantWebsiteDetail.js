@@ -43,6 +43,9 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	primary_colour_code: {
 		type: Sequelize.STRING
+	},
+	secondary_colour_code: {
+		type: Sequelize.STRING
 	}
 },{
 	underscored: true
