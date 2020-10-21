@@ -40,6 +40,9 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	pre_book_prior_time: {
 		type: Sequelize.INTEGER
+	},
+	primary_colour_code: {
+		type: Sequelize.STRING
 	}
 },{
 	underscored: true
