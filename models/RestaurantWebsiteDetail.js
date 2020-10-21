@@ -34,6 +34,12 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	pre_order_info_image: {
 		type: Sequelize.TEXT
+	},
+	is_run_time_booking_enabled: {
+		type: Sequelize.BOOLEAN
+	},
+	pre_book_prior_time: {
+		type: Sequelize.INTEGER
 	}
 },{
 	underscored: true
