@@ -17,6 +17,7 @@ var RestaurantEmployee = require('./../../models/RestaurantEmployee');
 var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
 var QuantityValue = require('./../../models/QuantityValue');
 var MeasureValue = require('./../../models/MeasureValue');
+var OrderPreBookDetail = require('./../../models/OrderPreBookDetail');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -131,7 +132,8 @@ module.exports.getOrdersForBranch = (req, res) => {
             //   ]
             // }
           ]
-        }
+        },
+        { model: OrderPreBookDetail, as: 'preBookingDetail'}
       ]
     })
     .then(orders => {
