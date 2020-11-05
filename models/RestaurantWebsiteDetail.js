@@ -52,6 +52,12 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	customisation_info_content: {
 		type: Sequelize.TEXT
+	},
+	cards: {
+		type: Sequelize.TEXT
+	},
+	is_delivery_available: {
+		type: Sequelize.BOOLEAN
 	}
 },{
 	underscored: true
