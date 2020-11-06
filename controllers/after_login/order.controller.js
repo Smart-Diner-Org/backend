@@ -21,6 +21,7 @@ var smsHelper = require('./../../helpers/sms.helper');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway');
+var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
 // var _ = require('underscore');
 
 addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
@@ -455,7 +456,8 @@ exports.getOrderStatus = (req, res) => {
 				}
 			},
 			include:[
-				{ model: RestaurantBranch, required:true, as: 'restaurant_branches' }
+				{ model: RestaurantBranch, required:true, as: 'restaurant_branches' },
+				{ model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
 			],
 		})
 		.then(restuarant => {
@@ -466,6 +468,9 @@ exports.getOrderStatus = (req, res) => {
 					restuarantEmailId: restuarant.restaurant_branches[0].email,
 					restuarantAddress: restuarant.restaurant_branches[0].address,
 					logo: restuarant.logo,
+					is_delivery_available: restuarant.restaurant_website_detail.is_delivery_available,
+					latitude: restuarant.restaurant_branches[0].lat,
+					longitude: restuarant.restaurant_branches[0].long
 				};
 				Order.findOne({
 					where: {
