@@ -20,6 +20,7 @@ Restaurant.findAll({
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
   corsOptions = helper.getCorsFunction(urls);
+  // corsOptions='*';
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
@@ -33,6 +34,7 @@ Restaurant.findAll({
     ], paymentsController.paymentWebhook);
   router.get('/restaurant/get_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
   router.get('/restaurant/:branchId/get_orders', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getOrdersForBranch);
+  router.get('/restaurant/:branchId/get_menu', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuForBranch);
   router.get('/order/:orderId/get_menu_quantity_measure_price_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuQuantityMeasurePriceDetailsForOrder);
 })
 .catch(err => console.log(err))

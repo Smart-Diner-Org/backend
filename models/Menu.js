@@ -61,6 +61,11 @@ Menu.belongsTo(MenuCategory, {
 	as: 'category'
 });
 
+MenuCategory.hasMany(Menu, {
+	foreignKey: 'category_id',
+	as: 'menus'
+});
+
 Menu.hasMany(MenuQuantityMeasurePrice, {
 	foreignKey: 'menu_id',
 	as: 'menu_quantity_measure_price_list'

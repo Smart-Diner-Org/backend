@@ -37,6 +37,45 @@ module.exports.getMenu = (req, res) => {
   ;
 }
 
+module.exports.getMenuForBranch = (req, res) => {
+  console.log("Here 1");
+  if(req.params.branchId){
+    console.log("Here 2");
+    MenuCategory.findAll({
+      where:{
+        status: true
+      },
+      include: [
+        { model: Menu, required: true, as: 'menus', where: { 'restuarant_branch_id': req.params.branchId, 'status': true },
+        include: [
+          {
+            model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true },
+            include:[
+              { model: QuantityValue, required: true, as: 'quantity_values' },
+              { model: MeasureValue, required: true, as: 'measure_values' }
+            ]
+          }
+        ] },
+      ]
+    })
+    .then(menus => {
+      console.log("Here 3");
+      res.json({
+        status: true,
+        message:'successfully fetched menus',
+        menus : menus
+      });    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ message: err.message });
+    });
+  }
+  else{
+    console.log("Here 4");
+    res.status(404).send({ message: 'Restaurant branch id is missing' });
+  }
+}
+
 module.exports.getDetails = (req, res) => {
   RestaurantEmployee.findOne({
     where: {
