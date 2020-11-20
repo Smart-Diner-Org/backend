@@ -62,6 +62,7 @@ verifyDiscountedPrice= (data, cb) => {
 			]
 		})
 		.then(menuFromDb => {
+			console.log(menuFromDb.menu_quantity_measure_price_list);
 			if(menuFromDb && menuFromDb.menu_quantity_measure_price_list && menuFromDb.menu_quantity_measure_price_list.length == 1){
 				var discountFromDb = parseFloat(menuFromDb.discount);
 				var quantity = parseFloat(menu.quantity)
@@ -78,23 +79,25 @@ verifyDiscountedPrice= (data, cb) => {
 				if(totalPriceFromDb !== totalPrice)
 					foundMistake = true;
 				if(cb){
-					cb(!foundMistake);
+					cb(foundMistake);
 					return;
 				}
-				return !foundMistake;
+				return foundMistake;
 			}
 			else{
 				count++;
 			}
 		})
 		.catch(err => {
+			console.log("have reached the catch block of verifyDiscountedPrice function..");
+			console.log(err);
 			foundMistake = true;
 			if(count == menus.length){
 				if(cb){
-					cb(!foundMistake);
+					cb(foundMistake);
 					return;
 				}
-				return !foundMistake;
+				return foundMistake;
 			}
 			else{
 				count++;
@@ -104,69 +107,71 @@ verifyDiscountedPrice= (data, cb) => {
 }
 
 exports.placeOrder = (req, res) => {
-	Customer.findOne({
-		where: {
-			id: req.customerId
-		},
-		include:[
-			{ model: CustomerDetail, as: 'customer_detail', required: false }
-		]
-	})
-	.then(customer => {
-		if (!customer) {
-			return res.status(404).send({ message: "User not found." });
-		}
-		if(!customer.customer_detail || !customer.customer_detail.address_one || !customer.customer_detail.address_two){
-			return res.status(404).send({ message: "Delivery address not found." });
-		}
+	// Customer.findOne({
+	// 	where: {
+	// 		id: req.customerId
+	// 	},
+	// 	include:[
+	// 		{ model: CustomerDetail, as: 'customer_detail', required: false }
+	// 	]
+	// })
+	// .then(customer => {
+		// if (!customer) {
+		// 	return res.status(404).send({ message: "User not found." });
+		// }
+		// if(!customer.customer_detail || !customer.customer_detail.address_one || !customer.customer_detail.address_two){
+		// 	return res.status(404).send({ message: "Delivery address not found." });
+		// }
 		if(!req.body.menus || !Array.isArray(req.body.menus) || !(req.body.menus.length > 0)){
 			return res.status(404).send({ message: "Menu items not added" });
 		}
 		var menus = req.body.menus;
-		RestaurantBranch.findOne({
-			where: {
-				id: req.body.restuarantBranchId
-			}
-		})
-		.then(restuarantBranch => {
-			if (!restuarantBranch) {
-				return res.status(404).send({ message: "Particular branch has not found." });
-			}
-			OrderStage.findOne({
-				where: {
-					name: 'Fresh'
-				}
-			})
-			.then(orderStage => {
-				if (!orderStage) {
-					return res.status(404).send({ message: "Order stage is not found." });
-				}
-				helper.getPaymentStatusId('notPaid', function(paymentStatusId){
+		// RestaurantBranch.findOne({
+		// 	where: {
+		// 		id: req.body.restuarantBranchId
+		// 	}
+		// })
+		// .then(restuarantBranch => {
+		// 	if (!restuarantBranch) {
+		// 		return res.status(404).send({ message: "Particular branch has not found." });
+		// 	}
+			// OrderStage.findOne({
+			// 	where: {
+			// 		name: 'Fresh'
+			// 	}
+			// })
+			// .then(orderStage => {
+			// 	if (!orderStage) {
+			// 		return res.status(404).send({ message: "Order stage is not found." });
+			// 	}
+				// helper.getPaymentStatusId('notPaid', function(paymentStatusId){
 				
-					ModeOfDelivery.findOne({
-						where: {
-							name: "Door Delivery"
-						}
-					})
-					.then(modeOfDelivery => {
-						if (!modeOfDelivery) {
-							return res.status(404).send({ message: "Mode of delivery is not found." });
-						}
-						var orderData = {
-							customer_id: customer.id,
-							restuarant_branch_id: restuarantBranch.id,
-							description: req.body.description,
-							total_price: req.body.total_price,
-							stage_id: orderStage.id,
-							payment_status_id: paymentStatusId,
-							mode_of_delivery_id: modeOfDelivery.id,
-							delivery_address_one: customer.customer_detail.address_one,
-							delivery_address_two: customer.customer_detail.address_two,
-							lat: req.body.latitude,
-							long: req.body.longitude
-						};
-						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price}, function(isCorrect){ //This is to verify whether the calculated discount value in the UI is correct or not
-							if(isCorrect){
+					// ModeOfDelivery.findOne({
+					// 	where: {
+					// 		name: "Door Delivery"
+					// 	}
+					// })
+					// .then(modeOfDelivery => {
+					// 	if (!modeOfDelivery) {
+					// 		return res.status(404).send({ message: "Mode of delivery is not found." });
+					// 	}
+						
+						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
+							if(!foundMistake){
+								var orderData = {
+									customer_id: req.customer.id,
+									restuarant_branch_id: req.restuarantBranch.id,
+									description: req.body.description,
+									total_price: req.body.total_price,
+									stage_id: req.orderStage.id,
+									payment_status_id: req.paymentStatusId,
+									mode_of_delivery_id: req.modeOfDelivery.id,
+									delivery_address_one: req.customer.customer_detail.address_one,
+									delivery_address_two: req.customer.customer_detail.address_two,
+									lat: req.body.latitude,
+									long: req.body.longitude,
+									payment_type_id: req.body.paymentType
+								};
 								Order.create(orderData)
 								.then(createdOrder => {
 									if(req.body.date_of_delivery){
@@ -199,7 +204,7 @@ exports.placeOrder = (req, res) => {
 									});
 									Restaurant.findOne({
 										where: {
-											id: restuarantBranch.restaurant_id
+											id: req.restuarantBranch.restaurant_id
 										},
 										include:[
 											{ model: RestaurantPaymentGateway, as: 'restaurant_payments_gateways', required: false, where: { status: true } }
@@ -208,13 +213,12 @@ exports.placeOrder = (req, res) => {
 									.then(restaurantData => {
 										req.orderId = createdOrder.id;
 										req.amount = req.body.total_price;
-										req.customer = customer;
+										// req.customer = req.customer;
 										req.restaurantData = restaurantData;
-										PaymentsController.createRequest(req, res);
 
 										//Triggering msg to customer who placed the order
 										smsHelper.triggerTransactionalSms(
-											customer.mobile,
+											req.customer.mobile,
 											constants.countryDialCode.india,
 											"We have got your order request. We will get back to you soon. Till then, please check your order status here " + restaurantData.url + "/order/" + createdOrder.id + "/status",
 											null
@@ -222,7 +226,7 @@ exports.placeOrder = (req, res) => {
 
 										//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
 										smsHelper.triggerTransactionalSms(
-											restuarantBranch.contact_number,
+											req.restuarantBranch.contact_number,
 											constants.countryDialCode.india,
 											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
 											null
@@ -241,6 +245,16 @@ exports.placeOrder = (req, res) => {
 											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
 											null
 										);*/
+
+
+										switch(req.body.paymentType){
+											case constants.paymentType.cashOnDelivery:
+												res.status(200).send({ 'message' : 'Success' });
+											break;
+											case constants.paymentType.onlinePayment:
+												PaymentsController.createRequest(req, res);
+											break;
+										}
 									})
 									.catch(err => {
 										console.log("Throwing restaurant fetch error");
@@ -256,25 +270,83 @@ exports.placeOrder = (req, res) => {
 								return res.status(404).send({ message: "Calculated discounted value is wrong. Please contact the restaurant." });
 							}
 						});
-					})
-					.catch(err => {
-						res.status(500).send({ message: err.message });
-					});
+					// })
+					// .catch(err => {
+					// 	res.status(500).send({ message: err.message });
+					// });
+				// });
+			// })
+			// .catch(err => {
+			// 	res.status(500).send({ message: err.message });
+			// });
+			
+		// })
+		// .catch(err => {
+		// 	res.status(500).send({ message: err.message });
+		// });
+	// })
+	// .catch(err => {
+	// 	res.status(500).send({ message: err.message });
+	// });
+};
+
+exports.placeOfflineOrder = (req, res) => {
+	var customerDetailData = {
+		'city_id' : req.body.cityId,
+		'state_id' : req.body.stateId,
+		'address_one' : req.body.addressOne,
+		'address_two' : req.body.addressTwo
+	};
+	Customer.findOne({
+		where: {
+			id: req.body.mobile
+		},
+		include:[
+			{ model: CustomerDetail, as: 'customer_detail', required: false }
+		]
+	})
+	.then(customer => {
+		if (!customer) {
+			Customer.insert({ 'mobile' : req.body.mobile }).then(addedCustomer => {
+				customerDetailData.customer_id = addedCustomer.id
+				CustomerDetail.insert(customerDetailData)
+				.then(customerDetail => {
+					attachCustomerAndCreateOrder(req, res);
+				})
+				.catch(err => {
+					res.status(500).send({ message: err.message });
 				});
 			})
 			.catch(err => {
 				res.status(500).send({ message: err.message });
 			});
-			
-		})
-		.catch(err => {
-			res.status(500).send({ message: err.message });
-		});
+		}
+		else{
+			if(customer.customer_detail){
+				customer.customer_detail.update(customerDetailData)
+				.then(customerDetail => {
+					attachCustomerAndCreateOrder(req, res);
+				})
+				.catch(err => {
+					res.status(500).send({ message: err.message });
+				});
+			}
+			else{
+				customerDetailData.customer_id = customer.id
+				CustomerDetail.insert(customerDetailData)
+				.then(customerDetail => {
+					attachCustomerAndCreateOrder(req, res);
+				})
+				.catch(err => {
+					res.status(500).send({ message: err.message });
+				});
+			}
+		}
 	})
 	.catch(err => {
 		res.status(500).send({ message: err.message });
 	});
-};
+}
 
 exports.updateOrderStage = (req, res) => {
 	if(!req.params.orderId || !req.customerId || !req.body.stageId){
@@ -319,6 +391,24 @@ exports.updateOrderStage = (req, res) => {
 		console.log("Fetch customer failed");
 		console.log(err);
 		res.status(500).send({ message: err })
+	});
+}
+
+attachCustomerAndCreateOrder = (req, res) => {
+	Customer.findOne({
+		where: {
+			id: req.body.mobile
+		},
+		include:[
+			{ model: CustomerDetail, as: 'customer_detail', required: false }
+		]
+	})
+	.then(customer => {
+		req.customer = customer;
+		placeOrder(req, res);
+	})
+	.catch(err => {
+		res.status(500).send({ message: err.message });
 	});
 }
 
@@ -503,7 +593,18 @@ exports.getOrderStatus = (req, res) => {
 								// 	res.status(404).send({ message : 'Restuarant branch is not found'});
 								// }
 								if(restuarant.id == restuarantBranch.restaurant_id){
+									//Check for automatic OTP trigger to the customer's phone number
+									if(!customer.mobile_verification){
+										//Trigger OTP to verify the mobile number
+										smsHelper.triggerOtp(customer.mobile, constants.countryDialCode.india, function(smsStatus){
+											if(smsStatus)
+												console.log("Trigger automatic OTP successfully");
+											else console.log("Triggering automatic OTP failed")
+										});
+									}
 									dataToSend["name"] = customer.name;
+									dataToSend["customerContactNumber"] = customer.mobile;
+									dataToSend["mobileVerification"] = customer.mobile_verification;
 									dataToSend["stage_id"] = order.stage_id;
 									dataToSend["totalAmount"] = order.total_price;
 									dataToSend["deliveryAddressOne"] = order.delivery_address_one;

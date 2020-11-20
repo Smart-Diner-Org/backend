@@ -27,5 +27,9 @@ module.exports = {
 		india: "91",
 		usa: "1",
 		uk: "44"
+	},
+	paymentType: {
+		cashOnDelivery: 1,
+		onlinePayment: 2
 	}
 }

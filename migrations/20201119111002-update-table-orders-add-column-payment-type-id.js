@@ -15,9 +15,18 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.addColumn('menu_quantity_measure_prices', 'can_display_to_customer', {
-		'type' :'boolean',
-		defaultValue: true
+	return db.addColumn('orders', 'payment_type_id', {
+		type: 'bigint',
+		notNull: true,
+		foreignKey: {
+			name: 'orders_payment_type_id_fk',
+			table: 'payment_types',
+			rules: {
+				onDelete: 'CASCADE',
+				onUpdate: 'RESTRICT'
+			},
+			mapping: 'id'
+		}
 	})
 	.then(
 		function(result) {
@@ -32,7 +41,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.removeColumn('menu_quantity_measure_prices', 'can_display_to_customer');
+	return db.removeColumn('orders', 'payment_type_id');
 };
 
 exports._meta = {

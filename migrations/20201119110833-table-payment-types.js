@@ -15,40 +15,46 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  	return db.createTable('offline_orders', {
+	var paymentTypes = [
+		['Cash On Delivery'],
+		['Online Payment']
+	];
+	return db.createTable('payment_types', {
 		id: {
 			type: 'bigint',
 			primaryKey: true,
 			autoIncrement: true
 		},
-		order_id: {
-			type: 'bigint',
+		name: {
+			type: 'string',
 			notNull: true,
-			foreignKey:{
-				name: 'offline_orders_order_id_fk',
-				table: 'orders',
-				rules: {
-					onDelete: 'CASCADE',
-					onUpdate: 'RESTRICT'
-				},
-				mapping: 'id'
-			}
+			unique: true
+		},
+		status: {
+			type: 'boolean',
+			defaultValue: true,
+			notNull: true
 		},
 		created_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') },
 		updated_at: { type: 'timestamp', notNull: true, defaultValue: new String('CURRENT_TIMESTAMP') }
 	})
 	.then(
 		function(result) {
+			for(const index in paymentTypes) {
+				db.insert('payment_types', ['name'], paymentTypes[index]);
+			}
 			return true;
 		},
 		function(err) {
+			console.log("error");
+			console.log(err);
 			return;
 		}
 	);
 };
 
 exports.down = function(db) {
-	return db.dropTable('offline_orders');
+	return db.dropTable('payment_types');
 };
 
 exports._meta = {

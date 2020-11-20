@@ -5,7 +5,7 @@ var router = express.Router();
 const { customerController, orderController, paymentsController, restaurantController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
-const { authJwt } = require("../../middlewares");
+const { authJwt, verificationsToPlaceOrder } = require("../../middlewares");
 var helper = require('./../../helpers/general.helper');
 
 var cors = require("cors");
@@ -25,7 +25,29 @@ Restaurant.findAll({
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
   router.get('/customer/fetch_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.fetchCustomerDetails);
-  router.post('/order/place_order', [ cors(corsOptions), authJwt.verifyToken ], orderController.placeOrder);
+  router.post('/order/place_order', [
+    cors(corsOptions), 
+    authJwt.verifyToken,
+    verificationsToPlaceOrder.checkCustomer,
+    verificationsToPlaceOrder.checkRestaurantBranch,
+    verificationsToPlaceOrder.checkOrderStage,
+    verificationsToPlaceOrder.checkPaymentStatus,
+    verificationsToPlaceOrder.checkModeOfDelivery,
+    verificationsToPlaceOrder.checkPaymentType
+  ], orderController.placeOrder);
+
+  router.post('/order/place_offline_order', [
+    cors(corsOptions), 
+    authJwt.verifyToken,
+    verificationsToPlaceOrder.checkMobileNumber,
+    verificationsToPlaceOrder.checkCustomerAddress,
+    verificationsToPlaceOrder.checkPaymentType,
+    verificationsToPlaceOrder.checkRestaurantBranch,
+    verificationsToPlaceOrder.checkOrderStage,
+    verificationsToPlaceOrder.checkPaymentStatus,
+    verificationsToPlaceOrder.checkModeOfDelivery
+  ], orderController.placeOfflineOrder);
+
   router.post('/order/:orderId/cancel', [ cors(corsOptions), authJwt.verifyToken ], orderController.cancelOrder);
   router.post('/order/:orderId/update_status', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], orderController.updateOrderStage);
   router.post('/payment/create_request', [ cors(corsOptions), authJwt.verifyToken ], paymentsController.createRequest);
@@ -35,6 +57,8 @@ Restaurant.findAll({
   router.get('/restaurant/get_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
   router.get('/restaurant/:branchId/get_orders', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getOrdersForBranch);
   router.get('/restaurant/:branchId/get_menu', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuForBranch);
+  // router.get('/restaurant/get_cities', [ cors(corsOptions), authJwt.verifyToken ], restaurantController.getCities);
+  // router.get('/restaurant/get_states', [ cors(corsOptions), authJwt.verifyToken ], restaurantController.getStates);
   router.get('/order/:orderId/get_menu_quantity_measure_price_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuQuantityMeasurePriceDetailsForOrder);
 })
 .catch(err => console.log(err))

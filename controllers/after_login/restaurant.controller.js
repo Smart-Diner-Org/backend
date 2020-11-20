@@ -18,6 +18,8 @@ var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice'
 var QuantityValue = require('./../../models/QuantityValue');
 var MeasureValue = require('./../../models/MeasureValue');
 var OrderPreBookDetail = require('./../../models/OrderPreBookDetail');
+var City = require('./../../models/City');
+var State = require('./../../models/State');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -64,7 +66,8 @@ module.exports.getMenuForBranch = (req, res) => {
         status: true,
         message:'successfully fetched menus',
         menus : menus
-      });    })
+      });
+    })
     .catch(err => {
       console.log(err);
       res.status(500).send({ message: err.message });
@@ -75,7 +78,22 @@ module.exports.getMenuForBranch = (req, res) => {
     res.status(404).send({ message: 'Restaurant branch id is missing' });
   }
 }
-
+module.exports.getCities = (req, res) => {
+  var cities = City.findAll();
+  res.json({
+    status: true,
+    message:'successfully fetched cities',
+    cities : cities
+  });
+}
+module.exports.getStates = (req, res) => {
+  var states = State.findAll();
+  res.json({
+    status: true,
+    message:'successfully fetched states',
+    states : states
+  });
+}
 module.exports.getDetails = (req, res) => {
   RestaurantEmployee.findOne({
     where: {

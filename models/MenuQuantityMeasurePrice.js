@@ -19,6 +19,9 @@ const MenuQuantityMeasurePrice = db.define('menu_quantity_measure_prices', {
 	},
 	status: {
 		type: Sequelize.BOOLEAN
+	},
+	can_display_to_customer: {
+		type: Sequelize.BOOLEAN
 	}
 },{
 	// timestamps: false
