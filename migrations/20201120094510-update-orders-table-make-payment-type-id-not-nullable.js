@@ -15,18 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.addColumn('orders', 'payment_type_id', {
-		type: 'bigint',
-		foreignKey: {
-			name: 'orders_payment_type_id_fk',
-			table: 'payment_types',
-			rules: {
-				onDelete: 'CASCADE',
-				onUpdate: 'RESTRICT'
-			},
-			mapping: 'id'
-		}
-	})
+	return db.changeColumn('orders', 'payment_type_id', { notNull: true })
 	.then(
 		function(result) {
 			return true;
@@ -40,7 +29,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.removeColumn('orders', 'payment_type_id');
+	return db.changeColumn('orders', 'payment_type_id', { notNull: true });
 };
 
 exports._meta = {
