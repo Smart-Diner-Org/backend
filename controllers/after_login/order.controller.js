@@ -62,7 +62,6 @@ verifyDiscountedPrice= (data, cb) => {
 			]
 		})
 		.then(menuFromDb => {
-			console.log(menuFromDb.menu_quantity_measure_price_list);
 			if(menuFromDb && menuFromDb.menu_quantity_measure_price_list && menuFromDb.menu_quantity_measure_price_list.length == 1){
 				var discountFromDb = parseFloat(menuFromDb.discount);
 				var quantity = parseFloat(menu.quantity)
@@ -213,14 +212,13 @@ exports.placeOrder = (req, res) => {
 									.then(restaurantData => {
 										req.orderId = createdOrder.id;
 										req.amount = req.body.total_price;
-										// req.customer = req.customer;
 										req.restaurantData = restaurantData;
-
+										var statusPageUrl = restaurantData.url + "/order/" + createdOrder.id + "/status";
 										//Triggering msg to customer who placed the order
 										smsHelper.triggerTransactionalSms(
 											req.customer.mobile,
 											constants.countryDialCode.india,
-											"We have got your order request. We will get back to you soon. Till then, please check your order status here " + restaurantData.url + "/order/" + createdOrder.id + "/status",
+											"We have got your order request. We will get back to you soon. Till then, please check your order status here " + statusPageUrl,
 											null
 										);
 
@@ -245,11 +243,9 @@ exports.placeOrder = (req, res) => {
 											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
 											null
 										);*/
-
-
-										switch(req.body.paymentType){
+										switch(parseInt(req.body.paymentType)){
 											case constants.paymentType.cashOnDelivery:
-												res.status(200).send({ 'message' : 'Success' });
+												res.status(200).send({ 'redirectUrl' : statusPageUrl, 'message' : 'Success' });
 											break;
 											case constants.paymentType.onlinePayment:
 												PaymentsController.createRequest(req, res);
@@ -299,17 +295,17 @@ exports.placeOfflineOrder = (req, res) => {
 	};
 	Customer.findOne({
 		where: {
-			id: req.body.mobile
+			mobile: req.body.mobile.toString()
 		},
-		include:[
+		include: [
 			{ model: CustomerDetail, as: 'customer_detail', required: false }
 		]
 	})
-	.then(customer => {
-		if (!customer) {
-			Customer.insert({ 'mobile' : req.body.mobile }).then(addedCustomer => {
+	.then(customerData => {
+		if (!customerData) {
+			Customer.create({ 'mobile' : req.body.mobile, 'role_id': constants.roles.customer }).then(addedCustomer => {
 				customerDetailData.customer_id = addedCustomer.id
-				CustomerDetail.insert(customerDetailData)
+				CustomerDetail.create(customerDetailData)
 				.then(customerDetail => {
 					attachCustomerAndCreateOrder(req, res);
 				})
@@ -322,8 +318,8 @@ exports.placeOfflineOrder = (req, res) => {
 			});
 		}
 		else{
-			if(customer.customer_detail){
-				customer.customer_detail.update(customerDetailData)
+			if(customerData.customer_detail){
+				customerData.customer_detail.update(customerDetailData)
 				.then(customerDetail => {
 					attachCustomerAndCreateOrder(req, res);
 				})
@@ -332,8 +328,8 @@ exports.placeOfflineOrder = (req, res) => {
 				});
 			}
 			else{
-				customerDetailData.customer_id = customer.id
-				CustomerDetail.insert(customerDetailData)
+				customerDetailData.customer_id = customerData.id
+				CustomerDetail.create(customerDetailData)
 				.then(customerDetail => {
 					attachCustomerAndCreateOrder(req, res);
 				})
@@ -344,6 +340,7 @@ exports.placeOfflineOrder = (req, res) => {
 		}
 	})
 	.catch(err => {
+		console.log(err);
 		res.status(500).send({ message: err.message });
 	});
 }
@@ -397,7 +394,7 @@ exports.updateOrderStage = (req, res) => {
 attachCustomerAndCreateOrder = (req, res) => {
 	Customer.findOne({
 		where: {
-			id: req.body.mobile
+			mobile: req.body.mobile.toString()
 		},
 		include:[
 			{ model: CustomerDetail, as: 'customer_detail', required: false }
@@ -405,9 +402,10 @@ attachCustomerAndCreateOrder = (req, res) => {
 	})
 	.then(customer => {
 		req.customer = customer;
-		placeOrder(req, res);
+		this.placeOrder(req, res);
 	})
 	.catch(err => {
+		console.log(err);
 		res.status(500).send({ message: err.message });
 	});
 }
