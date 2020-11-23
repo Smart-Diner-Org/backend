@@ -6,6 +6,8 @@ var RestaurantBranch = require('./RestaurantBranch');
 var RestaurantWebsiteDetail = require('./RestaurantWebsiteDetail');
 var RestaurantPaymentGateway = require('./RestaurantPaymentGateway');
 var Payment = require('./Payment');
+var RestaurantPaymentType = require('./RestaurantPaymentType');
+var RestaurantGetLocationAssociation = require('./RestaurantGetLocationAssociation');
 
 const Restaurant = db.define('restaurants', {
 	customer_id: {
@@ -79,6 +81,24 @@ RestaurantPaymentGateway.hasMany(Payment, {
 Payment.belongsTo(RestaurantPaymentGateway, {
 	foreignKey: 'restaurant_payment_gateway_id',
 	as: 'restaurant_payment_gateway'
+});
+
+Restaurant.hasMany(RestaurantPaymentType, {
+	foreignKey: 'restaurant_id',
+	as: 'payment_types'
+});
+RestaurantPaymentType.belongsTo(Restaurant, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant'
+});
+
+Restaurant.hasOne(RestaurantGetLocationAssociation, {
+	foreignKey: 'restaurant_id',
+	as: 'get_location_info'
+});
+RestaurantGetLocationAssociation.belongsTo(Restaurant, {
+	foreignKey: 'restaurant_id',
+	as: 'restaurant'
 });
 
 module.exports = Restaurant;

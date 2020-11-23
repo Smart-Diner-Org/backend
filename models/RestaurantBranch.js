@@ -48,6 +48,9 @@ const RestaurantBranch = db.define('restaurant_branches', {
 	},
 	delivery_distance: {
 		type: Sequelize.INTEGER
+	},
+	delivery_locations_to_display: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true

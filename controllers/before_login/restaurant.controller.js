@@ -19,6 +19,11 @@ var Subscription = require('./../../models/Subscription');
 var QuantityValue = require('./../../models/QuantityValue');
 var MeasureValue = require('./../../models/MeasureValue');
 var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
+var RestaurantPaymentType = require('./../../models/RestaurantPaymentType');
+var PaymentType = require('./../../models/PaymentType');
+var RestaurantGetLocationAssociation = require('./../../models/RestaurantGetLocationAssociation');
+var GetLocationType = require('./../../models/GetLocationType');
+var GetLocationPlace = require('./../../models/GetLocationPlace');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -70,7 +75,18 @@ module.exports.getRestaurantDetails = (req, res) => {
             ]
           }*/
         ]},
-        { model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
+        { model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'},
+        { model: RestaurantPaymentType, required: true, as: 'payment_types',
+          include: [
+            { model: PaymentType, required: true, duplicating: true, as: 'payment_type' }
+          ]
+        },
+        { model: RestaurantGetLocationAssociation, as: 'get_location_info',
+          include: [
+            { model: GetLocationType, as: 'get_location_type' },
+            { model: GetLocationPlace, as: 'get_location_place' }
+          ]
+        }
       ],
       // order: [
       //   [
