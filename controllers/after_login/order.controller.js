@@ -245,7 +245,11 @@ exports.placeOrder = (req, res) => {
 										);*/
 										switch(parseInt(req.body.paymentType)){
 											case constants.paymentType.cashOnDelivery:
-												res.status(200).send({ 'redirectUrl' : statusPageUrl, 'message' : 'Success' });
+												res.status(200).send({
+													'orderId': createdOrder.id,
+													'redirectPage' : 'orderStatus',
+													'message' : 'Success'
+												});
 											break;
 											case constants.paymentType.onlinePayment:
 												PaymentsController.createRequest(req, res);
@@ -566,6 +570,7 @@ exports.getOrderStatus = (req, res) => {
 					},
 					include:[
 						{ model: Cancellation, as: 'cancellation', required: false }
+						// { model: Payment, as: 'payments', required: false }, 'created_at', 'ASC',
 					]
 				})
 				.then(order => {
