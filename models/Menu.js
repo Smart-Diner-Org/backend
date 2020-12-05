@@ -4,6 +4,7 @@ var MenuCategory = require('./MenuCategory');
 var MenuQuantityMeasurePrice = require('./MenuQuantityMeasurePrice');
 var QuantityValue = require('./QuantityValue');
 var MeasureValue = require('./MeasureValue');
+var RestaurantMenuCategorySequence = require('./RestaurantMenuCategorySequence');
 
 const Menu = db.define('menus', {
 	restuarant_branch_id: {
@@ -64,6 +65,16 @@ Menu.belongsTo(MenuCategory, {
 MenuCategory.hasMany(Menu, {
 	foreignKey: 'category_id',
 	as: 'menus'
+});
+
+RestaurantMenuCategorySequence.belongsTo(MenuCategory, {
+	foreignKey: 'category_id',
+	as: 'category'
+});
+
+MenuCategory.hasMany(RestaurantMenuCategorySequence, {
+	foreignKey: 'category_id',
+	as: 'restaurant_sequences'
 });
 
 Menu.hasMany(MenuQuantityMeasurePrice, {

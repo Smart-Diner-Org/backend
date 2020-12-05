@@ -24,6 +24,7 @@ var PaymentType = require('./../../models/PaymentType');
 var RestaurantGetLocationAssociation = require('./../../models/RestaurantGetLocationAssociation');
 var GetLocationType = require('./../../models/GetLocationType');
 var GetLocationPlace = require('./../../models/GetLocationPlace');
+var RestaurantMenuCategorySequence = require('./../../models/RestaurantMenuCategorySequence');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -113,6 +114,81 @@ module.exports.getRestaurantDetails = (req, res) => {
 }
 
 module.exports.getMenuForBranch = (req, res, cb = null) => {
+  if(req.branchId){
+    MenuCategory.findAll({
+      where:{
+        status: true
+      },
+      order: [
+        [
+          { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences' }, 'display_sequence', 'ASC',
+        ]
+      ],
+      include: [
+        { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences', where: { 'restuarant_branch_id': req.branchId, 'status': true } },
+        { model: Menu, required: true, as: 'menus', where: { 'restuarant_branch_id': req.branchId, 'status': true },
+        include: [
+          {
+            model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true },
+            include:[
+              { model: QuantityValue, required: true, as: 'quantity_values' },
+              { model: MeasureValue, required: true, as: 'measure_values' }
+            ]
+          }
+        ] },
+      ]
+    })
+    // RestaurantMenuCategorySequence.findAll({
+    //   where:{
+    //     status: true
+    //   },
+    //   order: [
+    //     ['display_sequence', 'ASC']
+    //   ],
+    //   include: [
+    //     { model: MenuCategory, required: true, as: 'category',
+    //       include: [
+    //         { model: Menu, required: true, as: 'menus', where: { 'restuarant_branch_id': req.branchId, 'status': true },
+    //           include: [
+    //             {
+    //               model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true },
+    //               include:[
+    //                 { model: QuantityValue, required: true, as: 'quantity_values' },
+    //                 { model: MeasureValue, required: true, as: 'measure_values' }
+    //               ]
+    //             }
+    //           ]
+    //         }
+    //       ]
+    //     }
+    //   ]
+    // })
+    .then(menus => {
+      if(cb){
+        return cb(menus);
+      }
+      else{
+        res.json({
+          status: true,
+          message:'successfully fetched menus',
+          menus : menus
+        });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ message: err.message });
+    });
+  }
+  else{
+    if(cb){
+      return cb(false);
+    }
+    else res.status(404).send({ message: 'Restaurant branch id is missing' });
+  }
+}
+
+module.exports.getMenuForBranchOld = (req, res, cb = null) => {
   if(req.branchId){
     Menu.findAll({
       where: {
