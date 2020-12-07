@@ -31,5 +31,11 @@ module.exports = {
 	paymentType: {
 		cashOnDelivery: 1,
 		onlinePayment: 2
+	},
+	paymentStatuses: {
+		"paid" : 1,
+		"notPaid" : 2,
+		"paymentFailed": 3,
+		"paymentRequestFailed": 4
 	}
 }
