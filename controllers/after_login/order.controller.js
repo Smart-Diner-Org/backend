@@ -568,9 +568,14 @@ exports.getOrderStatus = (req, res) => {
 					where: {
 						id: req.params.id
 					},
+					order: [
+						[
+							{ model: Payment, as: 'payments', required: false }, 'created_at', 'DESC',
+						]
+					],
 					include:[
-						{ model: Cancellation, as: 'cancellation', required: false }
-						// { model: Payment, as: 'payments', required: false }, 'created_at', 'ASC',
+						{ model: Cancellation, as: 'cancellation', required: false },
+						{ model: Payment, as: 'payments', required: false }
 					]
 				})
 				.then(order => {
@@ -605,6 +610,10 @@ exports.getOrderStatus = (req, res) => {
 											else console.log("Triggering automatic OTP failed")
 										});
 									}
+									var paymentLink = null;
+									if(order.payments && order.payments.length > 0 && order.payment_status_id != constants.paymentStatuses["paid"]){
+										paymentLink = order.payments[0].payment_url_long;
+									}
 									dataToSend["name"] = customer.name;
 									dataToSend["customerContactNumber"] = customer.mobile;
 									dataToSend["mobileVerification"] = customer.mobile_verification;
@@ -615,6 +624,9 @@ exports.getOrderStatus = (req, res) => {
 									dataToSend["createdDate"] = order.createdAt;
 									dataToSend["cancellationReason"] = order.cancellation ? order.cancellation.cancellation_reason : null;
 									dataToSend["cancellationDateTime"] = order.cancellation ? order.cancellation.time_of_cancellation : null;
+									dataToSend["paymentTypeId"] = order.payment_type_id;
+									dataToSend["paymentStatusId"] = order.payment_status_id;
+									dataToSend["paymentLink"] = paymentLink;
 									return res.status(200).send(dataToSend);
 								}
 								else{

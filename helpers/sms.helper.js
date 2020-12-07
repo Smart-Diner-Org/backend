@@ -35,7 +35,7 @@ module.exports.triggerOtp = (mobile, countryDialCode, cb) => {
 
 module.exports.verifyOtp = (mobile, countryDialCode, otp, cb) => {
 	sendOtp.verify(countryDialCode + mobile, otp, function (error, data) {
-		if(data.type == 'success')
+		if(data && data.type == 'success')
 			status = true;
 		else{
 			console.log("Verify OTP Failed : ");
