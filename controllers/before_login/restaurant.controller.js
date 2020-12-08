@@ -130,6 +130,9 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
         include: [
           {
             model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true },
+            order: [
+              ['display_order', 'ASC']
+            ],
             include:[
               { model: QuantityValue, required: true, as: 'quantity_values' },
               { model: MeasureValue, required: true, as: 'measure_values' }
@@ -164,6 +167,9 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
     //   ]
     // })
     .then(menus => {
+      console.log("******** menus starts ******");
+      console.log(menus);
+      console.log("******** menus ends ******");
       if(cb){
         return cb(menus);
       }
