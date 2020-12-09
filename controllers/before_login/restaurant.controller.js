@@ -129,7 +129,7 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
         { model: Menu, required: true, as: 'menus', where: { 'restuarant_branch_id': req.branchId, 'status': true },
         include: [
           {
-            model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true },
+            model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true, can_display_to_customer: true },
             order: [
               ['display_order', 'ASC']
             ],

@@ -583,71 +583,82 @@ exports.getOrderStatus = (req, res) => {
 						dataToSend['message'] = 'Order not found';
 						return res.status(200).send(dataToSend);
 					}
-					Customer.findByPk(order.customer_id)
-					.then(customer => {
-						if(!customer){
-							dataToSend['message'] = 'Customer not found';
+					req.params.orderId = order.id;
+					RestaurantController.getMenuQuantityMeasurePriceDetailsForOrder(req, res, function(menuDetails){
+						if(menuDetails){
+							Customer.findByPk(order.customer_id)
+							.then(customer => {
+								if(!customer){
+									dataToSend['message'] = 'Customer not found';
+									return res.status(200).send(dataToSend);
+								}
+								RestaurantBranch.findByPk(order.restuarant_branch_id)
+								.then(restuarantBranch => {
+									if(!restuarantBranch){
+										dataToSend['message'] = 'Restuarant branch is not found for the order';
+										return res.status(200).send(dataToSend);
+									}
+									// Restaurant.findByPk(restuarantBranch.restaurant_id)
+									// .then(restuarant => {
+										// if(!restuarant){
+										// 	res.status(404).send({ message : 'Restuarant branch is not found'});
+										// }
+										if(restuarant.id == restuarantBranch.restaurant_id){
+											//Check for automatic OTP trigger to the customer's phone number
+											if(!customer.mobile_verification){
+												//Trigger OTP to verify the mobile number
+												smsHelper.triggerOtp(customer.mobile, constants.countryDialCode.india, function(smsStatus){
+													if(smsStatus)
+														console.log("Trigger automatic OTP successfully");
+													else console.log("Triggering automatic OTP failed")
+												});
+											}
+											var paymentLink = null;
+											if(order.payments && order.payments.length > 0 && order.payment_status_id != constants.paymentStatuses["paid"]){
+												paymentLink = order.payments[0].payment_url_long;
+											}
+											dataToSend["name"] = customer.name;
+											dataToSend["customerContactNumber"] = customer.mobile;
+											dataToSend["mobileVerification"] = customer.mobile_verification;
+											dataToSend["stage_id"] = order.stage_id;
+											dataToSend["totalAmount"] = order.total_price;
+											dataToSend["deliveryAddressOne"] = order.delivery_address_one;
+											dataToSend["deliveryAddressTwo"] = order.delivery_address_two;
+											dataToSend["createdDate"] = order.createdAt;
+											dataToSend["cancellationReason"] = order.cancellation ? order.cancellation.cancellation_reason : null;
+											dataToSend["cancellationDateTime"] = order.cancellation ? order.cancellation.time_of_cancellation : null;
+											dataToSend["paymentTypeId"] = order.payment_type_id;
+											dataToSend["paymentStatusId"] = order.payment_status_id;
+											dataToSend["paymentLink"] = paymentLink;
+											dataToSend["orderDetailMenus"] = menuDetails;
+											return res.status(200).send(dataToSend);
+										}
+										else{
+											dataToSend['message'] = 'Invalid Order';
+											return res.status(200).send(dataToSend);
+										}
+									// })
+									// .catch(err => {
+									// 	res.status(500).send({ message : err});
+									// });
+								})
+								.catch(err => {
+									return res.status(500).send({ message : err});
+								});
+							})
+							.catch(err => {
+								return res.status(500).send({ message : err});
+							});
+							// if(req.params.payment_id && req.params.payment_request_id && payment_status)
+						}
+						else {
+							dataToSend['message'] = 'Ordered Menu details not found';
 							return res.status(200).send(dataToSend);
 						}
-						RestaurantBranch.findByPk(order.restuarant_branch_id)
-						.then(restuarantBranch => {
-							if(!restuarantBranch){
-								dataToSend['message'] = 'Restuarant branch is not found for the order';
-								return res.status(200).send(dataToSend);
-							}
-							// Restaurant.findByPk(restuarantBranch.restaurant_id)
-							// .then(restuarant => {
-								// if(!restuarant){
-								// 	res.status(404).send({ message : 'Restuarant branch is not found'});
-								// }
-								if(restuarant.id == restuarantBranch.restaurant_id){
-									//Check for automatic OTP trigger to the customer's phone number
-									if(!customer.mobile_verification){
-										//Trigger OTP to verify the mobile number
-										smsHelper.triggerOtp(customer.mobile, constants.countryDialCode.india, function(smsStatus){
-											if(smsStatus)
-												console.log("Trigger automatic OTP successfully");
-											else console.log("Triggering automatic OTP failed")
-										});
-									}
-									var paymentLink = null;
-									if(order.payments && order.payments.length > 0 && order.payment_status_id != constants.paymentStatuses["paid"]){
-										paymentLink = order.payments[0].payment_url_long;
-									}
-									dataToSend["name"] = customer.name;
-									dataToSend["customerContactNumber"] = customer.mobile;
-									dataToSend["mobileVerification"] = customer.mobile_verification;
-									dataToSend["stage_id"] = order.stage_id;
-									dataToSend["totalAmount"] = order.total_price;
-									dataToSend["deliveryAddressOne"] = order.delivery_address_one;
-									dataToSend["deliveryAddressTwo"] = order.delivery_address_two;
-									dataToSend["createdDate"] = order.createdAt;
-									dataToSend["cancellationReason"] = order.cancellation ? order.cancellation.cancellation_reason : null;
-									dataToSend["cancellationDateTime"] = order.cancellation ? order.cancellation.time_of_cancellation : null;
-									dataToSend["paymentTypeId"] = order.payment_type_id;
-									dataToSend["paymentStatusId"] = order.payment_status_id;
-									dataToSend["paymentLink"] = paymentLink;
-									return res.status(200).send(dataToSend);
-								}
-								else{
-									dataToSend['message'] = 'Invalid Order';
-									return res.status(200).send(dataToSend);
-								}
-							// })
-							// .catch(err => {
-							// 	res.status(500).send({ message : err});
-							// });
-						})
-						.catch(err => {
-							return res.status(500).send({ message : err});
-						});
-					})
-					.catch(err => {
-						return res.status(500).send({ message : err});
 					});
-					// if(req.params.payment_id && req.params.payment_request_id && payment_status)
 				})
 				.catch(err => {
+					console.log(err);
 					return res.status(500).send({ message : err});
 				});
 			}

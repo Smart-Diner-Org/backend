@@ -128,7 +128,7 @@ module.exports.getDetails = (req, res) => {
   });
 }
 
-module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
+module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res, cb = null) => {
   if(req.params.orderId){
     OrderDetailMenu.findAll({
       where: {
@@ -139,6 +139,7 @@ module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
         ['created_at', 'DESC'],
       ],
       include:[
+        { model: OrderDetail, required:true, as: 'order_detail', required: true },
         { model: MenuQuantityMeasurePrice, required:true, as: 'menu_quantity_measure_price',
           include:[
             { model: Menu, required:true, as: 'menu' },
@@ -149,20 +150,33 @@ module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res) => {
       ]
     })
     .then(orderMenuDetails => {
-      res.json({
-        status: true,
-        message:'successfully fetched menu details',
-        orderMenuDetails : orderMenuDetails
-      });
+      if(cb){
+        cb(orderMenuDetails);
+      }
+      else{
+        res.json({
+          status: true,
+          message:'successfully fetched menu details',
+          orderMenuDetails : orderMenuDetails
+        });
+      }
     })
     .catch(err => {
       console.log("got error");
       console.log(err);
-      res.status(500).send({ message: err.message });
+      if(cb){
+        cb(false);
+      }
+      else
+        res.status(500).send({ message: err.message });
     });
   }
   else{
-    return res.status(404).send({ message: "Branch id not found" });
+    if(cb){
+      cb(false);
+    }
+    else
+      return res.status(404).send({ message: "Branch id not found" });
   }
 }
 

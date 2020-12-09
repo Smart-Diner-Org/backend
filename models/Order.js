@@ -89,5 +89,4 @@ Order.hasOne(OrderPreBookDetail, {
 	foreignKey: 'order_id',
 	as: 'preBookingDetail'
 });
-
 module.exports = Order;
