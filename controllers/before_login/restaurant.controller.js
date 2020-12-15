@@ -121,7 +121,12 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
       },
       order: [
         [
-          { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences' }, 'display_sequence', 'ASC',
+          { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences' }, 'display_sequence', 'ASC'
+        ],
+        [
+          { model: Menu, as: 'menus', order: [
+            { model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price_list' }, 'display_order', 'ASC'
+          ] }, 'id', 'DESC',
         ]
       ],
       include: [
@@ -130,9 +135,6 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
         include: [
           {
             model: MenuQuantityMeasurePrice, required:false, as: 'menu_quantity_measure_price_list', where: { status: true, can_display_to_customer: true },
-            order: [
-              ['display_order', 'ASC']
-            ],
             include:[
               { model: QuantityValue, required: true, as: 'quantity_values' },
               { model: MeasureValue, required: true, as: 'measure_values' }

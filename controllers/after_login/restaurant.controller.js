@@ -40,9 +40,7 @@ module.exports.getMenu = (req, res) => {
 }
 
 module.exports.getMenuForBranch = (req, res) => {
-  console.log("Here 1");
   if(req.params.branchId){
-    console.log("Here 2");
     MenuCategory.findAll({
       where:{
         status: true
@@ -61,7 +59,6 @@ module.exports.getMenuForBranch = (req, res) => {
       ]
     })
     .then(menus => {
-      console.log("Here 3");
       res.json({
         status: true,
         message:'successfully fetched menus',
@@ -74,7 +71,6 @@ module.exports.getMenuForBranch = (req, res) => {
     });
   }
   else{
-    console.log("Here 4");
     res.status(404).send({ message: 'Restaurant branch id is missing' });
   }
 }
@@ -150,7 +146,7 @@ module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res, cb = null
       ]
     })
     .then(orderMenuDetails => {
-      if(cb){
+      if(req.isFromGetOrderStatus && cb){
         cb(orderMenuDetails);
       }
       else{
@@ -164,7 +160,7 @@ module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res, cb = null
     .catch(err => {
       console.log("got error");
       console.log(err);
-      if(cb){
+      if(req.isFromGetOrderStatus && cb){
         cb(false);
       }
       else
@@ -172,7 +168,7 @@ module.exports.getMenuQuantityMeasurePriceDetailsForOrder = (req, res, cb = null
     });
   }
   else{
-    if(cb){
+    if(req.isFromGetOrderStatus && cb){
       cb(false);
     }
     else

@@ -584,6 +584,7 @@ exports.getOrderStatus = (req, res) => {
 						return res.status(200).send(dataToSend);
 					}
 					req.params.orderId = order.id;
+					req.isFromGetOrderStatus = true;
 					RestaurantController.getMenuQuantityMeasurePriceDetailsForOrder(req, res, function(menuDetails){
 						if(menuDetails){
 							Customer.findByPk(order.customer_id)
