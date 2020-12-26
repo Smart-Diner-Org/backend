@@ -124,10 +124,9 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
           { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences' }, 'display_sequence', 'ASC'
         ],
         [
-          { model: Menu, as: 'menus', order: [
-            { model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price_list' }, 'display_order', 'ASC'
-          ] }, 'id', 'ASC',
-        ]
+          { model: Menu, as: 'menus' }, 'id', 'ASC',
+        ],
+        [ Menu, { model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price_list' }, 'display_order', 'ASC' ]
       ],
       include: [
         { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences', where: { 'restuarant_branch_id': req.branchId, 'status': true } },
