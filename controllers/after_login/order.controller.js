@@ -243,13 +243,6 @@ exports.placeOrder = (req, res) => {
 											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
 											null
 										);*/
-										if(isOfflineOrderCreation){
-											res.status(200).send({
-												'orderId': createdOrder.id
-												'message' : 'Success'
-											});
-											return;
-										}
 										switch(parseInt(req.body.paymentType)){
 											case constants.paymentType.cashOnDelivery:
 												res.status(200).send({
