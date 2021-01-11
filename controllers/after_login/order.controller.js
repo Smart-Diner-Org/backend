@@ -177,7 +177,7 @@ exports.placeOrder = (req, res) => {
 										var preBookData = {
 											'order_id': createdOrder.id,
 											'date_of_delivery': req.body.date_of_delivery, //Should be in the format of "YYYY-MM-DD"
-											'time_of_delivery': req.body.time_of_delivery ? req.body.time_of_delivery : null //Should be in the format of HH:MM. 24 hour clock
+											'time_of_delivery': req.body.time_of_delivery ? req.body.time_of_delivery : null //It is a text. delivery slot text Ex. 9.00 am - 10.00 am
 										};
 										OrderPreBookDetail.create(preBookData)
 										.then(orderPreBook => {
