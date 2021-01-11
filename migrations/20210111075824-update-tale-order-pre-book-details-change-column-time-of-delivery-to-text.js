@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.changeColumn('order_pre_book_details', 'time_of_delivery', { type: 'string', notNull: true })
+	return db.changeColumn('order_pre_book_details', 'time_of_delivery', { type: 'string', notNull: false })
 	.then(
 		function(result) {
 			return true;
