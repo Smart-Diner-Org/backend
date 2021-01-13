@@ -72,7 +72,7 @@ isCustomer = (req, res, next) => {
 canAccessRestaurantDetails = (req, res, next) => {
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
-      if (role.name === "Admin" || role.name === "Super Admin") {
+      if (role.name === "Admin" || role.name === "Super Admin" || role.name === "Smart Diner Super Admin") {
         next();
         return;
       }
