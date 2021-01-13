@@ -221,3 +221,30 @@ module.exports.getOrdersForBranch = (req, res) => {
   }
 }
 
+module.exports.getAllRestaurants = (req, res) => {
+  Restaurant.findAll({
+    where: {
+      status: true
+    },
+    order: [
+      ['id', 'Asc'],
+      ['created_at', 'ASC'],
+    ],
+    include:[
+      { model: RestaurantDetail, required: true, as: 'restaurant_detail' },
+      { model: RestaurantBranch, required: true, as: 'restaurant_branches' },
+    ]
+  })
+  .then(restaurants => {
+    res.json({
+      status: true,
+      message:'successfully fetched all the restaurants',
+      restaurants : restaurants
+    });
+  })
+  .catch(err => {
+    console.log("got error");
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  });
+}

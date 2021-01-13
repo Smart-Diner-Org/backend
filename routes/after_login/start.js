@@ -60,6 +60,7 @@ Restaurant.findAll({
   // router.get('/restaurant/get_cities', [ cors(corsOptions), authJwt.verifyToken ], restaurantController.getCities);
   // router.get('/restaurant/get_states', [ cors(corsOptions), authJwt.verifyToken ], restaurantController.getStates);
   router.get('/order/:orderId/get_menu_quantity_measure_price_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuQuantityMeasurePriceDetailsForOrder);
+  router.get('/restaurants/all', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessAllRestaurants ], restaurantController.getAllRestaurants);
 })
 .catch(err => console.log(err))
 ;

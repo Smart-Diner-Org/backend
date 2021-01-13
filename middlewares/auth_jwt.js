@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
 // const dbModels = require("../models");
 const Customer = require("../models/Customer");
+var constants = require('./../config/constants');
 
 verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
@@ -11,7 +12,6 @@ verifyToken = (req, res, next) => {
       message: "No token provided!"
     });
   }
-
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
       return res.status(401).send({
@@ -81,12 +81,27 @@ canAccessRestaurantDetails = (req, res, next) => {
       });
     });
   });
-}
+};
+
+canAccessAllRestaurants = (req, res, next) => {
+  console.log("Have coem here 1");
+  Customer.findByPk(req.customerId).then(customer => {
+    if (parseInt(customer.role_id) === constants.roles.smartDinerSuperAdmin) {
+      next();
+      return;
+    }
+    return res.status(403).send({
+      message: "Required proper role to access. You are not allowed to access."
+    });
+  });
+};
+
 const authJwt = {
   verifyToken: verifyToken,
   isAdmin: isAdmin,
   isSuperAdmin: isSuperAdmin,
   isCustomer: isCustomer,
-  canAccessRestaurantDetails: canAccessRestaurantDetails
+  canAccessRestaurantDetails: canAccessRestaurantDetails,
+  canAccessAllRestaurants: canAccessAllRestaurants
 };
 module.exports = authJwt;

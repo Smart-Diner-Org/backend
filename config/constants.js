@@ -8,7 +8,8 @@ module.exports = {
 		'superAdmin': 1,
 		'admin': 2,
 		'deliveryAgent': 3,
-		'customer': 4
+		'customer': 4,
+		'smartDinerSuperAdmin': 5
 	},
 	instamojo: {
 		paymentRequestStatus: {
