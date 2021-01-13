@@ -93,9 +93,10 @@ exports.signin = (req, res) => {
       res.status(200).send({
         message: 'Login Success!',
         id: user.id,
-        username: user.username,
+        username: user.name,
         email: user.email,
-        accessToken: token
+        accessToken: token,
+        roleId: user.role_id
       });
     })
     .catch(err => {
