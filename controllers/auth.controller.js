@@ -61,7 +61,7 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
-  if(req.body.email && req.body.roleId && helper.isEmailLoginRole(req.body.roleId)){
+  if(req.body.email && !req.body.mobile){
     if(!req.body.password)
       return res.status(404).send({ message: "Password is missing." });
     Customer.findOne({
@@ -72,6 +72,9 @@ exports.signin = (req, res) => {
     .then(user => {
       if (!user) {
         return res.status(404).send({ message: "User not found." });
+      }
+      if(!helper.isEmailLoginRole(user.role_id)){
+        return res.status(404).send({ message: "Could not login with password" });
       }
       var passwordIsValid = false;
       if(user.password)
