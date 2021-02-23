@@ -124,7 +124,7 @@ module.exports.getMenuForBranch = (req, res, cb = null) => {
           { model: RestaurantMenuCategorySequence, as: 'restaurant_sequences' }, 'display_sequence', 'ASC'
         ],
         [
-          { model: Menu, as: 'menus' }, 'id', 'ASC',
+          { model: Menu, as: 'menus' }, 'id', 'ASC', 'is_active', 'DESC'
         ],
         [ Menu, { model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price_list' }, 'display_order', 'ASC' ]
       ],
