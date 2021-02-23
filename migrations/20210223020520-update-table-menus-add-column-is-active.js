@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	return db.addColumn('menus', 'is_active', { type: 'boolean', notNull: true, defaultValue: true })
+	return db.addColumn('menus', 'is_available', { type: 'boolean', notNull: true, defaultValue: true })
 	.then(
 		function(result) {
 			return true;
@@ -29,7 +29,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.removeColumn('menus', 'is_active');
+	return db.removeColumn('menus', 'is_available');
 };
 
 exports._meta = {

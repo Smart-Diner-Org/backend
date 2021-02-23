@@ -46,7 +46,7 @@ const Menu = db.define('menus', {
 	serving_measure: {
 		type: Sequelize.STRING
 	},
-	is_active: {
+	is_available: {
 		type: Sequelize.BOOLEAN
 	}
 	// created_at: {
