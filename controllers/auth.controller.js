@@ -35,7 +35,8 @@ exports.checkAccount= (req, res) => {
   });
 }
 
-exports.signup = (req, res) => {
+exports.signup = (req, res, next = null) => {
+  console.log('inside signup');
   var dataToSave = {
     name: req.body.name,
     mobile: req.body.mobile,
@@ -45,17 +46,26 @@ exports.signup = (req, res) => {
   if(req.body.password)
     dataToSave['password'] = bcrypt.hashSync(req.body.password, 8);
 
+  console.log("inside sign up 1");
+
   Customer.create(dataToSave)
     .then(user => {
       //Trigger OTP to verify the mobile number
       smsHelper.triggerOtp(user.mobile, constants.countryDialCode.india, function(smsStatus){
         if(smsStatus){
-          return res.status(200).send({ message: "Successfully triggered OTP." });
+          if(req.isfromManualRestaurantSetup){
+            req.hasAccountCreated = true;
+            req.createdCustomerId = user.id;
+            next();
+          }
+          else
+            return res.status(200).send({ message: "Successfully triggered OTP." });
         }
         else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
       });
     })
     .catch(err => {
+      console.log(err);
       res.status(500).send({ message: err.message });
     });
 };
