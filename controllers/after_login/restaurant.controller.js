@@ -311,21 +311,22 @@ module.exports.setUpRestaurant = (req, res) => {
         .then(createdRestaurantEmployee => {
 
           var sliderImagesArray = [];
-          req.body.sliderImages.forEach((sliderImage, index) => {
-            if(sliderImage.url){
-              var tempSliderImage = {
-                url : sliderImage.url,
-                buttons: [
-                  {"content":"Order Now", "button_link_type":"menu"},
-                  {"content":"Call Us", "button_link_type":"contact_info"}
-                ]
-              };
-              if(sliderImage.content)
-                tempSliderImage['content'] = sliderImage.content;
-              
-              sliderImagesArray.push(tempSliderImage);
-            }
-          });
+          if(req.body.sliderImages && req.body.sliderImages.length > 0){
+            req.body.sliderImages.forEach((sliderImage, index) => {
+              if(sliderImage.url){
+                var tempSliderImage = {
+                  url : sliderImage.url,
+                  buttons: [
+                    {"content":"Order Now", "button_link_type":"menu"},
+                    {"content":"Call Us", "button_link_type":"contact_info"}
+                  ]
+                };
+                if(sliderImage.content)
+                  tempSliderImage['content'] = sliderImage.content;
+                sliderImagesArray.push(tempSliderImage);
+              }
+            });
+          }
 
           var cardsArray = [];
           if(req.body.cards){
@@ -343,9 +344,9 @@ module.exports.setUpRestaurant = (req, res) => {
             is_pre_booking_time_required:  req.body.isPreBookingTimeRequired,
             pre_book_prior_time: req.body.preBookPriorTime ? req.body.preBookPriorTime : null, 
             page_description: req.body.pageDescription ? req.body.pageDescription : null,
-            slider_images: JSON.stringify(sliderImagesArray),
+            slider_images: (sliderImagesArray && sliderImagesArray.length > 0) ? JSON.stringify(sliderImagesArray) : null,
             ga_tracking_id: req.body.gaTrackingId ? req.body.gaTrackingId : null,
-            about_image: req.body.aboutImage ? req.body.aboutImage : null,
+            about_image: req.body.aboutImageUrl ? req.body.aboutImageUrl : null,
             pre_order_info_image: req.body.preOrderInfoImage ? req.body.preOrderInfoImage : null,
             is_run_time_booking_enabled: req.body.isRunTimeBookingEnabled ? req.body.isRunTimeBookingEnabled : false,
             primary_colour_code: req.body.primaryColourCode ? req.body.primaryColourCode : null,

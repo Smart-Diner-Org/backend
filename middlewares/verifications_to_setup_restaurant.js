@@ -91,12 +91,17 @@ exports.checkAttributesToCreateRestaurantWebsiteDetails = (req, res, next) => {
 		else return res.status(404).send({ message: "Restaurant's pre book prior time is missing" });
 	}
 
-	if(!(req.body.sliderImages && req.body.sliderImages.length > 0)){
-		return res.status(404).send({ message: "Restaurant slider image is missing" });
-	}
-	else{
-		var sliderImage = req.body.sliderImages[0];
-		if(!sliderImage.url) return res.status(404).send({ message: "Restaurant slider image url missing" });
+	// if(!(req.body.sliderImages && req.body.sliderImages.length > 0)){
+	// 	return res.status(404).send({ message: "Restaurant slider image is missing" });
+	// }
+	// else{
+	// 	var sliderImage = req.body.sliderImages[0];
+	// 	if(!sliderImage.url) return res.status(404).send({ message: "Restaurant slider image url missing" });
+	// }
+
+	if(req.body.sliderImages && req.body.sliderImages.length > 0){
+		if(!(req.body.sliderImages[0] && req.body.sliderImages[0].url))
+			return res.status(404).send({ message: "Restaurant slider image url missing" });
 	}
 
 	if(!req.body.isCodEnabled && !req.body.isOnlinePaymentEnabled){
@@ -116,5 +121,4 @@ exports.canSetupRestaurant = (req, res, next) => {
 	if(authJwt.canAccessAllRestaurants || authJwt.isSuperAdmin){
 		next();
 	}
-	return res.status(404).send({ message: "You are not allowed to set the restaurant" });
 };
