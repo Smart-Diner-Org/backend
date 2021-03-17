@@ -47,8 +47,7 @@ isSuperAdmin = (req, res, next) => {
         next();
         return;
       }
-
-      res.status(403).send({
+      return res.status(403).send({
         message: "Require Super Admin Role!"
       });
     });
@@ -84,7 +83,6 @@ canAccessRestaurantDetails = (req, res, next) => {
 };
 
 canAccessAllRestaurants = (req, res, next) => {
-  console.log("Have coem here 1");
   Customer.findByPk(req.customerId).then(customer => {
     if (parseInt(customer.role_id) === constants.roles.smartDinerSuperAdmin) {
       next();

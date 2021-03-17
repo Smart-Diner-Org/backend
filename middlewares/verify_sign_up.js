@@ -30,6 +30,29 @@ checkForMobile = (req, res, next) => {
   next();
 };
 
+checkForEmail = (req, res, next) => {
+  if(!req.body.email){
+    return res.status(404).send({ message: "Email id is missing" });
+  }
+  next();
+};
+
+checkDuplicateMobile = (req, res, next) => {
+  Customer.findOne({
+    where: {
+      mobile: req.body.mobile
+    }
+  }).then(customer => {
+    if (customer) {
+      res.status(400).send({
+        message: "Failed! Mobile number is already in use!"
+      });
+      return;
+    }
+    next();
+  });
+}
+
 checkDuplicateMobileOrEmail = (req, res, next) => {
   // Mobile number
   if(helper.isMobileLoginRole(req.body.roleId)){
@@ -119,7 +142,9 @@ const verifySignUp = {
   checkRolesExisted: checkRolesExisted,
   checkForMobileAndRole: checkForMobileAndRole,
   checkForMobileAndOtp: checkForMobileAndOtp,
-  checkForMobile: checkForMobile
+  checkForMobile: checkForMobile,
+  checkForEmail: checkForEmail,
+  checkDuplicateMobile: checkDuplicateMobile
 };
 
 module.exports = verifySignUp;

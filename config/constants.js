@@ -38,5 +38,13 @@ module.exports = {
 		"notPaid" : 2,
 		"paymentFailed": 3,
 		"paymentRequestFailed": 4
+	},
+	getLocationPlaces: {
+		'beforeAddToCart': 1,
+		'whileAddingAddress': 2
+	},
+	getLocationTypes: {
+		'googleLocation': 1,
+		'dropdownLocation': 2
 	}
 }

@@ -18,8 +18,10 @@ var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice'
 var QuantityValue = require('./../../models/QuantityValue');
 var MeasureValue = require('./../../models/MeasureValue');
 var OrderPreBookDetail = require('./../../models/OrderPreBookDetail');
-var City = require('./../../models/City');
-var State = require('./../../models/State');
+var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
+var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway');
+var RestaurantPaymentType = require('./../../models/RestaurantPaymentType');
+var RestaurantGetLocationAssociation = require('./../../models/RestaurantGetLocationAssociation');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -73,22 +75,6 @@ module.exports.getMenuForBranch = (req, res) => {
   else{
     res.status(404).send({ message: 'Restaurant branch id is missing' });
   }
-}
-module.exports.getCities = (req, res) => {
-  var cities = City.findAll();
-  res.json({
-    status: true,
-    message:'successfully fetched cities',
-    cities : cities
-  });
-}
-module.exports.getStates = (req, res) => {
-  var states = State.findAll();
-  res.json({
-    status: true,
-    message:'successfully fetched states',
-    states : states
-  });
 }
 module.exports.getDetails = (req, res) => {
   RestaurantEmployee.findOne({
@@ -247,4 +233,230 @@ module.exports.getAllRestaurants = (req, res) => {
     console.log(err);
     res.status(500).send({ message: err.message });
   });
+}
+
+module.exports.setUpRestaurant = (req, res) => {
+  console.log("I am within setUpRestaurant");
+  console.log(req.isfromManualRestaurantSetup);
+  console.log(req.hasAccountCreated);
+  var restaurantDataToSave = {
+    name: req.body.restaurantName,
+    tracker_enabled: true
+  }
+  if(req.isfromManualRestaurantSetup && req.hasAccountCreated && req.createdCustomerId){
+    console.log("req.createdCustomerId");
+    console.log(req.createdCustomerId);
+    restaurantDataToSave['customer_id'] = req.createdCustomerId;
+  }
+  else restaurantDataToSave['customer_id'] = req.customerId;
+  if(req.body.templateId) restaurantDataToSave['template_id'] = req.body.templateId;
+  if(req.body.logoUrl) restaurantDataToSave['logo'] = req.body.logoUrl;
+  if(req.body.aboutContent) restaurantDataToSave['about'] = req.body.aboutContent;
+  if(req.body.websiteUrl) restaurantDataToSave['url'] = req.body.websiteUrl;
+  Restaurant.create(restaurantDataToSave)
+  .then(createdRestaurant => {
+
+    console.log("Created restaurant id");
+    console.log(createdRestaurant.id);
+    var restaurantDetailsDataToSave = {
+      restaurant_id: createdRestaurant.id
+    };
+    if(req.body.facebookLink) restaurantDetailsDataToSave['facebook_link'] = req.body.facebookLink;
+    if(req.body.instagramLink) restaurantDetailsDataToSave['instagram_link'] = req.body.instagramLink;
+    if(req.body.youtubeLink) restaurantDetailsDataToSave['youtube_link'] = req.body.youtubeLink;
+    if(req.body.twitterLink) restaurantDetailsDataToSave['twitter_link'] = req.body.twitterLink;
+    if(req.body.linkedinLink) restaurantDetailsDataToSave['linkedin_link'] = req.body.linkedinLink;
+    RestaurantDetail.create(restaurantDetailsDataToSave)
+    .then(createdRestaurantDetail => {
+
+      console.log("created Restaurant Detail id");
+      console.log(createdRestaurantDetail.id);
+
+      var branchesToSave = [];
+
+      req.body.branches.forEach((branch, index) => {
+        if(branch.branchName && branch.branchAddress && branch.branchCityId && branch.branchStateId && branch.branchContactNumber){
+          var tempBranch = {
+            restaurant_id : createdRestaurant.id,
+            name: branch.branchName,
+            address: branch.branchAddress,
+            city_id: branch.branchCityId,
+            state_id: branch.branchStateId,
+            contact_number: branch.branchContactNumber
+          };
+          if(branch.branchTimings) tempBranch['timings'] = branch.branchTimings;
+          if(branch.branchEmail) tempBranch['email'] = branch.branchEmail;
+          if(branch.branchDeliveryLocations) tempBranch['delivery_locations'] = branch.branchDeliveryLocations;
+          if(branch.branchDeliveryPostalCodes) tempBranch['delivery_postal_codes'] = branch.branchDeliveryPostalCodes;
+          if(branch.branchDeliveryDistance) tempBranch['delivery_distance'] = branch.branchDeliveryDistance;
+          if(branch.branchDeliveryLocationsToDisplay) tempBranch['delivery_locations_to_display'] = branch.branchDeliveryLocationsToDisplay;
+          if(branch.branchDeliverySlots) tempBranch['delivery_slots'] = branch.branchDeliverySlots;
+          branchesToSave.push(tempBranch);
+        }
+      });
+
+      RestaurantBranch.bulkCreate(branchesToSave)
+      .then(createdbranchesDetail => {
+
+        console.log('createdbranchesDetail new');
+        console.log(createdbranchesDetail[0]['id']);
+        console.log(createdbranchesDetail[0]['name']);
+        
+        var restaurantEmployeeToSave = {
+          customer_id : restaurantDataToSave['customer_id'],
+          restuarant_branch_id : createdbranchesDetail[0]['id']
+        };
+
+        RestaurantEmployee.create(restaurantEmployeeToSave)
+        .then(createdRestaurantEmployee => {
+
+          var sliderImagesArray = [];
+          if(req.body.sliderImages && req.body.sliderImages.length > 0){
+            req.body.sliderImages.forEach((sliderImage, index) => {
+              if(sliderImage.url){
+                var tempSliderImage = {
+                  url : sliderImage.url,
+                  buttons: [
+                    {"content":"Order Now", "button_link_type":"menu"},
+                    {"content":"Call Us", "button_link_type":"contact_info"}
+                  ]
+                };
+                if(sliderImage.content)
+                  tempSliderImage['content'] = sliderImage.content;
+                sliderImagesArray.push(tempSliderImage);
+              }
+            });
+          }
+
+          var cardsArray = [];
+          if(req.body.cards){
+            req.body.cards.forEach((card, index) => {
+              if(card.url){
+                cardsArray.push({
+                  url : card.url
+                });
+              }
+            });
+          }
+          var restaurantWebsiteDetailsToSave = {
+            restaurant_id: createdRestaurant.id,
+            is_pre_booking_enabled: req.body.isPrebookingEnabled,
+            is_pre_booking_time_required:  req.body.isPreBookingTimeRequired,
+            pre_book_prior_time: req.body.preBookPriorTime ? req.body.preBookPriorTime : null, 
+            page_description: req.body.pageDescription ? req.body.pageDescription : null,
+            slider_images: (sliderImagesArray && sliderImagesArray.length > 0) ? JSON.stringify(sliderImagesArray) : null,
+            ga_tracking_id: req.body.gaTrackingId ? req.body.gaTrackingId : null,
+            about_image: req.body.aboutImageUrl ? req.body.aboutImageUrl : null,
+            pre_order_info_image: req.body.preOrderInfoImage ? req.body.preOrderInfoImage : null,
+            is_run_time_booking_enabled: req.body.isRunTimeBookingEnabled ? req.body.isRunTimeBookingEnabled : false,
+            primary_colour_code: req.body.primaryColourCode ? req.body.primaryColourCode : null,
+            secondary_colour_code: req.body.secondaryColourCode ? req.body.secondaryColourCode : null,
+            has_customisation_info: req.body.hasCustomisationInfo ? req.body.hasCustomisationInfo : false,
+            customisation_info_content: req.body.customisationInfoContent ? req.body.customisationInfoContent : null,
+            cards: (cardsArray && cardsArray.length > 0) ? JSON.stringify(cardsArray) : null,
+            is_delivery_available: req.body.isDeliveryAvailable ? req.body.isDeliveryAvailable : false,
+            page_title: req.body.pageTitle ? req.body.pageTitle : null
+          };
+
+          RestaurantWebsiteDetail.create(restaurantWebsiteDetailsToSave)
+          .then(createdRestaurantWebsiteDetails => {
+
+            var paymentTypesToSave = [];
+            if(req.body.isCodEnabled){
+              paymentTypesToSave.push({
+                restaurant_id: createdRestaurant.id,
+                payment_type_id: constants.paymentType.cashOnDelivery
+              });
+            }
+            if(req.body.isOnlinePaymentEnabled){
+              paymentTypesToSave.push({
+                restaurant_id: createdRestaurant.id,
+                payment_type_id: constants.paymentType.onlinePayment
+              });
+            }
+            RestaurantPaymentType.bulkCreate(paymentTypesToSave)
+            .then(createdRestaurantPaymentType => {
+
+              //This one we will do separately
+
+              // if(req.body.isOnlinePaymentEnabled){
+              //   restaurantPaymentGatewayToSave = {
+              //     restaurant_id: createdRestaurant.id,
+              //     payment_gateway_id: 
+              //     api_key:
+              //     auth_token:
+              //   };
+              // RestaurantPaymentGateway.create(restaurantPaymentGatewayToSave)
+              // }
+              
+              var getLocationAssociationToSave = {
+                restaurant_id: createdRestaurant.id,
+                get_location_type_id: req.body.getLocationPlaceId,
+                get_location_place_id: req.body.getLocationTypeId
+              };
+
+              RestaurantGetLocationAssociation.create(getLocationAssociationToSave)
+              .then(createdRestaurantGetLocationAssociation => {
+                res.json({
+                  status: true,
+                  createdbranchesDetail: createdbranchesDetail,
+                  message:'successfully created the restaurants'
+                });
+              })
+              .catch(err => {
+                console.log("Got error while creating restaurant get location association details.");
+                console.log(err);
+                res.status(500).send({ message: err.message });
+              });
+
+            })
+            .catch(err => {
+              console.log("Got error while creating restaurant payment types.");
+              console.log(err);
+              res.status(500).send({ message: err.message });
+            });
+          })
+          .catch(err => {
+            console.log("Got error while creating restaurant website details.");
+            console.log(err);
+            res.status(500).send({ message: err.message });
+          });
+        })
+        .catch(err => {
+          console.log("Got error while creating restaurant employee.");
+          console.log(err);
+          res.status(500).send({ message: err.message });
+        });
+      })
+      .catch(err => {
+        console.log("Got error while creating restaurant branches.");
+        console.log(err);
+        res.status(500).send({ message: err.message });
+      });
+    })
+    .catch(err => {
+      console.log("Got error while creating restaurant detail.");
+      console.log(err.message);
+      res.status(500).send({ message: err.message });
+    });
+  })
+  .catch(err => {
+    console.log("Got error while creating a restaurant.");
+    console.log(err.message);
+    res.status(500).send({ message: err.message });
+  });
+}
+
+module.exports.setUpRestaurantWithAccountCreation = (req, res) => {
+  console.log("I am within setUpRestaurantWithAccountCreation");
+  console.log(req.isfromManualRestaurantSetup);
+  console.log(req.hasAccountCreated);
+  
+}
+
+module.exports.setUpRestaurantWithoutAccountCreation = (req, res) => {
+  console.log("I am within setUpRestaurantWithoutAccountCreation");
+  console.log(req.isfromManualRestaurantSetup);
+  console.log(req.hasAccountCreated);
+  
 }

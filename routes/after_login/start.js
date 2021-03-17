@@ -2,10 +2,11 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { customerController, orderController, paymentsController, restaurantController } = require("./../../controllers/after_login");
+const { customerController, orderController, paymentsController, restaurantController, generalController } = require("./../../controllers/after_login");
+const authController = require("./../../controllers/auth.controller");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
-const { authJwt, verificationsToPlaceOrder } = require("../../middlewares");
+const { authJwt, verificationsToPlaceOrder, verificationsToSetupRestaurant, verifySignUp } = require("../../middlewares");
 var helper = require('./../../helpers/general.helper');
 
 var cors = require("cors");
@@ -57,10 +58,43 @@ Restaurant.findAll({
   router.get('/restaurant/get_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getDetails);
   router.get('/restaurant/:branchId/get_orders', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getOrdersForBranch);
   router.get('/restaurant/:branchId/get_menu', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuForBranch);
-  // router.get('/restaurant/get_cities', [ cors(corsOptions), authJwt.verifyToken ], restaurantController.getCities);
-  // router.get('/restaurant/get_states', [ cors(corsOptions), authJwt.verifyToken ], restaurantController.getStates);
+  router.get('/get_cities', [
+      cors(corsOptions),
+      authJwt.verifyToken
+    ],
+    generalController.getCities);
+  router.get('/get_states', [
+      cors(corsOptions),
+      authJwt.verifyToken
+    ],
+    generalController.getStates);
+  router.get('/get_restaurant_cancellation_reasons', generalController.getRestaurantCancellationReasons);
   router.get('/order/:orderId/get_menu_quantity_measure_price_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuQuantityMeasurePriceDetailsForOrder);
   router.get('/restaurants/all', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessAllRestaurants ], restaurantController.getAllRestaurants);
+  router.post('/restaurant/setup_with_account_creation', [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      verificationsToSetupRestaurant.canSetupRestaurant,
+      verifySignUp.checkForMobileAndRole,
+      verifySignUp.checkForEmail,
+      verificationsToSetupRestaurant.checkForAccountHolderName,
+      verificationsToSetupRestaurant.checkForPassword,
+      verifySignUp.checkDuplicateMobileOrEmail,
+      verifySignUp.checkDuplicateMobile,
+      verificationsToSetupRestaurant.checkAttributesForToCreateRestaurant,
+      verificationsToSetupRestaurant.checkAttributesForToCreateRestaurantBranches,
+      verificationsToSetupRestaurant.checkAttributesToCreateRestaurantWebsiteDetails,
+      authController.signup
+    ],
+    restaurantController.setUpRestaurant);
+  // router.post('/restaurant/setup_without_account_creation', [
+  //   // cors(corsOptions),
+  //   // authJwt.verifyToken,
+  //   verificationsToSetupRestaurant.canSetupRestaurant,
+  //   verificationsToSetupRestaurant.checkAttributesForToCreateRestaurant,
+
+  // ],
+  // restaurantController.setUpRestaurant);
 })
 .catch(err => console.log(err))
 ;
