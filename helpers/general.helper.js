@@ -159,7 +159,8 @@ module.exports.getCurrentDate = (format) => {
 
 module.exports.getCorsUrlsList = (restaurants) => {
 	var urls =  _.map(restaurants, function(menu) {
-		return menu.url.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
+		if(menu.url)
+			return menu.url.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
 	});
 	urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
 	return urls;
