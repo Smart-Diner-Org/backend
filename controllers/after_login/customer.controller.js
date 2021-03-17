@@ -7,6 +7,29 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var _ = require('underscore');
 
+getCityId = (passedCityTextValue, passedCityId, cb) => {
+	var valueToPass = null;
+	if(passedCityTextValue){
+		City.create({'name' : passedCityTextValue})
+		.then(cityDetail => {
+			valueToPass = cityDetail.id;
+			if(cb) cb(valueToPass);
+		})
+		.catch(err => {
+			valueToPass = null;
+			if(cb) cb(valueToPass);
+		});
+	}
+	else if(passedCityId){
+		valueToPass = passedCityId;
+		if(cb) cb(valueToPass);
+	}
+	else{
+		valueToPass = null;
+		if(cb) cb(valueToPass);
+	}
+}
+
 exports.updateCustomerDetails = (req, res) => {
 	Customer.findOne({
 		where: {
@@ -31,49 +54,52 @@ exports.updateCustomerDetails = (req, res) => {
 		if(customerData && (customerData["name"] || customerData["email"])){
 			newCustomer = customer.update(customerData);
 		}
-		if(!customer.customer_detail){
-			if(!req.body.addressOne || !req.body.addressTwo || !req.body.cityId || !req.body.stateId){
-				return res.status(500).send({ message: "Address information is missing" });
+		var self = this;
+		getCityId(req.body.cityValueInText, req.body.cityId, function(cityId){
+			if(!customer.customer_detail){
+				if(!req.body.addressOne || !req.body.addressTwo || !cityId || !req.body.stateId){
+					return res.status(500).send({ message: "Address information is missing" });
+				}
+				var dataToCreate = {
+					customer_id : customer.id,
+					address_one : req.body.addressOne,
+					address_two : req.body.addressTwo,
+					city_id : cityId,
+					state_id : req.body.stateId,
+					lat : req.body.latitude,
+					long : req.body.longitude
+				};
+				CustomerDetail.create(dataToCreate)
+				.then(customerDetails => {
+					self.fetchCustomerDetails(req, res);
+				})
+				.catch(err => {
+					res.status(500).send({ message: err.message });
+				});
 			}
-			var dataToCreate = {
-				customer_id : customer.id,
-				address_one : req.body.addressOne,
-				address_two : req.body.addressTwo,
-				city_id : req.body.cityId,
-				state_id : req.body.stateId,
-				lat : req.body.latitude,
-				long : req.body.longitude
-			};
-			CustomerDetail.create(dataToCreate)
-			.then(customerDetails => {
-				this.fetchCustomerDetails(req, res);
-			})
-			.catch(err => {
-				res.status(500).send({ message: err.message });
-			});
-		}
-		else{
-			var dataToUpdate = {};
-			if(req.body.addressOne)
-				dataToUpdate['address_one'] = req.body.addressOne;
-			if(req.body.addressTwo)
-				dataToUpdate['address_two'] = req.body.addressTwo;
-			if(req.body.cityId)
-				dataToUpdate['city_id'] = req.body.cityId;
-			if(req.body.stateId)
-				dataToUpdate['state_id'] = req.body.stateId;
-			if(req.body.latitude)
-				dataToUpdate['lat'] = req.body.latitude;
-			if(req.body.longitude)
-				dataToUpdate['long'] = req.body.longitude;
-			customer.customer_detail.update(dataToUpdate)
-			.then(customerDetails => {
-				this.fetchCustomerDetails(req, res);
-			})
-			.catch(err => {
-				res.status(500).send({ message: err.message });
-			});
-		}
+			else{
+				var dataToUpdate = {};
+				if(req.body.addressOne)
+					dataToUpdate['address_one'] = req.body.addressOne;
+				if(req.body.addressTwo)
+					dataToUpdate['address_two'] = req.body.addressTwo;
+				if(cityId)
+					dataToUpdate['city_id'] = cityId;
+				if(req.body.stateId)
+					dataToUpdate['state_id'] = req.body.stateId;
+				if(req.body.latitude)
+					dataToUpdate['lat'] = req.body.latitude;
+				if(req.body.longitude)
+					dataToUpdate['long'] = req.body.longitude;
+				customer.customer_detail.update(dataToUpdate)
+				.then(customerDetails => {
+					self.fetchCustomerDetails(req, res);
+				})
+				.catch(err => {
+					res.status(500).send({ message: err.message });
+				});
+			}
+		});
 	})
 	.catch(err => {
 		res.status(500).send({ message: err.message });

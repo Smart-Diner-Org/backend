@@ -33,6 +33,9 @@ const Restaurant = db.define('restaurants', {
 	},
 	about: {
 		type: Sequelize.TEXT
+	},
+	is_ecommerce: {
+		type: Sequelize.BOOLEAN
 	}
 },{
 	underscored: true
