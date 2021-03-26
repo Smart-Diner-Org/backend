@@ -15,11 +15,16 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return null;
+	var values = [
+		['200', true]
+	];
+	for(const index in values) {  
+		return db.insert('quantity_values', ['quantity', 'status'], values[index]);
+	}
 };
 
 exports.down = function(db) {
-  return null;
+	return null;
 };
 
 exports._meta = {
