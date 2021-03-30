@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  var values = [['Super Admin', true], ['Admin', true], ['Delivery Agent', true], ['Customer', true]];
+  var values = [['Super Admin', true], ['Admin', true], ['Delivery Person', true], ['Customer', true]];
   return db.createTable('roles', {
   	id: {
   		type: 'bigint',

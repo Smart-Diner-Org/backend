@@ -70,6 +70,14 @@ Restaurant.findAll({
     generalController.getStates);
   router.get('/get_restaurant_cancellation_reasons', generalController.getRestaurantCancellationReasons);
   router.get('/order/:orderId/get_menu_quantity_measure_price_details', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessRestaurantDetails ], restaurantController.getMenuQuantityMeasurePriceDetailsForOrder);
+  router.post('/order/:orderId/assign_delivery_partner',
+    [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      authJwt.isAdmin,
+      authJwt.isSuperAdmin
+    ],
+    orderController.assignDeliveryPartnerForOrder)
   router.get('/restaurants/all', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessAllRestaurants ], restaurantController.getAllRestaurants);
   router.post('/restaurant/setup_with_account_creation', [
       cors(corsOptions),

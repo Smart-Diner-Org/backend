@@ -678,3 +678,55 @@ exports.getOrderStatus = (req, res) => {
 		return res.status(404).send({ message : 'Illegal request'});
 	}
 };
+
+exports.assignDeliveryPartnerForOrder = (req, res) => {
+	if(!req.customerId)
+		res.status(404).send({ message: "Not a valid user. Please check." });
+	if(!req.params.orderId){
+		res.status(404).send({ message: "Order id is missing. Please check." });
+	}
+	Order.findOne({
+		where: {
+			id: req.params.orderId
+		},
+		include:[
+			// { model: Payment, as: 'payments', required: false }
+			{ model: RestaurantBranch, required: true, as: 'restuarant_branch' }
+		]
+	})
+	.then(order => {
+		if(!order){
+			res.status(404).send({ message: "Order does not exist." });
+		}
+		var deliveryPartnerId = null;
+		switch(order.restuarant_branch.delivery_partner_preference_id){
+			case constants.deliveryPreferences.inHouse:
+				deliveryPartnerId = constants.deliveryPartners.inHouseDelivery;
+				break;
+			case constants.deliveryPreferences.service:
+				deliveryPartnerId = constants.deliveryPartners.kovaiDeliveryBoys;
+				break;
+			case constants.deliveryPreferences.all:
+				if(req.body.preferredDelivery){
+					switch(parseInt(req.body.preferredDelivery)){
+						case constants.deliveryPreferences.inHouse:
+							deliveryPartnerId = constants.deliveryPartners.inHouseDelivery;
+							break;
+						case constants.deliveryPreferences.service:
+							deliveryPartnerId = constants.deliveryPartners.kovaiDeliveryBoys;
+							break;
+						default:
+							res.status(404).send({ message: "Preferred delivery mode is not proper" });
+					}
+				}
+				else
+					res.status(404).send({ message: "Preferred delivery mode is missing" });
+				break;
+		}
+	})
+	.catch(err => {
+		console.log(err);
+		res.status(500).send({ message: err.message });
+	});
+}
+

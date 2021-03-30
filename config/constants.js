@@ -46,5 +46,15 @@ module.exports = {
 	getLocationTypes: {
 		'googleLocation': 1,
 		'dropdownLocation': 2
+	},
+	deliveryPreferences: {
+		'inHouse' : 1,
+		'service' : 2,
+		'all' : 3
+	},
+	deliveryPartners: {
+		"inHouseDelivery" : 1,
+		"kovaiDeliveryBoys" : 2,
+		"individualPartners" : 3
 	}
 }

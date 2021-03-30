@@ -41,7 +41,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-	return db.removeColumn('restaurant_branches', 'delivery_partner_preference_id');	
+	return db.removeColumn('restaurant_branches', 'delivery_partner_preference_id');
 };
 
 exports._meta = {

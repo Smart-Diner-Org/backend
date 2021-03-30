@@ -22,6 +22,7 @@ var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
 var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway');
 var RestaurantPaymentType = require('./../../models/RestaurantPaymentType');
 var RestaurantGetLocationAssociation = require('./../../models/RestaurantGetLocationAssociation');
+var DeliveryPartnerPreference = require('./../../models/DeliveryPartnerPreference');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
