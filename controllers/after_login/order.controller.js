@@ -564,7 +564,8 @@ exports.getOrderStatus = (req, res) => {
 					is_delivery_available: restuarant.restaurant_website_detail.is_delivery_available,
 					latitude: restuarant.restaurant_branches[0].lat,
 					longitude: restuarant.restaurant_branches[0].long,
-					gaTrackingId: restuarant.restaurant_website_detail.ga_tracking_id
+					gaTrackingId: restuarant.restaurant_website_detail.ga_tracking_id,
+					isEcommerce: restuarant.is_ecommerce
 				};
 				Order.findOne({
 					where: {
