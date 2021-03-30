@@ -45,9 +45,6 @@ const Order = db.define('orders', {
 	},
 	payment_type_id: {
 		type: Sequelize.BIGINT
-	},
-	delivery_person_id: {
-		type: Sequelize.BIGINT
 	}
 },{
 	underscored: true
