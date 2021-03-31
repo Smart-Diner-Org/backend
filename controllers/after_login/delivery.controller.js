@@ -72,14 +72,14 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 						res.status(500).send({ message: err.message });
 					});
 				}
-				else res.status(404).send({ message: "Could not found delievry person id. Some parameter is not correct / missing" });
+				else res.status(404).send({ message: "Could not find delievry person id. Some parameter is not correct / missing" });
 			})
 			.catch(err => {
 				console.log(err);
 				res.status(500).send({ message: err.message });
 			});
 		}
-		else res.status(404).send({ message: "Could not found delievry partner id. Some parameter is not correct / missing" });
+		else res.status(404).send({ message: "Could not find delievry partner id. Some parameter is not correct / missing" });
 	})
 	.catch(err => {
 		console.log(err);
@@ -110,7 +110,7 @@ exports.acceptDelivery = (req, res) => {
 				res.status(500).send({ message: err })
 			});
 		}
-		else res.status(404).send({ message: "Could not found Delivery request. Please check." });
+		else res.status(404).send({ message: "Could not find Delivery request. Please check." });
 	})
 	.catch(err => {
 		console.log("Fetch Delivery Request failed");
