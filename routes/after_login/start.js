@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { customerController, orderController, paymentsController, restaurantController, generalController } = require("./../../controllers/after_login");
+const { customerController, orderController, paymentsController, restaurantController, generalController, deliveryController } = require("./../../controllers/after_login");
 const authController = require("./../../controllers/auth.controller");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
@@ -74,10 +74,17 @@ Restaurant.findAll({
     [
       cors(corsOptions),
       authJwt.verifyToken,
-      authJwt.isAdmin,
-      authJwt.isSuperAdmin
+      authJwt.canAssignDelivery
     ],
-    orderController.assignDeliveryPartnerForOrder)
+    deliveryController.assignDeliveryPartnerForOrder);
+    router.post('/order/accept_delivery/:deliveryRequestId',
+      [
+        cors(corsOptions),
+        authJwt.verifyToken,
+        authJwt.canUpdateDeliveryStage
+      ],
+      deliveryController.acceptDelivery
+    );
   router.get('/restaurants/all', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessAllRestaurants ], restaurantController.getAllRestaurants);
   router.post('/restaurant/setup_with_account_creation', [
       cors(corsOptions),

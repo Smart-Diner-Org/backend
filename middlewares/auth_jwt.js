@@ -68,6 +68,20 @@ isCustomer = (req, res, next) => {
   });
 };
 
+isAdminOrSuperAdmin = (req, res, next) => {
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Admin" || role.name === "Super Admin") {
+        next();
+        return;
+      }
+      res.status(403).send({
+        message: "Require Admin or Super Admin Role!"
+      });
+    });
+  });
+}
+
 canAccessRestaurantDetails = (req, res, next) => {
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
@@ -94,12 +108,23 @@ canAccessAllRestaurants = (req, res, next) => {
   });
 };
 
+canAssignDelivery = (req, res, next) => {
+  isAdminOrSuperAdmin(req, res, next);
+};
+
+canUpdateDeliveryStage = (req, res, next) => {
+  isAdminOrSuperAdmin(req, res, next);
+};
+
 const authJwt = {
   verifyToken: verifyToken,
   isAdmin: isAdmin,
   isSuperAdmin: isSuperAdmin,
   isCustomer: isCustomer,
   canAccessRestaurantDetails: canAccessRestaurantDetails,
-  canAccessAllRestaurants: canAccessAllRestaurants
+  canAccessAllRestaurants: canAccessAllRestaurants,
+  isAdminOrSuperAdmin: isAdminOrSuperAdmin,
+  canAssignDelivery: canAssignDelivery,
+  canUpdateDeliveryStage: canUpdateDeliveryStage
 };
 module.exports = authJwt;

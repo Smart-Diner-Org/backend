@@ -56,5 +56,14 @@ module.exports = {
 		"inHouseDelivery" : 1,
 		"kovaiDeliveryBoys" : 2,
 		"individualPartners" : 3
+	},
+	deliveryStages: {
+		"requested" : 1,
+		"accepted" : 2,
+		"rejected" : 3,
+		"reassigned" : 4,
+		"completed" : 5,
+		"delayed" : 6,
+		"undelivered" : 7
 	}
 }

@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-	var values = [['Delivery Partner', true]];
+	var values = [['Delivery Partner Admin', true]];
 	for(const index in values) {  
 		return db.insert('roles', ['name', 'is_active'], values[index]);
 	}
