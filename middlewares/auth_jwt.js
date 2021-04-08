@@ -116,6 +116,20 @@ canUpdateDeliveryStage = (req, res, next) => {
   isAdminOrSuperAdmin(req, res, next);
 };
 
+isDeliveryPartner = (req, res, next) => {
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Delivery Partner Admin") {
+        next();
+        return;
+      }
+      res.status(403).send({
+        message: "Require Delivery Partner Admin Role!"
+      });
+    });
+  });
+}
+
 const authJwt = {
   verifyToken: verifyToken,
   isAdmin: isAdmin,
@@ -125,6 +139,7 @@ const authJwt = {
   canAccessAllRestaurants: canAccessAllRestaurants,
   isAdminOrSuperAdmin: isAdminOrSuperAdmin,
   canAssignDelivery: canAssignDelivery,
-  canUpdateDeliveryStage: canUpdateDeliveryStage
+  canUpdateDeliveryStage: canUpdateDeliveryStage,
+  isDeliveryPartner: isDeliveryPartner
 };
 module.exports = authJwt;

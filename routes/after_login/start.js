@@ -85,6 +85,14 @@ Restaurant.findAll({
       ],
       deliveryController.acceptDelivery
     );
+    router.get('/delivery_agent/get_all_delivery_requests',
+      [
+        cors(corsOptions),
+        authJwt.verifyToken,
+        authJwt.isDeliveryPartner
+      ],
+      deliveryController.getAllRequestsOfDeliveryPartner
+    );
   router.get('/restaurants/all', [ cors(corsOptions), authJwt.verifyToken, authJwt.canAccessAllRestaurants ], restaurantController.getAllRestaurants);
   router.post('/restaurant/setup_with_account_creation', [
       cors(corsOptions),

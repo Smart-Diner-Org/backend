@@ -9,7 +9,8 @@ module.exports = {
 		'admin': 2,
 		'deliveryAgent': 3,
 		'customer': 4,
-		'smartDinerSuperAdmin': 5
+		'smartDinerSuperAdmin': 5,
+		'deliveryPartnerAdmin': 6
 	},
 	instamojo: {
 		paymentRequestStatus: {
