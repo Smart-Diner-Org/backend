@@ -75,12 +75,12 @@ verifyDiscountedPrice= (data, cb) => {
 				totalPriceFromDb += (discountedPriceFromDb * quantity);
 				console.log(`GST Percentage to be added: ${gstPercentage}`);
 				console.log(`Before adding GST : ${totalPriceFromDb}`);
-				totalPriceFromDb += ( totalPriceFromDb * 100).toFixed(gstPercentage);
+				totalPriceFromDb = totalPriceFromDb + (totalPriceFromDb/100)*5;
 				console.log(`After adding GST : ${totalPriceFromDb}`);
 
 				//TODO: Temporarily adding the default_delivery_charge calculation as well
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
-				totalPriceFromDb += restaurantInReq.restaurant_website_detail.default_delivery_charge > 0 ? restaurantInReq.restaurant_website_detail.default_delivery_charge : 0;
+				totalPriceFromDb = totalPriceFromDb + restaurantInReq.restaurant_website_detail.default_delivery_charge > 0 ? restaurantInReq.restaurant_website_detail.default_delivery_charge : 0;
 				console.log(`After adding Default Delivery Charge of ${restaurantInReq.restaurant_website_detail.default_delivery_charge} : ${totalPriceFromDb}`);
 				if(!(discountedPriceFromDb == parseFloat(menu.price) && originalPriceFromDb == parseFloat(menu.originalPrice)))
 					foundMistake = true;
