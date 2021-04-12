@@ -130,7 +130,7 @@ exports.placeOrder = async (req, res) => {
 			return res.status(404).send({ message: "Menu items not added" });
 		}
 		var menus = req.body.menus;
-		var restaurentInRequest = await Restaurant.findOne({
+		var restaurantInRequest = await Restaurant.findOne({
 			where: {
 				id: req.restuarantBranch.restaurant_id
 			},
@@ -140,7 +140,7 @@ exports.placeOrder = async (req, res) => {
 		});
 
 		// In case if the restaurent id did not available
-		if(!restaurentInRequest || restaurentInRequest === undefined){
+		if(!restaurantInRequest || restaurantInRequest === undefined){
 			return res.status(404).send({ message: "Restaurant id mismatch." });
 		}
 
@@ -179,7 +179,7 @@ exports.placeOrder = async (req, res) => {
 					// 		return res.status(404).send({ message: "Mode of delivery is not found." });
 					// 	}
 						
-						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price, 'restaurantInReq': restaurentInRequest}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
+						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price, 'restaurantInReq': restaurantInRequest}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
 							if(!foundMistake){
 								var orderData = {
 									customer_id: req.customer.id,
