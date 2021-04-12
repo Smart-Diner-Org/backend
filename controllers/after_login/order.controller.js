@@ -75,7 +75,7 @@ verifyDiscountedPrice= (data, cb) => {
 				totalPriceFromDb += (discountedPriceFromDb * quantity);
 				console.log(`GST Percentage to be added: ${gstPercentage}`);
 				console.log(`Before adding GST : ${totalPriceFromDb}`);
-				totalPriceFromDb = totalPriceFromDb + (totalPriceFromDb/100)*5;
+				totalPriceFromDb = totalPriceFromDb + (totalPriceFromDb/100) * gstPercentage;
 				console.log(`After adding GST : ${totalPriceFromDb}`);
 
 				//TODO: Temporarily adding the default_delivery_charge calculation as well
