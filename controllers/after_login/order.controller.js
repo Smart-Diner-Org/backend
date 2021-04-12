@@ -48,7 +48,7 @@ verifyDiscountedPrice= (data, cb) => {
 	var menus = data.menus;
 	var totalPrice = parseFloat(data.totalPrice);
 	var restaurantInReq = data.restaurantInReq;
-	var gstPercentage = restaurantInReq.is_ecommerce ? constants.gstDefaultPercentage.eCommerce : constants.gstDefaultPercentage.restaurant;
+	var gstPercentage = !restaurantInReq.restaurant_website_detail.should_calculate_gst ? 0 : restaurantInReq.is_ecommerce ? constants.gstDefaultPercentage.eCommerce : constants.gstDefaultPercentage.restaurant;
 	menus.forEach((menu, index) => {
 		Menu.findOne({
 			where: {
