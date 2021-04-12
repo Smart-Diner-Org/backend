@@ -46,5 +46,9 @@ module.exports = {
 	getLocationTypes: {
 		'googleLocation': 1,
 		'dropdownLocation': 2
-	}
+	},
+	gstDefaultPercentage: {
+		restaurant: 5,
+		eCommerce: 18
+	},
 }

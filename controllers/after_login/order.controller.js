@@ -47,6 +47,8 @@ verifyDiscountedPrice= (data, cb) => {
 	var totalPriceFromDb = 0;
 	var menus = data.menus;
 	var totalPrice = parseFloat(data.totalPrice);
+	var restaurantInReq = data.restaurantInReq;
+	var gstPercentage = restaurantInReq.is_ecommerce ? constants.gstDefaultPercentage.eCommerce : constants.gstDefaultPercentage.restaurant;
 	menus.forEach((menu, index) => {
 		Menu.findOne({
 			where: {
@@ -67,7 +69,10 @@ verifyDiscountedPrice= (data, cb) => {
 				var quantity = parseFloat(menu.quantity)
 				var originalPriceFromDb = parseFloat(menuFromDb.menu_quantity_measure_price_list[0].price);
 				var discountedPriceFromDb = originalPriceFromDb - ((discountFromDb/100) * originalPriceFromDb);
-				totalPriceFromDb += (discountedPriceFromDb * quantity);
+				totalPriceFromDb += ((discountedPriceFromDb * quantity) * 100).toFixed(gstPercentage);
+				//TODO: Temporarily adding the default_delivery_charge calculation as well
+				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
+				totalPriceFromDb += restaurantInReq.restaurant_website_details.default_delivery_charge > 0 ? restaurantInReq.restaurant_website_details.default_delivery_charge : 0;
 				if(!(discountedPriceFromDb == parseFloat(menu.price) && originalPriceFromDb == parseFloat(menu.originalPrice)))
 					foundMistake = true;
 			}
@@ -105,7 +110,7 @@ verifyDiscountedPrice= (data, cb) => {
 	});
 }
 
-exports.placeOrder = (req, res) => {
+exports.placeOrder = async (req, res) => {
 	// Customer.findOne({
 	// 	where: {
 	// 		id: req.customerId
@@ -125,6 +130,25 @@ exports.placeOrder = (req, res) => {
 			return res.status(404).send({ message: "Menu items not added" });
 		}
 		var menus = req.body.menus;
+		var restaurentInRequest = await Restaurant.findOne({
+			where: {
+				id: req.restuarantBranch.restaurant_id
+			},
+			include:[
+				{ model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
+			]
+		});
+
+		// In case if the restaurent id did not available
+		if(!restaurentInRequest || restaurentInRequest === undefined){
+			return res.status(404).send({ message: "Restaurant id mismatch." });
+		}
+
+		// In case, if the business prefers min_order_purchase to be done & the order value did not match it.
+		if(restaurantInReq.restaurant_website_details.min_purchase_amount > 0 && req.body.total_price < restaurantInReq.restaurant_website_details.min_purchase_amount){
+			return res.status(404).send({ message: "Minimum order purchase amount does not match with total price sent." });
+		}
+
 		// RestaurantBranch.findOne({
 		// 	where: {
 		// 		id: req.body.restuarantBranchId
@@ -155,7 +179,7 @@ exports.placeOrder = (req, res) => {
 					// 		return res.status(404).send({ message: "Mode of delivery is not found." });
 					// 	}
 						
-						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
+						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price, 'restaurantInReq': restaurentInRequest}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
 							if(!foundMistake){
 								var orderData = {
 									customer_id: req.customer.id,

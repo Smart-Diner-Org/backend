@@ -61,6 +61,15 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	page_title: {
 		type: Sequelize.TEXT
+	},
+	should_calculate_gst: {
+		type: Sequelize.BOOLEAN
+	},
+	min_purchase_amount: {
+		type: Sequelize.DECIMAL
+	},
+	default_delivery_charge: {
+		type: Sequelize.DECIMAL
 	}
 },{
 	underscored: true
