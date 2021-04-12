@@ -145,7 +145,7 @@ exports.placeOrder = async (req, res) => {
 		}
 
 		// In case, if the business prefers min_order_purchase to be done & the order value did not match it.
-		if(restaurantInReq.restaurant_website_details.min_purchase_amount > 0 && req.body.total_price < restaurantInReq.restaurant_website_details.min_purchase_amount){
+		if(restaurantInRequest.restaurant_website_details.min_purchase_amount > 0 && req.body.total_price < restaurantInRequest.restaurant_website_details.min_purchase_amount){
 			return res.status(404).send({ message: "Minimum order purchase amount does not match with total price sent." });
 		}
 
