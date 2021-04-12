@@ -72,7 +72,7 @@ verifyDiscountedPrice= (data, cb) => {
 				totalPriceFromDb += ((discountedPriceFromDb * quantity) * 100).toFixed(gstPercentage);
 				//TODO: Temporarily adding the default_delivery_charge calculation as well
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
-				totalPriceFromDb += restaurantInReq.restaurant_website_details.default_delivery_charge > 0 ? restaurantInReq.restaurant_website_details.default_delivery_charge : 0;
+				totalPriceFromDb += restaurantInReq.restaurant_website_detail.default_delivery_charge > 0 ? restaurantInReq.restaurant_website_detail.default_delivery_charge : 0;
 				if(!(discountedPriceFromDb == parseFloat(menu.price) && originalPriceFromDb == parseFloat(menu.originalPrice)))
 					foundMistake = true;
 			}
@@ -145,7 +145,7 @@ exports.placeOrder = async (req, res) => {
 		}
 
 		// In case, if the business prefers min_order_purchase to be done & the order value did not match it.
-		if(restaurantInRequest.restaurant_website_details.min_purchase_amount > 0 && req.body.total_price < restaurantInRequest.restaurant_website_details.min_purchase_amount){
+		if(restaurantInRequest.restaurant_website_detail.min_purchase_amount > 0 && req.body.total_price < restaurantInRequest.restaurant_website_detail.min_purchase_amount){
 			return res.status(404).send({ message: "Minimum order purchase amount does not match with total price sent." });
 		}
 
