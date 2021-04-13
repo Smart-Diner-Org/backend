@@ -9,7 +9,8 @@ module.exports = {
 		'admin': 2,
 		'deliveryAgent': 3,
 		'customer': 4,
-		'smartDinerSuperAdmin': 5
+		'smartDinerSuperAdmin': 5,
+		'deliveryPartnerAdmin': 6
 	},
 	instamojo: {
 		paymentRequestStatus: {
@@ -51,4 +52,23 @@ module.exports = {
 		restaurant: 5,
 		eCommerce: 18
 	},
+	deliveryPreferences: {
+		'inHouse' : 1,
+		'service' : 2,
+		'all' : 3
+	},
+	deliveryPartners: {
+		"inHouseDelivery" : 1,
+		"kovaiDeliveryBoys" : 2,
+		"individualPartners" : 3
+	},
+	deliveryStages: {
+		"requested" : 1,
+		"accepted" : 2,
+		"rejected" : 3,
+		"reassigned" : 4,
+		"completed" : 5,
+		"delayed" : 6,
+		"undelivered" : 7
+	}
 }

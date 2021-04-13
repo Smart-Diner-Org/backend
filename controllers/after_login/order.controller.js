@@ -715,3 +715,4 @@ exports.getOrderStatus = (req, res) => {
 		return res.status(404).send({ message : 'Illegal request'});
 	}
 };
+

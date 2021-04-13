@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 var db = require('./../config/database');
 var Menu = require('./Menu');
 var Restaurant = require('./Restaurant');
+var DeliveryPartnerPreference = require('./DeliveryPartnerPreference');
 
 const RestaurantBranch = db.define('restaurant_branches', {
 	restaurant_id: {
@@ -62,6 +63,11 @@ const RestaurantBranch = db.define('restaurant_branches', {
 RestaurantBranch.hasMany(Menu, {
 	foreignKey: 'restuarant_branch_id',
 	as: 'restaurant_branch_menu'
+});
+
+RestaurantBranch.hasOne(DeliveryPartnerPreference, {
+	foreignKey: 'delivery_partner_preference_id',
+	as: 'delivery_partner_preference'
 });
 
 module.exports = RestaurantBranch;
