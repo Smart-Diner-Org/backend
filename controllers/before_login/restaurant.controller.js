@@ -99,7 +99,7 @@ module.exports.getRestaurantDetails = (req, res) => {
   )
   .then(restaurant => {
     this.getMenuForBranch({ branchId: restaurant.restaurant_branches[0].id}, null, function(menus){
-      restaurant["restaurant_website_detail"]["gst_percentage"] = restaurant.restaurant_website_detail.should_calculate_gst ? constants.gstDefaultPercentage : 0;
+      restaurant.restaurant_website_detail.gst_percentage = restaurant.restaurant_website_detail.should_calculate_gst ? constants.gstDefaultPercentage : 0;
       res.json({
         status: true,
         message:'successfully fetched restaurant full details',

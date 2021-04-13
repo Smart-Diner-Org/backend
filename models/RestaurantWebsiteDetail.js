@@ -70,6 +70,9 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	default_delivery_charge: {
 		type: Sequelize.DECIMAL
+	},
+	gst_percentage: {
+		type: Sequelize.VIRTUAL
 	}
 },{
 	underscored: true
