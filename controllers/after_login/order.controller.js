@@ -213,36 +213,39 @@ exports.placeOrder = (req, res) => {
 										req.orderId = createdOrder.id;
 										req.amount = req.body.total_price;
 										req.restaurantData = restaurantData;
-										var statusPageUrl = restaurantData.url + "/order/" + createdOrder.id + "/status";
+										var statusPageDomain = restaurantData.url;
+										var statusPageEndPoint = "/order/" + createdOrder.id + "/status";
 										//Triggering msg to customer who placed the order
+
+										// smsHelper.triggerTransactionalSms(
+										// 	req.customer.mobile,
+										// 	constants.countryDialCode.india,
+										// 	"We have got your order request. We will get back to you soon. Till then, please check your order status here " + statusPageUrl,
+										// 	null
+										// );
 										smsHelper.triggerTransactionalSms(
 											req.customer.mobile,
 											constants.countryDialCode.india,
-											"We have got your order request. We will get back to you soon. Till then, please check your order status here " + statusPageUrl,
+											[statusPageDomain, statusPageEndPoint, restaurantData.name],
+											'JUST_AFTER_ORDER_PLACED', //message template name
 											null
 										);
 
-										//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
 										smsHelper.triggerTransactionalSms(
 											req.restuarantBranch.contact_number,
 											constants.countryDialCode.india,
-											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+											[restaurantData.name],
+											'RESTAURANT_NEW_ORDER_RECEIVED', //message template name
 											null
 										);
+										//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
+										// smsHelper.triggerTransactionalSms(
+										// 	req.restuarantBranch.contact_number,
+										// 	constants.countryDialCode.india,
+										// 	"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
+										// 	null
+										// );
 
-										//Triggering sms to Sethu and Sharmi
-										/*smsHelper.triggerTransactionalSms(
-											'8838064610',
-											constants.countryDialCode.india,
-											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
-											null
-										);
-										smsHelper.triggerTransactionalSms(
-											'7904465474',
-											constants.countryDialCode.india,
-											"Hello " + restaurantData.name + ", You have received one order now. Please sign in to www.smartdiner.co to process the order.",
-											null
-										);*/
 										switch(parseInt(req.body.paymentType)){
 											case constants.paymentType.cashOnDelivery:
 												res.status(200).send({
