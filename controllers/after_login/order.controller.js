@@ -73,16 +73,7 @@ verifyDiscountedPrice= (data, cb) => {
 				var originalPriceFromDb = parseFloat(menuFromDb.menu_quantity_measure_price_list[0].price);
 				var discountedPriceFromDb = originalPriceFromDb - ((discountFromDb/100) * originalPriceFromDb);
 				totalPriceFromDb += (discountedPriceFromDb * quantity);
-				console.log(`GST Percentage to be added: ${gstPercentage}`);
-				console.log(`Before adding GST : ${totalPriceFromDb}`);
 				totalPriceFromDb = totalPriceFromDb + (totalPriceFromDb/100) * gstPercentage;
-				console.log(`After adding GST : ${totalPriceFromDb}`);
-
-				//TODO: Temporarily adding the default_delivery_charge calculation as well
-				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
-				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
-				totalPriceFromDb = totalPriceFromDb + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
-				console.log(`After adding Default Delivery Charge of ${restaurantInReq.restaurant_website_detail.default_delivery_charge} : ${totalPriceFromDb}`);
 				if(!(discountedPriceFromDb == parseFloat(menu.price) && originalPriceFromDb == parseFloat(menu.originalPrice)))
 					foundMistake = true;
 			}
@@ -90,6 +81,10 @@ verifyDiscountedPrice= (data, cb) => {
 				foundMistake = true;
 			}
 			if(count == menus.length){
+				//TODO: Temporarily adding the default_delivery_charge calculation as well on the total amount
+				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
+				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
+				totalPriceFromDb = totalPriceFromDb + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
 				if(totalPriceFromDb !== totalPrice)
 					foundMistake = true;
 				if(cb){
