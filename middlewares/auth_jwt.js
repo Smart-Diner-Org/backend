@@ -113,7 +113,17 @@ canAssignDelivery = (req, res, next) => {
 };
 
 canUpdateDeliveryStage = (req, res, next) => {
-  isAdminOrSuperAdmin(req, res, next);
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Delivery Partner Admin" || role.name === "Admin" || role.name === "Super Admin" || role.name === "Smart Diner Super Admin") {
+        next();
+        return;
+      }
+      res.status(403).send({
+        message: "Required Proper Role!"
+      });
+    });
+  });
 };
 
 isDeliveryPartner = (req, res, next) => {

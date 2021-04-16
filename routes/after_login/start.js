@@ -85,6 +85,14 @@ Restaurant.findAll({
       ],
       deliveryController.acceptDelivery
     );
+    router.post('/order/update_delivery_request_stage/:deliveryRequestId',
+      [
+        cors(corsOptions),
+        authJwt.verifyToken,
+        authJwt.canUpdateDeliveryStage
+      ],
+      deliveryController.updateDeliveryRequestStage
+    );
     router.get('/delivery_agent/get_all_delivery_requests',
       [
         cors(corsOptions),

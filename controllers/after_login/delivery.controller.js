@@ -7,6 +7,7 @@ var Order = require('./../../models/Order');
 var Customer = require('./../../models/Customer');
 var RestaurantBranch = require('./../../models/RestaurantBranch');
 var Restaurant = require('./../../models/Restaurant');
+var DeliveryStage = require('./../../models/DeliveryStage');
 
 getDeliveryPartnerId = (preferredId_1, preferredId_2 = null) => {
 	var deliveryPartnerId = null;
@@ -105,6 +106,56 @@ exports.acceptDelivery = (req, res) => {
 			})
 			.then(updatedDeliveryRequest => {
 				return res.status(200).send(updatedDeliveryRequest);
+			})
+			.catch(err => {
+				console.log("Update Delivery Request failed");
+				console.log(err);
+				res.status(500).send({ message: err })
+			});
+		}
+		else res.status(404).send({ message: "Could not find Delivery request. Please check." });
+	})
+	.catch(err => {
+		console.log("Fetch Delivery Request failed");
+		console.log(err);
+		res.status(500).send({ message: err })
+	});
+}
+
+exports.updateDeliveryRequestStage = (req, res) => {
+	if(!req.params.deliveryRequestId){
+		res.status(404).send({ message: "Delivery request id is missing. Please check." });
+	}
+	if(!req.body.deliveryRequestStageId){
+		res.status(404).send({ message: "Delivery request stage id is missing. Please check." });
+	}
+	DeliveryRequest.findOne({
+		where: {
+			id: req.params.deliveryRequestId
+		}
+	})
+	.then(deliveryRequest => {
+		if(deliveryRequest){
+			DeliveryStage.findOne({
+				where: {
+					id: req.body.deliveryRequestStageId
+				}
+			})
+			.then(deliveryStage => {
+				if(deliveryStage){
+					deliveryRequest.update({
+						delivery_stage_id : req.body.deliveryRequestStageId
+					})
+					.then(updatedDeliveryRequest => {
+						return res.status(200).send(updatedDeliveryRequest);
+					})
+					.catch(err => {
+						console.log("Update Delivery Request failed");
+						console.log(err);
+						res.status(500).send({ message: err })
+					});
+				}
+				else res.status(404).send({ message: "Could not find the given delivery stage. Please check." });
 			})
 			.catch(err => {
 				console.log("Update Delivery Request failed");
