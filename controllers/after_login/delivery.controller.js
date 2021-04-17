@@ -8,6 +8,7 @@ var Customer = require('./../../models/Customer');
 var RestaurantBranch = require('./../../models/RestaurantBranch');
 var Restaurant = require('./../../models/Restaurant');
 var DeliveryStage = require('./../../models/DeliveryStage');
+var smsHelper = require('./../../helpers/sms.helper');
 
 getDeliveryPartnerId = (preferredId_1, preferredId_2 = null) => {
 	var deliveryPartnerId = null;
@@ -68,7 +69,28 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 					};
 					DeliveryRequest.create(deliveryRequestDataToSave)
 					.then(savedDeliveryRequest => {
-						return res.status(200).send(savedDeliveryRequest);
+						Customer.findOne({
+							where: {
+								id: deliveryPersonId.delivery_person_id
+							}
+						})
+						.then(deliveryPersonDetail => {
+							if(deliveryPersonDetail){
+								smsHelper.triggerTransactionalSms(
+									deliveryPersonDetail.mobile,
+									constants.countryDialCode.india,
+									[deliveryPersonDetail.name],
+									'NEW_DELIVERY_REQUEST_RECEIVED', //message template name
+									null
+								);
+								return res.status(200).send(savedDeliveryRequest);
+							}
+							else res.status(404).send({ message: "Could not find delievry person in the database. Something happened" });
+						})
+						.catch(err => {
+							console.log(err);
+							res.status(500).send({ message: err.message });
+						});
 					})
 					.catch(err => {
 						console.log(err);
