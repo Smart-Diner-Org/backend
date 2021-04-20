@@ -101,7 +101,7 @@ exports.signin = (req, res) => {
         });
       }
       var token = accessTokenHelper.getJwtAccessToken(user.id);
-
+      // Only valid for delivery partner user login
       if(parseInt(user.role_id) === constants.roles.deliveryPartnerAdmin)
       {
         var isProduction = process.env.ENVIRONMENT == 'production' ? true : false;
