@@ -677,7 +677,7 @@ exports.getOrderStatus = (req, res) => {
 											dataToSend["paymentStatusId"] = order.payment_status_id;
 											dataToSend["paymentLink"] = paymentLink;
 											dataToSend["orderDetailMenus"] = menuDetails;
-											dataToSend['deliveryRequestId'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].id : null;
+											dataToSend['deliveryRequestStageId'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].delivery_stage_id : null;
 											dataToSend['deliveryPersonName'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].delivery_person.name : null;
 											dataToSend['deliveryPersonContactNumber'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].delivery_person.mobile : null;
 											return res.status(200).send(dataToSend);
