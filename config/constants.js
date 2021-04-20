@@ -70,5 +70,9 @@ module.exports = {
 		"completed" : 5,
 		"delayed" : 6,
 		"undelivered" : 7
+	},
+	deliveryPartnerPortalUrl: {
+		testing : 'https://testingdeliverypartner.smartdiner.co/',
+		prod : 'https://deliverypartner.smartdiner.co/'
 	}
 }

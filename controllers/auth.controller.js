@@ -11,6 +11,7 @@ var accessTokenHelper = require('./../helpers/access_token.helper');
 var bcrypt = require("bcryptjs");
 var constants = require('../config/constants');
 var express = require('express');
+const { deliveryPartnerPortalUrl } = require("../config/constants");
 var app = express();
 
 exports.checkAccount= (req, res) => {
@@ -100,6 +101,15 @@ exports.signin = (req, res) => {
         });
       }
       var token = accessTokenHelper.getJwtAccessToken(user.id);
+
+      if(parseInt(user.role_id) === constants.roles.deliveryPartnerAdmin)
+      {
+        var isProduction = process.env.ENVIRONMENT == 'production' ? true : false;
+        res.status(302);
+        res.append('token', token);
+        res.redirect( !isProduction ? deliveryPartnerPortalUrl.testing : deliveryPartnerPortalUrl.prod).send();
+      }
+      
       res.status(200).send({
         message: 'Login Success!',
         id: user.id,
