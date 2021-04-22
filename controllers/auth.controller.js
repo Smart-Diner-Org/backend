@@ -101,23 +101,21 @@ exports.signin = (req, res) => {
         });
       }
       var token = accessTokenHelper.getJwtAccessToken(user.id);
-      // Only valid for delivery partner user login
-      if(parseInt(user.role_id) === constants.roles.deliveryPartnerAdmin)
-      {
-        var isProduction = process.env.ENVIRONMENT == 'production' ? true : false;
-        res.status(302);
-        res.append('token', token);
-        res.redirect( !isProduction ? deliveryPartnerPortalUrl.testing : deliveryPartnerPortalUrl.prod).send();
-      }
-      
-      res.status(200).send({
+      var responseObject = {
         message: 'Login Success!',
         id: user.id,
         username: user.name,
         email: user.email,
         accessToken: token,
         roleId: user.role_id
-      });
+      }
+      // Only valid for delivery partner user login
+      if(parseInt(user.role_id) === constants.roles.deliveryPartnerAdmin)
+      {
+        var isProduction = process.env.ENVIRONMENT == 'production' ? true : false;
+        responseObject.redirectLink = !isProduction ? deliveryPartnerPortalUrl.testing : deliveryPartnerPortalUrl.prod;
+      }
+      res.status(200).send(responseObject);
     })
     .catch(err => {
       res.status(500).send({ message: err.message });
