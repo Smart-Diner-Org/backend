@@ -22,6 +22,7 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway');
 var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
+var DeliveryRequest = require('./../../models/DeliveryRequest')
 // var _ = require('underscore');
 
 addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
@@ -607,11 +608,19 @@ exports.getOrderStatus = (req, res) => {
 					order: [
 						[
 							{ model: Payment, as: 'payments', required: false }, 'created_at', 'DESC',
+						],
+						[
+							{ model: DeliveryRequest, as: 'delivery_requests', required: false }, 'created_at', 'DESC',
 						]
 					],
 					include:[
 						{ model: Cancellation, as: 'cancellation', required: false },
-						{ model: Payment, as: 'payments', required: false }
+						{ model: Payment, as: 'payments', required: false },
+						{ model: DeliveryRequest, as: 'delivery_requests',  required: false,
+							include: [
+								{ model: Customer, as: 'delivery_person', required: true },
+							]
+						}
 					]
 				})
 				.then(order => {
@@ -668,6 +677,9 @@ exports.getOrderStatus = (req, res) => {
 											dataToSend["paymentStatusId"] = order.payment_status_id;
 											dataToSend["paymentLink"] = paymentLink;
 											dataToSend["orderDetailMenus"] = menuDetails;
+											dataToSend['deliveryRequestStageId'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].delivery_stage_id : null;
+											dataToSend['deliveryPersonName'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].delivery_person.name : null;
+											dataToSend['deliveryPersonContactNumber'] = (order.delivery_requests && order.delivery_requests[0]) ? order.delivery_requests[0].delivery_person.mobile : null;
 											return res.status(200).send(dataToSend);
 										}
 										else{
