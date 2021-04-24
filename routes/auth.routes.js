@@ -15,6 +15,7 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
 	var urls = helper.getCorsUrlsList(restaurants);
+	console.log(`URLs List in Auth Routes: ${urls}`);
 	corsOptions = helper.getCorsFunction(urls);
 	// corsOptions = '*';
 
