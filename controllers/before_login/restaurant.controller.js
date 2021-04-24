@@ -262,7 +262,7 @@ module.exports.getRestaurantUrls = (callback) => {
     var urls =  _.map(resUrls, function(resUrl) {
       return resUrl.url; 
     });
-    urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
+    urls.push(...constants.whitelistWebsites[process.env.ENVIRONMENT]);
     console.log("inside controller");
     console.log(urls);
     callback(urls);

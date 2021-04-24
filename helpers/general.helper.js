@@ -162,7 +162,7 @@ module.exports.getCorsUrlsList = (restaurants) => {
 		if(menu.url)
 			return menu.url.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
 	});
-	urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
+	urls.push(...constants.whitelistWebsites[process.env.ENVIRONMENT]);
 	return urls;
 }
 
