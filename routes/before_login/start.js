@@ -19,7 +19,6 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
-  console.log(`URLs List in Start JS Before Login: ${urls}`);
   corsOptions = helper.getCorsFunction(urls);
   //Define all routes here
     // app.get('/:id', function(req, res){
