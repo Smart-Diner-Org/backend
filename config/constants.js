@@ -1,8 +1,8 @@
 module.exports = {
 	whitelistWebsites: {
-		local : 'localhost:3000',
-		production : 'smartdiner.co',
-		testing: 'testingfrontend.smartdiner.co'
+		local : ['localhost:3000'],
+		production : ['smartdiner.co', 'deliverypartner.smartdiner.co'],
+		testing: ['testingfrontend.smartdiner.co', 'testingdeliverypartner.smartdiner.co']
 	},
 	roles: {
 		'superAdmin': 1,
@@ -70,5 +70,9 @@ module.exports = {
 		"completed" : 5,
 		"delayed" : 6,
 		"undelivered" : 7
+	},
+	deliveryPartnerPortalUrl: {
+		testing : 'https://testingdeliverypartner.smartdiner.co/',
+		prod : 'https://deliverypartner.smartdiner.co/'
 	}
 }

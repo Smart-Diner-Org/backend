@@ -11,6 +11,7 @@ var accessTokenHelper = require('./../helpers/access_token.helper');
 var bcrypt = require("bcryptjs");
 var constants = require('../config/constants');
 var express = require('express');
+const { deliveryPartnerPortalUrl } = require("../config/constants");
 var app = express();
 
 exports.checkAccount= (req, res) => {
@@ -100,14 +101,21 @@ exports.signin = (req, res) => {
         });
       }
       var token = accessTokenHelper.getJwtAccessToken(user.id);
-      res.status(200).send({
+      var responseObject = {
         message: 'Login Success!',
         id: user.id,
         username: user.name,
         email: user.email,
         accessToken: token,
         roleId: user.role_id
-      });
+      }
+      // Only valid for delivery partner user login
+      if(parseInt(user.role_id) === constants.roles.deliveryPartnerAdmin)
+      {
+        var isProduction = process.env.ENVIRONMENT == 'production' ? true : false;
+        responseObject.redirectLink = !isProduction ? deliveryPartnerPortalUrl.testing : deliveryPartnerPortalUrl.prod;
+      }
+      res.status(200).send(responseObject);
     })
     .catch(err => {
       res.status(500).send({ message: err.message });

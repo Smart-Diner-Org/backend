@@ -162,11 +162,14 @@ module.exports.getCorsUrlsList = (restaurants) => {
 		if(menu.url)
 			return menu.url.replace('http://','').replace('https://','').replace('www.','').split(/[/?#]/)[0];
 	});
-	urls.push(constants.whitelistWebsites[process.env.ENVIRONMENT]);
+	console.log(`Before pushing to URLS Array: ${urls}`);
+	urls.push(...constants.whitelistWebsites[process.env.ENVIRONMENT]);
+	console.log(`After pushing to URLS Array: ${urls}`);
 	return urls;
 }
 
 module.exports.getCorsFunction = (urls) => {
+	console.log(`Inside getCorsFunction: ${urls}`);
 	return {
 		origin: function (origin, callback) {
 			console.log("urls");
