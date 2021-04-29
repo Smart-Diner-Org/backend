@@ -269,6 +269,23 @@ exports.placeOrder = async (req, res) => {
 											'RESTAURANT_NEW_ORDER_RECEIVED', //message template name
 											null
 										);
+
+										//Triggering messages to smartdiner official & sharmi's personal numbers
+										smsHelper.triggerTransactionalSms(
+											8825906491,
+											constants.countryDialCode.india,
+											[restaurantData.name],
+											'RESTAURANT_NEW_ORDER_RECEIVED', //message template name
+											null
+										);
+										smsHelper.triggerTransactionalSms(
+											7904465474,
+											constants.countryDialCode.india,
+											[restaurantData.name],
+											'RESTAURANT_NEW_ORDER_RECEIVED', //message template name
+											null
+										);
+
 										//Triggering msg to the restaurant's particular branch's (to whom ethe order placed) contact number
 										// smsHelper.triggerTransactionalSms(
 										// 	req.restuarantBranch.contact_number,
