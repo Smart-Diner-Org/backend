@@ -21,8 +21,8 @@ Restaurant.findAll({
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
   console.log(`After Login StartJS After urls call: ${urls}`);
-  //corsOptions = helper.getCorsFunction(urls);
-  corsOptions='*';
+  corsOptions = helper.getCorsFunction(urls);
+  //corsOptions='*';
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
