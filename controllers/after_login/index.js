@@ -4,6 +4,7 @@ const paymentsController = require("./payments.controller");
 const restaurantController = require("./restaurant.controller");
 var generalController = require("./general.controller");
 const deliveryController = require("./delivery.controller");
+const menuController = require("./menu.controller");
 
 module.exports = {
 	customerController,
@@ -11,5 +12,6 @@ module.exports = {
 	paymentsController,
 	restaurantController,
 	generalController,
-	deliveryController
+	deliveryController,
+	menuController
 };

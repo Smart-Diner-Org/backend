@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { customerController, orderController, paymentsController, restaurantController, generalController, deliveryController } = require("./../../controllers/after_login");
+const { customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
 const authController = require("./../../controllers/auth.controller");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
@@ -21,8 +21,8 @@ Restaurant.findAll({
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
   console.log(`After Login StartJS After urls call: ${urls}`);
-  corsOptions = helper.getCorsFunction(urls);
-  // corsOptions='*';
+  //corsOptions = helper.getCorsFunction(urls);
+  corsOptions='*';
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
@@ -119,6 +119,16 @@ Restaurant.findAll({
       authController.signup
     ],
     restaurantController.setUpRestaurant);
+  router.get('/get_menu_categories', [
+      cors(corsOptions),
+      authJwt.verifyToken
+    ],
+    menuController.getMenuCategoriesList);
+  router.post('/add_menu_categories', [
+      cors(corsOptions),
+      authJwt.verifyToken
+    ],
+    menuController.addMenuCategories);
   // router.post('/restaurant/setup_without_account_creation', [
   //   // cors(corsOptions),
   //   // authJwt.verifyToken,
