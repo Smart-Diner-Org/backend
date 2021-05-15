@@ -17,7 +17,7 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
 	return db.addColumn('orders', 'original_total_price', {
 		type: 'decimal',
-		notNull: true
+		notNull: false
 	})
 	.then(
 		function(result) {
