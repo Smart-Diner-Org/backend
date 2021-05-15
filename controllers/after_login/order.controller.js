@@ -146,7 +146,8 @@ exports.placeOrder = async (req, res) => {
 				id: req.restuarantBranch.restaurant_id
 			},
 			include:[
-				{ model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'}
+				{ model: RestaurantWebsiteDetail, as: 'restaurant_website_detail'},
+				{ model: RestaurantBranch, as: 'restaurant_branches'}
 			]
 		});
 
