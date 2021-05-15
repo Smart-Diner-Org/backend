@@ -48,9 +48,10 @@ verifyDiscountedPrice= (data, cb) => {
 	var totalPriceFromDb = 0;
 	var menus = data.menus;
 	var totalPrice = parseFloat(data.totalPrice);
+	var originalTotalPrice = parseFloat(data.originalTotalPrice);
 	var restaurantInReq = data.restaurantInReq;
 	var gstPercentage = !restaurantInReq.restaurant_website_detail.should_calculate_gst ? 0 : restaurantInReq.is_ecommerce ? constants.gstDefaultPercentage.eCommerce : constants.gstDefaultPercentage.restaurant;
-	console.log(`Total price sent by client: ${data.totalPrice}`);
+	console.log(`Total price sent by client: ${data.originalTotalPrice}`);
 	console.log(`Restaurant in req: ${restaurantInReq}`);
 
 	menus.forEach((menu, index) => {
@@ -86,7 +87,11 @@ verifyDiscountedPrice= (data, cb) => {
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
 				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
 				totalPriceFromDb = totalPriceFromDb + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
-				if(totalPriceFromDb !== totalPrice)
+				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
+				var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
+				if(discountOnMrp && discountOnMrp > 0)
+					totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb)
+				if((totalPriceFromDb !== originalTotalPrice) || (totalPriceFromDbWithMrpDiscount !== totalPrice))
 					foundMistake = true;
 				if(cb){
 					cb(foundMistake);
@@ -186,13 +191,19 @@ exports.placeOrder = async (req, res) => {
 					// 		return res.status(404).send({ message: "Mode of delivery is not found." });
 					// 	}
 						
-						verifyDiscountedPrice({'menus': menus, 'totalPrice' : req.body.total_price, 'restaurantInReq': restaurantInRequest}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
+						verifyDiscountedPrice({
+							'menus': menus,
+							'totalPrice' : req.body.total_price,
+							'originalTotalPrice': req.body.original_total_price,
+							'restaurantInReq': restaurantInRequest
+						}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
 							if(!foundMistake){
 								var orderData = {
 									customer_id: req.customer.id,
 									restuarant_branch_id: req.restuarantBranch.id,
 									description: req.body.description,
 									total_price: req.body.total_price,
+									original_total_price: req.body.original_total_price,
 									stage_id: req.orderStage.id,
 									payment_status_id: req.paymentStatusId,
 									mode_of_delivery_id: req.modeOfDelivery.id,
