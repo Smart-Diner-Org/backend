@@ -42,16 +42,21 @@ addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
 	});
 }
 
+getGstPercentage = (restaurantData) =>{
+	var gstPercentage = !restaurantData.restaurant_website_detail.should_calculate_gst ? 0 : restaurantData.is_ecommerce ? constants.gstDefaultPercentage.eCommerce : constants.gstDefaultPercentage.restaurant;
+	return gstPercentage;
+}
+
 verifyDiscountedPrice= (data, cb) => {
 	var foundMistake = false;
 	var count = 1;
 	var totalPriceFromDb = 0;
 	var menus = data.menus;
 	var totalPrice = parseFloat(data.totalPrice);
-	var originalTotalPrice = parseFloat(data.originalTotalPrice);
+	var totalMrpPrice = parseFloat(data.totalMrpPrice);
 	var restaurantInReq = data.restaurantInReq;
-	var gstPercentage = !restaurantInReq.restaurant_website_detail.should_calculate_gst ? 0 : restaurantInReq.is_ecommerce ? constants.gstDefaultPercentage.eCommerce : constants.gstDefaultPercentage.restaurant;
-	console.log(`Total price sent by client: ${data.originalTotalPrice}`);
+	var gstPercentage = getGstPercentage(restaurantInReq);
+	console.log(`Total price sent by client: ${data.totalPrice}`);
 	console.log(`Restaurant in req: ${restaurantInReq}`);
 
 	menus.forEach((menu, index) => {
@@ -82,17 +87,33 @@ verifyDiscountedPrice= (data, cb) => {
 				foundMistake = true;
 			}
 			if(count == menus.length){
-				totalPriceFromDb = totalPriceFromDb + (totalPriceFromDb/100) * gstPercentage;
+
+
+				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
+				var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
+				//At this stage, the variable totalPriceFromDb has the original total mrp price without mrp discount calculated form DB values.
+				//so this value should be equal to the totalMrpPrice passed from the FE
+				if((totalPriceFromDb !== totalMrpPrice))
+					foundMistake = true;
+				if(discountOnMrp && discountOnMrp > 0){
+					totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb);
+				}
+				//Applying GST & delivery charge on the discounted final price
+				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (totalPriceFromDbWithMrpDiscount/100) * gstPercentage;
 				//TODO: Temporarily adding the default_delivery_charge calculation as well on the total amount
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
 				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
-				totalPriceFromDb = totalPriceFromDb + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
+				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
 				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
-				var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
-				if(discountOnMrp && discountOnMrp > 0)
-					totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb)
-				if((totalPriceFromDb !== originalTotalPrice) || (totalPriceFromDbWithMrpDiscount !== totalPrice))
+				// var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
+				// if(discountOnMrp && discountOnMrp > 0)
+				// 	totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb)
+				if((totalPriceFromDbWithMrpDiscount !== totalPrice))
 					foundMistake = true;
+				console.log("Total price sent by client - "+totalPrice);
+				console.log("Total price from DB - "+totalPriceFromDbWithMrpDiscount);
+				console.log("total mrp by client - "+totalMrpPrice);
+				console.log("total mrp by DB - "+totalPriceFromDb);
 				if(cb){
 					cb(foundMistake);
 					return;
@@ -195,7 +216,7 @@ exports.placeOrder = async (req, res) => {
 						verifyDiscountedPrice({
 							'menus': menus,
 							'totalPrice' : req.body.total_price,
-							'originalTotalPrice': req.body.original_total_price,
+							'totalMrpPrice': req.body.total_mrp_price,
 							'restaurantInReq': restaurantInRequest
 						}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
 							if(!foundMistake){
@@ -204,7 +225,9 @@ exports.placeOrder = async (req, res) => {
 									restuarant_branch_id: req.restuarantBranch.id,
 									description: req.body.description,
 									total_price: req.body.total_price,
-									original_total_price: req.body.original_total_price,
+									total_mrp_price: req.body.total_mrp_price,
+									delivery_charge: restaurantInRequest.restaurant_website_detail.default_delivery_charge,
+									gst: getGstPercentage(restaurantInRequest),
 									stage_id: req.orderStage.id,
 									payment_status_id: req.paymentStatusId,
 									mode_of_delivery_id: req.modeOfDelivery.id,
