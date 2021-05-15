@@ -58,6 +58,9 @@ const RestaurantBranch = db.define('restaurant_branches', {
 	},
 	delivery_partner_preference_id: {
 		type: Sequelize.BIGINT
+	},
+	discount_on_mrp: {
+		type: Sequelize.DECIMAL
 	}
 },{
 	underscored: true

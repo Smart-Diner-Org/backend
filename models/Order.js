@@ -45,6 +45,9 @@ const Order = db.define('orders', {
 	},
 	payment_type_id: {
 		type: Sequelize.BIGINT
+	},
+	original_total_price: {
+		type: Sequelize.DECIMAL
 	}
 },{
 	underscored: true
