@@ -47,13 +47,24 @@ getGstPercentage = (restaurantData) =>{
 	return gstPercentage;
 }
 
+convertToDecimal = (value) => {
+	var num = parseFloat(value);
+    if (isNaN(num)) {
+        return 0;
+    }
+	if (String(num).split(".").length < 2 || String(num).split(".")[1].length<2 ){
+        num = num.toFixed(2);
+    }
+    return num;
+}
+
 verifyDiscountedPrice= (data, cb) => {
 	var foundMistake = false;
 	var count = 1;
 	var totalPriceFromDb = 0;
 	var menus = data.menus;
-	var totalPrice = parseFloat(data.totalPrice);
-	var totalMrpPrice = parseFloat(data.totalMrpPrice);
+	var totalPrice = convertToDecimal(data.totalPrice);
+	var totalMrpPrice = convertToDecimal(data.totalMrpPrice);
 	var restaurantInReq = data.restaurantInReq;
 	var gstPercentage = getGstPercentage(restaurantInReq);
 	console.log(`Total price sent by client: ${data.totalPrice}`);
@@ -87,27 +98,23 @@ verifyDiscountedPrice= (data, cb) => {
 				foundMistake = true;
 			}
 			if(count == menus.length){
-
-
-				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
-				var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
+				totalPriceFromDb = totalPriceFromDb.toFixed(2);
 				//At this stage, the variable totalPriceFromDb has the original total mrp price without mrp discount calculated form DB values.
 				//so this value should be equal to the totalMrpPrice passed from the FE
 				if((totalPriceFromDb !== totalMrpPrice))
 					foundMistake = true;
+				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
+				var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
 				if(discountOnMrp && discountOnMrp > 0){
 					totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb);
 				}
 				//Applying GST & delivery charge on the discounted final price
-				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (totalPriceFromDbWithMrpDiscount/100) * gstPercentage;
+				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + ((gstPercentage/100) * totalPriceFromDbWithMrpDiscount);
 				//TODO: Temporarily adding the default_delivery_charge calculation as well on the total amount
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
 				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
 				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
-				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
-				// var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
-				// if(discountOnMrp && discountOnMrp > 0)
-				// 	totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb)
+				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount.toFixed(2);
 				if((totalPriceFromDbWithMrpDiscount !== totalPrice))
 					foundMistake = true;
 				console.log("Total price sent by client - "+totalPrice);
