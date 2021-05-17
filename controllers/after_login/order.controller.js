@@ -114,9 +114,11 @@ verifyDiscountedPrice= (data, cb) => {
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
 				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
 				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
-				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount.toFixed(2);
+				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount).toFixed(2);
 				if((totalPriceFromDbWithMrpDiscount !== totalPrice))
 					foundMistake = true;
+				console.log(typeof totalPrice);
+				console.log(typeof totalPriceFromDbWithMrpDiscount);
 				console.log("Total price sent by client - "+totalPrice);
 				console.log("Total price from DB - "+totalPriceFromDbWithMrpDiscount);
 				console.log("total mrp by client - "+totalMrpPrice);

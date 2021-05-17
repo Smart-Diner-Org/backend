@@ -46,7 +46,13 @@ const Order = db.define('orders', {
 	payment_type_id: {
 		type: Sequelize.BIGINT
 	},
-	original_total_price: {
+	total_mrp_price: {
+		type: Sequelize.DECIMAL
+	},
+	delivery_charge: {
+		type: Sequelize.DECIMAL
+	},
+	gst: {
 		type: Sequelize.DECIMAL
 	}
 },{
