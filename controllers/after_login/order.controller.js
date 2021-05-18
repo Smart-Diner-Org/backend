@@ -53,7 +53,7 @@ convertToDecimal = (value) => {
         return 0;
     }
 	if (String(num).split(".").length < 2 || String(num).split(".")[1].length<2 ){
-        num = num.toFixed(2);
+        num = parseFloat(num).toFixed(2);
     }
     return num;
 }
@@ -67,8 +67,8 @@ verifyDiscountedPrice= (data, cb) => {
 	var totalMrpPrice = convertToDecimal(data.totalMrpPrice);
 	var restaurantInReq = data.restaurantInReq;
 	var gstPercentage = getGstPercentage(restaurantInReq);
-	console.log(`Total price sent by client: ${data.totalPrice}`);
-	console.log(`Restaurant in req: ${restaurantInReq}`);
+	// console.log(`Total price sent by client: ${data.totalPrice}`);
+	// console.log(`Restaurant in req: ${restaurantInReq}`);
 
 	menus.forEach((menu, index) => {
 		Menu.findOne({
@@ -114,7 +114,9 @@ verifyDiscountedPrice= (data, cb) => {
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
 				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
 				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
-				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount.toFixed(2));
+				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount).toFixed(2);
+				console.log(typeof totalPrice);
+				console.log(typeof totalPriceFromDbWithMrpDiscount);
 				if((totalPriceFromDbWithMrpDiscount !== totalPrice))
 					foundMistake = true;
 				console.log(typeof totalPrice);
