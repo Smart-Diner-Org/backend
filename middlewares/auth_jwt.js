@@ -68,7 +68,20 @@ isCustomer = (req, res, next) => {
   });
 };
 
-isAdminOrSuperAdmin = (req, res, next) => {
+isSmartDinerSuperAdmin = (req, res) => {
+  console.log("going into Smart Diner Super Admin");
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Smart Diner Super Admin"){
+         console.log("returning true - Smart Diner Super Admin");
+        return true;
+      }
+      else return false;
+    });
+  });
+}
+
+isAdminOrSuperAdmin = (req, res) => {
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
       if (role.name === "Admin" || role.name === "Super Admin") {
@@ -112,6 +125,20 @@ canAssignDelivery = (req, res, next) => {
   isAdminOrSuperAdmin(req, res, next);
 };
 
+canGetInvoice = (req, res, next) => {
+  Customer.findByPk(req.customerId).then(customer => {
+    customer.getRole().then(role => {
+      if (role.name === "Admin" || role.name === "Super Admin" || role.name === "Smart Diner Super Admin") {
+        next();
+        return;
+      }
+      return res.status(403).send({
+        message: "Required proper role to access. You are not allowed to access."
+      });
+    });
+  });
+};
+
 canUpdateDeliveryStage = (req, res, next) => {
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
@@ -150,6 +177,7 @@ const authJwt = {
   isAdminOrSuperAdmin: isAdminOrSuperAdmin,
   canAssignDelivery: canAssignDelivery,
   canUpdateDeliveryStage: canUpdateDeliveryStage,
-  isDeliveryPartner: isDeliveryPartner
+  isDeliveryPartner: isDeliveryPartner,
+  canGetInvoice: canGetInvoice
 };
 module.exports = authJwt;

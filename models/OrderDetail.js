@@ -11,6 +11,12 @@ const OrderDetail = db.define('order_details', {
 	},
 	original_price: {
 		type: Sequelize.DECIMAL
+	},
+	gst: {
+		type: Sequelize.DECIMAL
+	},
+	price_includes_gst: {
+		type: Sequelize.BOOLEAN
 	}
 },{
 	underscored: true

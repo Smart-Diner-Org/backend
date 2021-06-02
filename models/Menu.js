@@ -48,6 +48,12 @@ const Menu = db.define('menus', {
 	},
 	is_available: {
 		type: Sequelize.BOOLEAN
+	},
+	gst: {
+		type: Sequelize.DECIMAL
+	},
+	price_includes_gst: {
+		type: Sequelize.BOOLEAN
 	}
 	// created_at: {
 	// 	type: Sequelize.NOW

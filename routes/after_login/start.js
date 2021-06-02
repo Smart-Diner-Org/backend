@@ -20,7 +20,6 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
-  console.log(`After Login StartJS After urls call: ${urls}`);
   corsOptions = helper.getCorsFunction(urls);
   //corsOptions='*';
 
@@ -129,6 +128,12 @@ Restaurant.findAll({
       authJwt.verifyToken
     ],
     menuController.addMenuCategories);
+  router.get('/order/:orderId/get_invoice', [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      authJwt.canGetInvoice
+    ],
+    orderController.getInvoiceForTheOrder);
   // router.post('/restaurant/setup_without_account_creation', [
   //   // cors(corsOptions),
   //   // authJwt.verifyToken,

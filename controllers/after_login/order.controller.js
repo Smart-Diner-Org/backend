@@ -23,7 +23,12 @@ const Op = Sequelize.Op;
 var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway');
 var RestaurantWebsiteDetail = require('./../../models/RestaurantWebsiteDetail');
 var DeliveryRequest = require('./../../models/DeliveryRequest')
+var QuantityValue = require('./../../models/QuantityValue');
+var MeasureValue = require('./../../models/MeasureValue');
+var date = require('date-and-time');
+var numWords = require('num-words')
 // var _ = require('underscore');
+var menus;
 
 addOrderDetails = (orderDetailsData, orderDetailMenuData) => {
 	OrderDetail.create(orderDetailsData)
@@ -62,7 +67,7 @@ verifyDiscountedPrice= (data, cb) => {
 	var foundMistake = false;
 	var count = 1;
 	var totalPriceFromDb = 0;
-	var menus = data.menus;
+	// menus = data.menus;
 	var totalPrice = convertToDecimal(data.totalPrice);
 	var totalMrpPrice = convertToDecimal(data.totalMrpPrice);
 	var restaurantInReq = data.restaurantInReq;
@@ -85,6 +90,8 @@ verifyDiscountedPrice= (data, cb) => {
 			]
 		})
 		.then(menuFromDb => {
+			menu['gst'] = menuFromDb.gst;
+			menu['price_includes_gst'] = menuFromDb.price_includes_gst;
 			if(menuFromDb && menuFromDb.menu_quantity_measure_price_list && menuFromDb.menu_quantity_measure_price_list.length == 1){
 				var discountFromDb = parseFloat(menuFromDb.discount);
 				var quantity = parseFloat(menu.quantity)
@@ -173,7 +180,7 @@ exports.placeOrder = async (req, res) => {
 		if(!req.body.menus || !Array.isArray(req.body.menus) || !(req.body.menus.length > 0)){
 			return res.status(404).send({ message: "Menu items not added" });
 		}
-		var menus = req.body.menus;
+		menus = req.body.menus;
 		var restaurantInRequest = await Restaurant.findOne({
 			where: {
 				id: req.restuarantBranch.restaurant_id
@@ -226,7 +233,7 @@ exports.placeOrder = async (req, res) => {
 					// 	}
 						
 						verifyDiscountedPrice({
-							'menus': menus,
+							// 'menus': menus,
 							'totalPrice' : req.body.total_price,
 							'totalMrpPrice': req.body.total_mrp_price,
 							'restaurantInReq': restaurantInRequest
@@ -271,7 +278,9 @@ exports.placeOrder = async (req, res) => {
 										var orderDetailsData = {
 											quantity: menu.quantity,
 											price: menu.price, //Discounted price
-											original_price: menu.originalPrice
+											original_price: menu.originalPrice,
+											gst: menu.gst,
+											price_includes_gst: menu.price_includes_gst
 										};
 										var orderDetailMenuData = {
 											order_id: createdOrder.id,
@@ -782,6 +791,163 @@ exports.getOrderStatus = (req, res) => {
 		.catch(err1 => {
 			console.log(err1);
 			return res.status(500).send({ message: err1.message });
+		});
+	}
+	else{
+		return res.status(404).send({ message : 'Illegal request'});
+	}
+};
+
+//this function is to do the reverse calculation.
+//If we have the final amount & the applied percentage then we need to find out the base value
+getBaseValue = (percentage, finalValue) => {
+  /*
+  Basic formula -> x + (x*(p/100))=y
+  p=percentage, x=base value, y=final value
+  Formula: x=y/(1+(p/100))
+  */
+  return (finalValue / (1 + (percentage/100)));
+}
+
+getPercentageFromBaseAndFinalValue = (baseValue, finalValue) => {
+  /*
+  Basic formula -> x + (x*(p/100))=y
+  p=percentage, x=base value, y=final value
+  Formula: p=(1-(y/x))*100
+  */
+  return (1-(finalValue/baseValue))*100;
+}
+
+exports.getInvoiceForTheOrder = (req, res) => {
+	console.log("insider getInvoiceForTheOrder");
+	if(req.params.orderId){
+		console.log("getInvoiceForTheOrder 1");
+		Order.findOne({
+			where: {
+				id: req.params.orderId
+			},
+			order: [
+				[
+					{ model: Payment, as: 'payments', required: false }, 'created_at', 'DESC',
+				]
+			],
+			include:[
+				{ model: Customer, as: 'customer', required: true},
+				{ model: Payment, as: 'payments', required: false },
+				{ model: RestaurantBranch, as: 'restuarant_branch', required: true,
+					include: [
+						{ model: Restaurant, as: 'restaurant', required: true },
+					]
+				},
+				{ model: OrderDetailMenu, as: 'order_detail_menus', required: true,
+					include: [
+						{ model: OrderDetail, as: 'order_detail', required: true },
+						{ model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price', required: true,
+							include: [
+								{ model: Menu, as: 'menu', required: true },
+								{ model: QuantityValue, required: true, as: 'quantity_values' },
+								{ model: MeasureValue, required: true, as: 'measure_values' }
+							]
+						}
+					]
+				}
+			]
+		})
+		.then(order => {
+			if(order){
+				var invoiceTotal = parseFloat(order.total_price).toFixed(2);
+				var orderPriceWithoutDeliveryCharge = order.total_price-order.delivery_charge;
+				var orderBaseAmountWithoutGst = getBaseValue(order.gst, orderPriceWithoutDeliveryCharge);
+				var orderGstAmount = orderBaseAmountWithoutGst * (order.gst/100);
+				var orderDiscountedPercentage = (getPercentageFromBaseAndFinalValue(order.total_mrp_price, orderBaseAmountWithoutGst));
+				var products = [];
+				order.order_detail_menus.forEach((menu, index) => {
+					product = {
+						"name": menu.menu_quantity_measure_price.menu.name,
+						"quantity": menu.order_detail.quantity,
+						"quantityValue": menu.menu_quantity_measure_price.quantity_values.quantity,
+						"measureValue": menu.menu_quantity_measure_price.measure_values.name
+					};
+					if(menu.order_detail.gst){
+						if(menu.order_detail.price_includes_gst){
+							var priceWithoutGst = getBaseValue(menu.order_detail.gst, menu.order_detail.price);
+							var originalPriceWithoutGst =  getBaseValue(menu.order_detail.gst, menu.order_detail.original_price);
+							var gstAmount = menu.order_detail.price - priceWithoutGst;
+						}
+						else{
+							var priceWithoutGst = menu.order_detail.price;
+							var originalPriceWithoutGst =  menu.order_detail.original_price;
+							var gstAmount = priceWithoutGst * (menu.order_detail.gst/100);
+							var discountPercentage = getPercentageFromBaseAndFinalValue(originalPriceWithoutGst, priceWithoutGst);
+						}
+						var itemDiscountPercentage = getPercentageFromBaseAndFinalValue(originalPriceWithoutGst, priceWithoutGst);
+						var itemDiscountedAmount = originalPriceWithoutGst - priceWithoutGst;
+					}
+					product["originalPrice"] = originalPriceWithoutGst.toFixed(2);
+					product["itemDiscount"] = itemDiscountedAmount.toFixed(2);
+					product["orderDiscount"] = (priceWithoutGst * (orderDiscountedPercentage/100)).toFixed(2);
+					product["priceAfterDiscount"] = originalPriceWithoutGst - product["itemDiscount"] - product["orderDiscount"];
+					product["cgst"] = (gstAmount/2).toFixed(2);
+					product["sgst"] = (gstAmount/2).toFixed(2);
+					product["tgst"] = null;
+					product["total"] = (product["priceAfterDiscount"] + gstAmount).toFixed(2);
+					products.push(product);
+				});
+				var invoiceData = {
+					"company": {
+						"companyName": order.restuarant_branch.restaurant.name,
+						"gstin": order.restuarant_branch.restaurant.gstin,
+						"state": null,
+						"pan": order.restuarant_branch.restaurant.pan,
+						"invoiceDate": date.format(new Date(), 'DD/MMM/YYYY'),
+						"invoiceNumber": order.id,
+						"refNo": null
+					},
+					"customer": {
+						"name": order.customer.name,
+						"customerGstin": null,
+						"billingAddress": order.delivery_address_one + order.delivery_address_two,
+						"billingGstin": null,
+						"billingState": null,
+						"billingPan": null,
+						"shippingAddress": order.delivery_address_one + order.delivery_address_two,
+						"shippingGstin": null,
+						"shippingState": null,
+						"shippingPan": null
+					},
+					"order": {
+						"totalTaxableAmount": orderBaseAmountWithoutGst.toFixed(2),
+						"totalTax": orderGstAmount.toFixed(2),
+						"deliveryCharge": parseFloat(order.delivery_charge).toFixed(2),
+						"invoiceTotal": invoiceTotal,
+						"invoiceTotalInWords": numWords(invoiceTotal),
+						"products": products
+						// [
+						// 	{
+						// 		"name":
+						// 		"quantity":
+						// 		"measure":
+						// 		"originalPrice":
+						// 		"itemDiscount":
+						// 		"overAllDiscount":
+						// 		"priceAfterDiscount":
+						// 		"cgst":
+						// 		"sgst":
+						// 		"tgst";
+						// 		"total":
+						// 	}
+						// ]
+					}
+				};
+				res.status(200).send({
+					invoiceData: invoiceData
+				});
+			}
+			else return res.status(404).send({ message : 'Something went wrong. Please try again'});
+		})
+		.catch(err => {
+			console.log(err);
+			return res.status(500).send({ message : err});
 		});
 	}
 	else{
