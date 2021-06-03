@@ -115,12 +115,14 @@ verifyDiscountedPrice= (data, cb) => {
 				if(discountOnMrp && discountOnMrp > 0){
 					totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb);
 				}
-				//Applying GST & delivery charge on the discounted final price
-				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount) + parseFloat(((gstPercentage/100) * totalPriceFromDbWithMrpDiscount));
 				//TODO: Temporarily adding the default_delivery_charge calculation as well on the total amount
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
 				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
-				totalPriceFromDbWithMrpDiscount = totalPriceFromDbWithMrpDiscount + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
+				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount) + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
+
+				//Applying GST & delivery charge on the discounted final price
+				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount) + parseFloat(((gstPercentage/100) * totalPriceFromDbWithMrpDiscount));
+
 				//totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount).toFixed(2);
 				totalPriceFromDbWithMrpDiscount = convertToDecimal(totalPriceFromDbWithMrpDiscount);
 				console.log(typeof totalPrice);
@@ -818,11 +820,9 @@ getPercentageFromBaseAndFinalValue = (baseValue, finalValue) => {
   return (1-(finalValue/baseValue))*100;
 }
 
-exports.getInvoiceForTheOrder = (req, res) => {
-	console.log("insider getInvoiceForTheOrder");
+exports.getInvoiceForTheOrder = async (req, res) => {
 	if(req.params.orderId){
-		console.log("getInvoiceForTheOrder 1");
-		Order.findOne({
+		var order = await Order.findOne({
 			where: {
 				id: req.params.orderId
 			},
@@ -844,107 +844,113 @@ exports.getInvoiceForTheOrder = (req, res) => {
 						{ model: OrderDetail, as: 'order_detail', required: true },
 						{ model: MenuQuantityMeasurePrice, as: 'menu_quantity_measure_price', required: true,
 							include: [
-								{ model: Menu, as: 'menu', required: true },
-								{ model: QuantityValue, required: true, as: 'quantity_values' },
-								{ model: MeasureValue, required: true, as: 'measure_values' }
+								{ model: Menu, as: 'menu', required: true }
 							]
 						}
 					]
 				}
 			]
-		})
-		.then(order => {
-			if(order){
-				var orderPriceWithoutDeliveryCharge = order.total_price-order.delivery_charge;
-				var orderBaseAmountWithoutGst = getBaseValue(order.gst, orderPriceWithoutDeliveryCharge);
-				var orderGstAmount = orderBaseAmountWithoutGst * (order.gst/100);
-				var orderDiscountedPercentage = (getPercentageFromBaseAndFinalValue(order.total_mrp_price, orderBaseAmountWithoutGst));
-				var products = [];
-				var totalTaxableAmount = 0;
-				var totalTax = 0;
-				order.order_detail_menus.forEach((menu, index) => {
-					var gstAmount = 0;
-					product = {
-						"name": menu.menu_quantity_measure_price.menu.name,
-						"quantity": menu.order_detail.quantity,
-						"quantityValue": menu.menu_quantity_measure_price.quantity_values.quantity,
-						"measureValue": menu.menu_quantity_measure_price.measure_values.name
-					};
-					if(menu.order_detail.gst){
-						if(menu.order_detail.price_includes_gst){
-							var priceWithoutGst = getBaseValue(menu.order_detail.gst, menu.order_detail.price);
-							var originalPriceWithoutGst =  getBaseValue(menu.order_detail.gst, menu.order_detail.original_price);
-							gstAmount = menu.order_detail.price - priceWithoutGst;
-						}
-						else{
-							var priceWithoutGst = menu.order_detail.price;
-							var originalPriceWithoutGst =  menu.order_detail.original_price;
-							gstAmount = priceWithoutGst * (menu.order_detail.gst/100);
-						}
-					}
-					else {
-						var priceWithoutGst = menu.order_detail.price;
-						var originalPriceWithoutGst =  menu.order_detail.original_price;
-						if(order.gst)
-							gstAmount = priceWithoutGst * (order.gst/100);
-					}
-					originalPriceWithoutGst = parseFloat(originalPriceWithoutGst);
-					var itemDiscountPercentage = getPercentageFromBaseAndFinalValue(originalPriceWithoutGst, priceWithoutGst);
-					var itemDiscountedAmount = originalPriceWithoutGst - priceWithoutGst;
-					product["originalPrice"] = originalPriceWithoutGst.toFixed(2);
-					product["itemDiscount"] = itemDiscountedAmount.toFixed(2);
-					product["orderDiscount"] = (priceWithoutGst * (orderDiscountedPercentage/100)).toFixed(2);
-					product["priceAfterDiscount"] = originalPriceWithoutGst - product["itemDiscount"] - product["orderDiscount"];
-					totalTaxableAmount += parseFloat(product["priceAfterDiscount"]);
-					totalTax += parseFloat(gstAmount);
-					product["cgst"] = (gstAmount/2).toFixed(2);
-					product["sgst"] = (gstAmount/2).toFixed(2);
-					product["tgst"] = null;
-					product["total"] = (product["priceAfterDiscount"] + gstAmount).toFixed(2);
-					products.push(product);
-				});
-				var invoiceTotal = (parseFloat(totalTaxableAmount) + parseFloat(totalTax) + parseFloat(order.delivery_charge)).toFixed(2);
-				var invoiceData = {
-					"company": {
-						"companyName": order.restuarant_branch.restaurant.name,
-						"gstin": order.restuarant_branch.restaurant.gstin,
-						"state": null,
-						"pan": order.restuarant_branch.restaurant.pan,
-						"invoiceDate": date.format(new Date(), 'DD/MMM/YYYY'),
-						"invoiceNumber": order.id,
-						"refNo": null
-					},
-					"customer": {
-						"name": order.customer.name,
-						"customerGstin": null,
-						"billingAddress": order.delivery_address_one + order.delivery_address_two,
-						"billingGstin": null,
-						"billingState": null,
-						"billingPan": null,
-						"shippingAddress": order.delivery_address_one + order.delivery_address_two,
-						"shippingGstin": null,
-						"shippingState": null,
-						"shippingPan": null
-					},
-					"order": {
-						"totalTaxableAmount": totalTaxableAmount.toFixed(2),
-						"totalTax": totalTax.toFixed(2),
-						"deliveryCharge": parseFloat(order.delivery_charge).toFixed(2),
-						"invoiceTotal": invoiceTotal,
-						"invoiceTotalInWords": numWords(invoiceTotal),
-						"products": products
-					}
-				};
-				res.status(200).send({
-					invoiceData: invoiceData
-				});
-			}
-			else return res.status(404).send({ message : 'Something went wrong. Please try again'});
-		})
-		.catch(err => {
-			console.log(err);
-			return res.status(500).send({ message : err});
 		});
+		if(order){
+			var orderPriceWithoutDeliveryCharge = order.total_price-order.delivery_charge;
+			var orderBaseAmountWithoutGst = getBaseValue(order.gst, orderPriceWithoutDeliveryCharge);
+			var orderGstAmount = orderBaseAmountWithoutGst * (order.gst/100);
+			var orderDiscountedPercentage = (getPercentageFromBaseAndFinalValue(order.total_mrp_price, orderBaseAmountWithoutGst));
+			var products = [];
+			var totalTaxableAmount = 0;
+			var totalTax = 0;
+			var promises = order.order_detail_menus.map(async (menu, index) => {
+				var menuQuantityMeasurePriceDetail = await MenuQuantityMeasurePrice.findOne({
+					where: {
+						id: menu.menu_quantity_measure_price.id
+					},
+					include:[
+						{ model: QuantityValue, required: true, as: 'quantity_values' },
+						{ model: MeasureValue, required: true, as: 'measure_values' }
+					]
+				});
+				var gstAmount = 0;
+				var quantity = menu.order_detail.quantity;
+				var price = menu.order_detail.price * quantity;
+				var originalPrice = menu.order_detail.original_price * quantity;
+				product = {
+					"name": menu.menu_quantity_measure_price.menu.name,
+					"itemMeasureQuantity": menuQuantityMeasurePriceDetail.quantity_values.quantity + " " + menuQuantityMeasurePriceDetail.measure_values.name,
+					"quantity": menu.order_detail.quantity
+				};
+				var itemDiscountedAmount = originalPrice - price;
+				var orderDiscountAmount = parseFloat(price) * (parseFloat(orderDiscountedPercentage)/100);
+				var priceAfterOrderDicsount = price - orderDiscountAmount;
+				if(menu.order_detail.gst){
+					if(menu.order_detail.price_includes_gst){
+						var priceWithoutGst = getBaseValue(menu.order_detail.gst, priceAfterOrderDicsount);
+						var originalPriceWithoutGst =  getBaseValue(menu.order_detail.gst, originalPrice);
+						gstAmount = priceAfterOrderDicsount - priceWithoutGst;
+					}
+					else{
+						var priceWithoutGst = priceAfterOrderDicsount;
+						var originalPriceWithoutGst =  originalPrice;
+						gstAmount = priceWithoutGst * (menu.order_detail.gst/100);
+					}
+				}
+				else {
+					var priceWithoutGst = priceAfterOrderDicsount;
+					var originalPriceWithoutGst =  originalPrice;
+					if(order.gst)
+						gstAmount = priceWithoutGst * (order.gst/100);
+				}
+				originalPriceWithoutGst = parseFloat(originalPriceWithoutGst);
+				product["originalPrice"] = originalPriceWithoutGst.toFixed(2);
+				product["itemDiscount"] = itemDiscountedAmount.toFixed(2);
+				product["orderDiscount"] = orderDiscountAmount.toFixed(2);
+				product["priceAfterDiscount"] = priceWithoutGst.toFixed(2);
+				totalTaxableAmount += parseFloat(product["priceAfterDiscount"]);
+				totalTax += parseFloat(gstAmount);
+				product["cgst"] = (gstAmount/2).toFixed(2);
+				product["sgst"] = (gstAmount/2).toFixed(2);
+				product["tgst"] = null;
+				product["total"] = parseFloat((priceWithoutGst + gstAmount)).toFixed(2);
+				products.push(product);
+			});
+			const products_new = await Promise.all(promises)
+				console.log(products_new)
+			var invoiceTotal = (parseFloat(totalTaxableAmount) + parseFloat(totalTax) + parseFloat(order.delivery_charge)).toFixed(2);
+			var invoiceData = {
+				"company": {
+					"companyName": order.restuarant_branch.restaurant.name,
+					"gstin": order.restuarant_branch.restaurant.gstin,
+					"state": null,
+					"pan": order.restuarant_branch.restaurant.pan,
+					"invoiceDate": date.format(new Date(), 'DD/MMM/YYYY'),
+					"invoiceNumber": order.id,
+					"refNo": null
+				},
+				"customer": {
+					"name": order.customer.name,
+					"customerGstin": null,
+					"billingAddress": order.delivery_address_one + order.delivery_address_two,
+					"billingGstin": null,
+					"billingState": null,
+					"billingPan": null,
+					"shippingAddress": order.delivery_address_one + order.delivery_address_two,
+					"shippingGstin": null,
+					"shippingState": null,
+					"shippingPan": null
+				},
+				"order": {
+					"totalTaxableAmount": totalTaxableAmount.toFixed(2),
+					"totalTax": totalTax.toFixed(2),
+					"deliveryCharge": parseFloat(order.delivery_charge).toFixed(2),
+					"invoiceTotal": invoiceTotal,
+					// "invoiceTotalInWords": numWords(invoiceTotal),
+					"products": products
+				}
+			};
+			res.status(200).send({
+				invoiceData: invoiceData
+			});
+		}
+		else return res.status(404).send({ message : 'Could not find the order. Please try again'});
 	}
 	else{
 		return res.status(404).send({ message : 'Illegal request'});
