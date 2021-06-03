@@ -933,7 +933,7 @@ exports.getInvoiceForTheOrder = async (req, res) => {
 					totalTaxableAmount += parseFloat(order.delivery_charge);
 					products.push(product);
 				}
-				var invoiceTotal = (parseFloat(totalTaxableAmount) + parseFloat(totalTax) + parseFloat(order.delivery_charge)).toFixed(2);
+				var invoiceTotal = (parseFloat(totalTaxableAmount) + parseFloat(totalTax)).toFixed(2);
 				var invoiceData = {
 					"company": {
 						"companyName": order.restuarant_branch.restaurant.name,
