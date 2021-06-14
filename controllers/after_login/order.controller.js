@@ -855,13 +855,30 @@ exports.getInvoiceForTheOrder = async (req, res) => {
 		});
 		if(order){
 			try{
-				var orderPriceWithoutDeliveryCharge = order.total_price-order.delivery_charge;
-				var orderBaseAmountWithoutGst = getBaseValue(order.gst, orderPriceWithoutDeliveryCharge);
-				var orderGstAmount = orderBaseAmountWithoutGst * (order.gst/100);
-				var orderDiscountedPercentage = (getPercentageFromBaseAndFinalValue(order.total_mrp_price, orderBaseAmountWithoutGst));
 				var products = [];
 				var totalTaxableAmount = 0;
 				var totalTax = 0;
+
+				var deliveryGstAmount = 0;
+				var deliveryProduct = null;
+				if(order.delivery_charge && order.delivery_charge > 0){ // Add the delivery charge also one of the products
+					if(order.gst){
+						deliveryGstAmount =  order.delivery_charge * (order.gst/100);
+					}
+					deliveryProduct = {
+						"name": "Delivery Charge",
+						"originalPrice": parseFloat(order.delivery_charge).toFixed(2),
+						"cgst": (deliveryGstAmount/2).toFixed(2),
+						"sgst": (deliveryGstAmount/2).toFixed(2),
+						"total": (parseFloat(order.delivery_charge) + parseFloat(deliveryGstAmount)).toFixed(2)
+					};
+					totalTax += parseFloat(deliveryGstAmount);
+					totalTaxableAmount += parseFloat(order.delivery_charge);
+				}
+				var orderPriceWithoutDeliveryCharge = order.total_price-order.delivery_charge-deliveryGstAmount; //Reducing delivery charge + delivery charge's GST also
+				var orderBaseAmountWithoutGst = getBaseValue(order.gst, orderPriceWithoutDeliveryCharge);
+				var orderGstAmount = orderBaseAmountWithoutGst * (order.gst/100);
+				var orderDiscountedPercentage = (getPercentageFromBaseAndFinalValue(order.total_mrp_price, orderBaseAmountWithoutGst));
 				var promises = order.order_detail_menus.map(async (menu, index) => {
 					var menuQuantityMeasurePriceDetail = await MenuQuantityMeasurePrice.findOne({
 						where: {
@@ -916,23 +933,24 @@ exports.getInvoiceForTheOrder = async (req, res) => {
 					products.push(product);
 				});
 				promises = await Promise.all(promises)
-				if(order.delivery_charge && order.delivery_charge > 0){ // Add the delivery charge also one of the products
-					var product = null;
-					gstAmount = 0;
-					if(order.gst){
-						gstAmount =  order.delivery_charge * (order.gst/100);
-					}
-					product = {
-						"name": "Delivery Charge",
-						"originalPrice": parseFloat(order.delivery_charge).toFixed(2),
-						"cgst": (gstAmount/2).toFixed(2),
-						"sgst": (gstAmount/2).toFixed(2),
-						"total": (parseFloat(order.delivery_charge) + parseFloat(gstAmount)).toFixed(2)
-					};
-					totalTax += parseFloat(gstAmount);
-					totalTaxableAmount += parseFloat(order.delivery_charge);
-					products.push(product);
-				}
+				products.push(deliveryProduct); // Add the delivery charge also one of the products
+				// if(order.delivery_charge && order.delivery_charge > 0){
+				// 	var product = null;
+				// 	gstAmount = 0;
+				// 	if(order.gst){
+				// 		gstAmount =  order.delivery_charge * (order.gst/100);
+				// 	}
+				// 	product = {
+				// 		"name": "Delivery Charge",
+				// 		"originalPrice": parseFloat(order.delivery_charge).toFixed(2),
+				// 		"cgst": (gstAmount/2).toFixed(2),
+				// 		"sgst": (gstAmount/2).toFixed(2),
+				// 		"total": (parseFloat(order.delivery_charge) + parseFloat(gstAmount)).toFixed(2)
+				// 	};
+				// 	totalTax += parseFloat(gstAmount);
+				// 	totalTaxableAmount += parseFloat(order.delivery_charge);
+				// 	products.push(product);
+				// }
 				var invoiceTotal = (parseFloat(totalTaxableAmount) + parseFloat(totalTax)).toFixed(2);
 				var invoiceData = {
 					"company": {
