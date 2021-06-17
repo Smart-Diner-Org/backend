@@ -49,6 +49,11 @@ This function will be called in from FE when we load the web page by matching th
 */
 module.exports.getRestaurantDetails = (req, res) => {
   var hostname = (new URL(req.headers.origin)).hostname;
+  if(hostname === 'localhost'){
+    var port=(new URL(req.headers.origin)).port;
+    if(port) hostname = hostname+port;
+  }
+
   // var hostname = 'localhost';
   // if(hostname.includes('localhost')){
   //   hostname = 'testingfrontend.smartdiner.co';
