@@ -51,7 +51,7 @@ module.exports.getRestaurantDetails = (req, res) => {
   var hostname = (new URL(req.headers.origin)).hostname;
   if(hostname === 'localhost'){
     var port=(new URL(req.headers.origin)).port;
-    if(port) hostname = hostname+port;
+    if(port) hostname = hostname+ ':' + port;
   }
 
   // var hostname = 'localhost';
