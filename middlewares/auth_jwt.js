@@ -19,7 +19,13 @@ verifyToken = (req, res, next) => {
       });
     }
     req.customerId = decoded.id;
-    next();
+    Customer.findByPk(req.customerId).then(customer => {
+      customer.getRole().then(role => {
+        req.roleName = role.name;
+        req.roleId = role.id;
+        next();
+      });
+    });
   });
 };
 
@@ -42,7 +48,6 @@ isAdmin = (req, res, next) => {
 isSuperAdmin = (req, res, next) => {
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
-      console.log(role);
       if (role.name === "Super Admin") {
         next();
         return;
@@ -69,11 +74,9 @@ isCustomer = (req, res, next) => {
 };
 
 isSmartDinerSuperAdmin = (req, res) => {
-  console.log("going into Smart Diner Super Admin");
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
       if (role.name === "Smart Diner Super Admin"){
-         console.log("returning true - Smart Diner Super Admin");
         return true;
       }
       else return false;

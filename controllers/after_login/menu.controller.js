@@ -1,6 +1,9 @@
 var Menu = require('./../../models/Menu');
 var MenuQuantityMeasurePrice = require('./../../models/MenuQuantityMeasurePrice');
 var MenuCategory = require('./../../models/MenuCategory');
+var QuantityValue = require('./../../models/QuantityValue');
+var MeasureValue = require('./../../models/MeasureValue');
+var RestaurantMenuCategorySequence = require('./../../models/RestaurantMenuCategorySequence');
 
 exports.getMenuCategoriesList =  async (req, res) => {
 	var menuCategories = await MenuCategory.findAll({
@@ -20,30 +23,198 @@ exports.getMenuCategoriesList =  async (req, res) => {
 	});
 };
 
-exports.addMenuCategories = async (req, res) => {
-	console.log("menuCategories...");
-	console.log(req.body.menuCategories);
-	if(!req.body.menuCategories || !(req.body.menuCategories && req.body.menuCategories.length <= 0)){
-		return res.status(404).send({ message: "Menu categories list is missing" });
+exports.addMenuCategories = async (req, res, next, cb = null) => {
+	if(!req.body.menuCategories || !(req.body.menuCategories && req.body.menuCategories.length > 0)){
+		if(cb)
+			return null;
+		else return res.status(404).send({ message: "Menu categories list is missing" });
 	}
 	var menuCategoriesToSave = [];
 	req.body.menuCategories.forEach((category, index)  => {
 		menuCategoriesToSave.push({'name': category.toLowerCase()});
 	});
-	console.log("category...");
-	console.log(menuCategoriesToSave);
-	var savedMenuCategories = await MenuCategory.bulkCreate(menuCategoriesToSave)
-	// .catch((err) => {
-	// 	console.log(err);
-	// 	res.status(500).send({ message: err.message });
-	// })
-	;
+	var savedMenuCategories = await MenuCategory.bulkCreate(menuCategoriesToSave);
 	if(!savedMenuCategories || savedMenuCategories === undefined){
-		return res.status(404).send({ message: "Something happened while saving. couldn't save the menu categories" });
+		if(cb)
+			return null;
+		else
+			return res.status(404).send({ message: "Something happened while saving. couldn't save the menu categories" });
 	}
 	else{
-		res.status(200).send({
-			savedMenuCategories: savedMenuCategories
-		});
+		if(cb){
+			return savedMenuCategories;
+		}
+		else{
+			res.status(200).send({
+				savedMenuCategories: savedMenuCategories
+			});
+		}
 	}
 };
+
+
+addQuantityValue = async (quantityValue) => {
+	var quantityValueToSave = {
+		quantity: quantityValue.toLowerCase()
+	};
+	var foundQuantityValue = await QuantityValue.findOne({
+		where: quantityValueToSave
+	});
+	if(foundQuantityValue)
+		return foundQuantityValue;
+	var savedQuantityValue = await QuantityValue.create(quantityValueToSave);
+	if(!savedQuantityValue || savedQuantityValue === undefined){
+		return null;
+	}
+	else{
+		return savedQuantityValue;
+	}
+};
+addMeasureValue = async (measureValue) => {
+	var measureValueToSave = {
+		name: measureValue.toLowerCase()
+	};
+	var foundMeasureValue = await MeasureValue.findOne({
+		where: measureValueToSave
+	});
+	if(foundMeasureValue)
+		return foundMeasureValue;
+	var savedMeasureValue = await MeasureValue.create(measureValueToSave);
+	if(!savedMeasureValue || savedMeasureValue === undefined){
+		return null;
+	}
+	else{
+		return savedMeasureValue;
+	}
+};
+
+addRestaurantMenuCategorySequences = async (restaurantBranchId, categoryId) => {
+	var foundCategorySequence = null;
+	foundCategorySequence = await RestaurantMenuCategorySequence.findOne({
+		where: {
+			restuarant_branch_id : restaurantBranchId,
+			category_id : categoryId
+		}
+	});
+	if(!foundCategorySequence){
+		var foundDisplaysequence = await RestaurantMenuCategorySequence.findOne({
+			attributes: ['display_sequence'],
+			where: {
+				restuarant_branch_id : restaurantBranchId
+			},
+			order: [
+				['display_sequence', 'desc']
+			],
+		});
+
+		if(foundDisplaysequence && foundDisplaysequence.display_sequence){
+			var newDisplaySequence = foundDisplaysequence.display_sequence + 1;
+		}
+		else var newDisplaySequence = 1;
+
+		var categorySequenceDataToSave = {
+			'restuarant_branch_id': restaurantBranchId,
+			'category_id': categoryId,
+			'display_sequence': newDisplaySequence
+		};
+		var savedCategorySequence = await RestaurantMenuCategorySequence.create(categorySequenceDataToSave);
+		if(!savedCategorySequence || savedCategorySequence === undefined)
+			return false;
+	}
+	return true;
+}
+
+exports.createMenuwithCategory = async(req, res) => {
+	var categoryId = req.body.categoryId;
+	if(req.body.newCategoryName){
+		req.body.menuCategories = [req.body.newCategoryName];
+		var addedCategory = await this.addMenuCategories(req, res, true);
+		if(!addedCategory || addedCategory === undefined){
+			return res.status(404).send({ message: "Couldn't add the Menu category." });
+		}
+		categoryId = addedCategory[0].id;
+	}
+	var sequenceAdded = await addRestaurantMenuCategorySequences(req.body.restaurantBranchId, categoryId);
+	if(!sequenceAdded)
+		return res.status(404).send({ message: "Couldn't add the Menu category seuence." });
+
+	var menuDataToSave = {
+		'restuarant_branch_id': req.body.restaurantBranchId,
+		'category_id': categoryId,
+		'name': req.body.menuName,
+		'image': null,
+		'discount': req.body.discount ? req.body.discount : 0,
+		'description': req.body.description ? req.body.description : null,
+		'short_description': req.body.shortDescription ? req.body.shortDescription : null,
+		'menu_type': req.body.menuType ? req.body.menuType : null,
+		'gst': req.body.gst ? req.body.gst : null,
+		'price_includes_gst': req.body.priceIncludesGst ? req.body.priceIncludesGst : null
+	};
+	var addedMenu = await Menu.create(menuDataToSave);
+	if(!addedMenu || addedMenu === undefined){
+		return res.status(404).send({ message: "Couldn't add the menu details." });
+	}
+	
+	var menuQuantityMeasurePriceDataToSave = [];
+	var promises = req.body.priceDetails.map(async (priceDetail, index) => {
+		if(priceDetail.newQuantityValueName){
+			var addedQuantityValue = await addQuantityValue(priceDetail.newQuantityValueName);
+			if(!addedQuantityValue || addedQuantityValue === undefined){
+				return res.status(404).send({ message: "Couldn't add the quantity value." });
+			}
+		}
+		if(priceDetail.newMeasureValueName){
+			var addedMeasureValue = await addMeasureValue(priceDetail.newMeasureValueName);
+			if(!addedMeasureValue || addedMeasureValue === undefined){
+				return res.status(404).send({ message: "Couldn't add the measure value." });
+			}
+		}
+		menuQuantityMeasurePriceDataToSave.push({
+			'menu_id': addedMenu.id,
+			'quantity_value_id': priceDetail.quantityValueId ? priceDetail.quantityValueId : addedQuantityValue.id,
+			'measure_value_id': priceDetail.measureValueId ? priceDetail.measureValueId : addedMeasureValue.id,
+			'price': priceDetail.originalPrice,
+			'display_order': (index + 1)
+		});
+	});
+	promises = await Promise.all(promises);
+	var addedMenuQuantityMeasurePrice = await MenuQuantityMeasurePrice.bulkCreate(menuQuantityMeasurePriceDataToSave)
+	if(!addedMenuQuantityMeasurePrice || addedMenuQuantityMeasurePrice === undefined){
+		return res.status(404).send({ message: "Couldn't add the menu quantity measure price value details." });
+	}
+	return res.status(200).send({ message: "Successfully uploaded the menu" });
+}
+
+/*
+	Task descriptions:
+	Discount price should be lesser than the original price
+	convet to lowercase
+	change app design to getting discount percentage
+*/
+
+// var AWS 				= require('aws-sdk');
+// var fs 					= require('fs');
+// AWS.config.update({accessKeyId: 'AKIA3626MXM24FBLV7NI', secretAccessKey: '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'});
+// AWS.config.update({region: 'ap-south-1'});
+// var s3 					= new AWS.S3();
+
+// exports.uploadToS3 = (req, res) => {
+// 	path='/Users/sharmiladevi/Dev/smart_diner/github/backend/juniorsri.png';
+// 	fs.readFile(path, function(err, file_buffer){
+//       var params = {
+//         ACL         : 'public-read',
+//         Bucket      : 'smartdiner-testing-uploads',
+//         Key         : 'juniorsri.png',
+//         Body        : file_buffer,
+//         ContentType : 'image/jpeg'
+//       };
+//       s3.putObject(params, function(err, data) {
+//         console.log(data);
+//         console.log(err);
+//        });
+//     });
+// }
+
+
+
+
