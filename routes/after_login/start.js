@@ -20,8 +20,8 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
-  //corsOptions = helper.getCorsFunction(urls);
-  corsOptions='*';
+  corsOptions = helper.getCorsFunction(urls);
+  // corsOptions='*';
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
@@ -137,7 +137,7 @@ Restaurant.findAll({
     orderController.getInvoiceForTheOrder);
 
   router.post('/create_menu_with_category', [
-      // cors(corsOptions),
+      cors(corsOptions),
       authJwt.verifyToken,
       verificationsToSetupRestaurant.canAddEditMenuWithCategories,
       verificationsToSetupRestaurant.checkAttributesToAddEditMenuWithCategories
