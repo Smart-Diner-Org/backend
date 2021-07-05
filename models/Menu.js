@@ -28,9 +28,6 @@ const Menu = db.define('menus', {
 	image: {
 		type: Sequelize.TEXT
 	},
-	price: {
-		type: Sequelize.DECIMAL
-	},
 	serving: {
 		type: Sequelize.INTEGER
 	},

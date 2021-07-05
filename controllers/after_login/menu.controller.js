@@ -52,6 +52,38 @@ exports.addMenuCategories = async (req, res, next, cb = null) => {
 	}
 };
 
+exports.getQuantityMeasureValueList = async (req, res) => {
+	var quantityValues = await QuantityValue.findAll({
+		attributes: ['id', 'quantity'],
+		where: {
+			status: true
+		}
+	}).catch((err) => {
+		console.log(err);
+		res.status(500).send({ message: err.message });
+	});
+	if(!quantityValues || quantityValues === undefined){
+		return res.status(404).send({ message: "Could not found quantity values." });
+	}
+
+	var measureValues = await MeasureValue.findAll({
+		attributes: ['id', 'name'],
+		where: {
+			status: true
+		}
+	}).catch((err) => {
+		console.log(err);
+		res.status(500).send({ message: err.message });
+	});
+	if(!measureValues || measureValues === undefined){
+		return res.status(404).send({ message: "Could not found measure values." });
+	}
+
+	res.status(200).send({
+		quantityValues: quantityValues,
+		measureValues: measureValues
+	});
+};
 
 addQuantityValue = async (quantityValue) => {
 	var quantityValueToSave = {
@@ -128,7 +160,7 @@ exports.createMenuwithCategory = async(req, res) => {
 	var categoryId = req.body.categoryId;
 	if(req.body.newCategoryName){
 		req.body.menuCategories = [req.body.newCategoryName];
-		var addedCategory = await this.addMenuCategories(req, res, true);
+		var addedCategory = await this.addMenuCategories(req, res, null, true);
 		if(!addedCategory || addedCategory === undefined){
 			return res.status(404).send({ message: "Couldn't add the Menu category." });
 		}
@@ -142,7 +174,7 @@ exports.createMenuwithCategory = async(req, res) => {
 		'restuarant_branch_id': req.body.restaurantBranchId,
 		'category_id': categoryId,
 		'name': req.body.menuName,
-		'image': null,
+		'image': req.body.menuImageUrl ? req.body.menuImageUrl : null,
 		'discount': req.body.discount ? req.body.discount : 0,
 		'description': req.body.description ? req.body.description : null,
 		'short_description': req.body.shortDescription ? req.body.shortDescription : null,
@@ -182,7 +214,11 @@ exports.createMenuwithCategory = async(req, res) => {
 	if(!addedMenuQuantityMeasurePrice || addedMenuQuantityMeasurePrice === undefined){
 		return res.status(404).send({ message: "Couldn't add the menu quantity measure price value details." });
 	}
-	return res.status(200).send({ message: "Successfully uploaded the menu" });
+	return res.status(200).send({
+		message: "Successfully uploaded the menu",
+		addedMenu: addedMenu,
+		addedMenuQuantityMeasurePrice: addedMenuQuantityMeasurePrice
+	 });
 }
 
 /*

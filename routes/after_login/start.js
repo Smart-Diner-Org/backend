@@ -21,7 +21,7 @@ Restaurant.findAll({
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
   corsOptions = helper.getCorsFunction(urls);
-  // corsOptions='*';
+  //corsOptions='*';
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
@@ -143,6 +143,11 @@ Restaurant.findAll({
       verificationsToSetupRestaurant.checkAttributesToAddEditMenuWithCategories
     ],
     menuController.createMenuwithCategory);
+  router.get('/get_quantity_measure_values', [
+      cors(corsOptions),
+      authJwt.verifyToken
+    ],
+    menuController.getQuantityMeasureValueList);
 
   // router.post('/uploadToS3',menuController.uploadToS3);
 
