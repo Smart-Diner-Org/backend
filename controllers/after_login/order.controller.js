@@ -74,6 +74,7 @@ verifyDiscountedPrice= (data, cb) => {
 	var totalMrpPrice = convertToDecimal(data.totalMrpPrice);
 	var restaurantInReq = data.restaurantInReq;
 	var gstPercentage = getGstPercentage(restaurantInReq);
+	var deliveryDistance = parseInt(data.deliveryDistance);
 	// console.log(`Total price sent by client: ${data.totalPrice}`);
 	// console.log(`Restaurant in req: ${restaurantInReq}`);
 
@@ -240,7 +241,8 @@ exports.placeOrder = async (req, res) => {
 							// 'menus': menus,
 							'totalPrice' : req.body.total_price,
 							'totalMrpPrice': req.body.total_mrp_price,
-							'restaurantInReq': restaurantInRequest
+							'restaurantInReq': restaurantInRequest,
+							'deliveryDistance': req.body.delivery_distance
 						}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
 							if(!foundMistake){
 								var orderData = {
