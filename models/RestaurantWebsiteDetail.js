@@ -73,6 +73,9 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	gst_percentage: {
 		type: Sequelize.VIRTUAL
+	},
+	delivery_charges: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true
