@@ -65,6 +65,14 @@ convertToDecimal = (value) => {
     return num;
 }
 
+calculateDeliveryCharge = (restaurantInReq, deliveryDistance) => {
+	var deliveryCharges = restaurantInReq.restaurant_website_detail.delivery_charges;
+	console.log("deliveryCharges....");
+	console.log(deliveryCharges);
+
+	// if(deliveryCharges && )
+}
+
 verifyDiscountedPrice= (data, cb) => {
 	var foundMistake = false;
 	var count = 1;
@@ -77,6 +85,8 @@ verifyDiscountedPrice= (data, cb) => {
 	var deliveryDistance = parseInt(data.deliveryDistance);
 	// console.log(`Total price sent by client: ${data.totalPrice}`);
 	// console.log(`Restaurant in req: ${restaurantInReq}`);
+
+	// calculateDeliveryCharge(restaurantInReq, 5);
 
 	menus.forEach((menu, index) => {
 		Menu.findOne({
@@ -120,7 +130,9 @@ verifyDiscountedPrice= (data, cb) => {
 				}
 				//TODO: Temporarily adding the default_delivery_charge calculation as well on the total amount
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
-				var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
+
+				// var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
+				var defaultDeliveryCharge = parseFloat(deliveryChargeFromFE);
 				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount) + (defaultDeliveryCharge > 0 ? defaultDeliveryCharge : 0);
 
 				//Applying GST & delivery charge on the discounted final price
@@ -242,7 +254,8 @@ exports.placeOrder = async (req, res) => {
 							'totalPrice' : req.body.total_price,
 							'totalMrpPrice': req.body.total_mrp_price,
 							'restaurantInReq': restaurantInRequest,
-							'deliveryDistance': req.body.delivery_distance
+							'deliveryDistance': req.body.delivery_distance,
+							'deliveryChargeFromFE': req.body.delivery_charge
 						}, function(foundMistake){ //This is to verify whether the calculated discount value in the UI is correct or not
 							if(!foundMistake){
 								var orderData = {
