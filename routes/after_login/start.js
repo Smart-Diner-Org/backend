@@ -143,6 +143,13 @@ Restaurant.findAll({
       verificationsToSetupRestaurant.checkAttributesToAddEditMenuWithCategories
     ],
     menuController.createMenuwithCategory);
+  router.post('/update_menu_with_category', [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      verificationsToSetupRestaurant.canAddEditMenuWithCategories,
+      verificationsToSetupRestaurant.checkAttributesToAddEditMenuWithCategories
+    ],
+    menuController.updateMenuwithCategory);
   router.get('/get_quantity_measure_values', [
       cors(corsOptions),
       authJwt.verifyToken

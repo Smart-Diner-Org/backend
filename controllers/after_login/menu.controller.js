@@ -156,6 +156,59 @@ addRestaurantMenuCategorySequences = async (restaurantBranchId, categoryId) => {
 	return true;
 }
 
+exports.updateMenuwithCategory = async(req, res) => {
+	if(req.body.menuId){
+		var foundMenu = await Menu.findOne({
+			where: {
+				id : req.body.menuId
+			}
+		});
+		if(!foundMenu)
+			return res.status(404).send({ message: "Couldn't found the Menu." });
+
+		//updating category	
+		var categoryId = req.body.categoryId;
+		if(req.body.newCategoryName){
+			req.body.menuCategories = [req.body.newCategoryName];
+			var addedCategory = await this.addMenuCategories(req, res, null, true);
+			if(!addedCategory || addedCategory === undefined){
+				return res.status(404).send({ message: "Couldn't add the Menu category." });
+			}
+			categoryId = addedCategory[0].id;
+		}
+		var sequenceAdded = await addRestaurantMenuCategorySequences(req.body.restaurantBranchId, categoryId);
+		if(!sequenceAdded)
+			return res.status(404).send({ message: "Couldn't add the Menu category seuence." });
+
+		if(!req.body.menuName || ((foundMenu.name.toLowerCase()).trim() === (req.body.menuName.toLowerCase()).trim())){
+			var dataToUpdate = {};
+			if(categoryId && categoryId !== undefined)
+				dataToUpdate['category_id'] = categoryId;
+			// if(req.body.menuName)
+			// 	dataToUpdate['name'] = req.body.menuName;
+			if(req.body.menuImageUrl)
+				dataToUpdate['image'] = req.body.menuImageUrl;
+			if(req.body.discount)
+				dataToUpdate['discount'] = req.body.discount;
+			if(req.body.description)
+				dataToUpdate['description'] = req.body.description;
+			if(req.body.shortDescription)
+				dataToUpdate['short_description'] = req.body.shortDescription;
+			if(req.body.menuType)
+				dataToUpdate['menu_type'] = req.body.menuType;
+			if(req.body.gst)
+				dataToUpdate['gst'] = req.body.gst;
+			if(req.body.priceIncludesGst)
+				dataToUpdate['price_includes_gst'] = req.body.priceIncludesGst;
+			var updatedMenu = await foundMenu.update(dataToUpdate);
+			
+		}
+		else{
+
+		}
+	}
+}
+
 exports.createMenuwithCategory = async(req, res) => {
 	var categoryId = req.body.categoryId;
 	if(req.body.newCategoryName){
