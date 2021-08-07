@@ -17,7 +17,8 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
 	// ALTER TABLE village ADD COLUMN district VARCHAR;
 	return db.addColumn('restaurant_website_details', 'delivery_charges', {
-		type: 'text'
+		type: 'text',
+		notNull: false
 	})
 	.then(
 		function(result) {
