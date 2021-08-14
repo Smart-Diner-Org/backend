@@ -66,10 +66,7 @@ convertToDecimal = (value) => {
 }
 
 calculateDeliveryCharge = (restaurantInReq, deliveryDistance, totalMRP) => {
-	console.log("sent deliveryDistance from FE - " + deliveryDistance);
 	var deliveryCharges = JSON.parse(restaurantInReq.restaurant_website_detail.delivery_charges);
-	console.log("deliveryCharges....");
-	console.log(deliveryCharges);
 
 	var deliveryCharge = 0;
 	var distance = deliveryDistance;
@@ -123,12 +120,25 @@ calculateDeliveryCharge = (restaurantInReq, deliveryDistance, totalMRP) => {
 			}
 		});
 	}
-	console.log("calculated delivery charge" + deliveryCharge);
 	return deliveryCharge;
 }
 
 calculateDiscountOnMrp = (restaurantInReq, totalMRP) => {
-
+	var discountOnMrpData = JSON.parse(restaurantInReq.restaurant_branches[0].discount_on_mrp);
+	var discountOnMrp = 0;
+	var selectedMinMrp = 0;
+	totalMRP = parseFloat(totalMRP).toFixed(2);
+	if(discountOnMrpData && discountOnMrpData.length > 0){
+		discountOnMrpData.forEach((data, index) => {
+			var key = Object.keys(data);
+			var minMrpLimit = parseInt(key[0]);
+			if(totalMRP >= minMrpLimit && selectedMinMrp <= minMrpLimit){
+				discountOnMrp = data[key[0]];
+				selectedMinMrp = minMrpLimit;
+			}
+		})
+	}
+	return discountOnMrp;
 }
 
 verifyDiscountedPrice= (data, cb) => {
@@ -186,7 +196,8 @@ verifyDiscountedPrice= (data, cb) => {
 				if((totalPriceFromDb !== totalMrpPrice))
 					foundMistake = true;
 				
-				var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
+				// var discountOnMrp = parseInt(restaurantInReq.restaurant_branches[0].discount_on_mrp);
+				var discountOnMrp = calculateDiscountOnMrp(restaurantInReq, totalPriceFromDb);
 				var totalPriceFromDbWithMrpDiscount = totalPriceFromDb;
 				if(discountOnMrp && discountOnMrp > 0){
 					totalPriceFromDbWithMrpDiscount = totalPriceFromDb - ((discountOnMrp/100)*totalPriceFromDb);
@@ -197,6 +208,14 @@ verifyDiscountedPrice= (data, cb) => {
 				// var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
 				// var defaultDeliveryCharge = parseFloat(data.deliveryChargeFromFE);
 				var deliveryCharge = calculateDeliveryCharge(restaurantInReq, deliveryDistance, totalPriceFromDb);
+
+				if((data.deliveryChargeFromFE && parseFloat(data.deliveryChargeFromFE).toFixed(2) !== parseFloat(deliveryCharge).toFixed(2))
+				 || (data.deliveryChargeFromFE && !deliveryCharge)
+				 || (!data.deliveryChargeFromFE && deliveryCharge)){
+				 	console.log("Found mistake inside delivery charge checking");
+					foundMistake = true;
+				}
+
 				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount) + (deliveryCharge > 0 ? deliveryCharge : 0);
 
 				//Applying GST & delivery charge on the discounted final price

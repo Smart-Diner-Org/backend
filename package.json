@@ -31,7 +31,7 @@
     "pg-promise": "^10.5.8",
     "redux-react-session": "^2.6.1",
     "sendotp": "^1.2.9",
-    "sequelize": "^6.3.3",
+    "sequelize": "^6.6.5",
     "underscore": "^1.10.2"
   },
   "devDependencies": {
