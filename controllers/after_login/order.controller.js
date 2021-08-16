@@ -127,7 +127,7 @@ calculateDiscountOnMrp = (restaurantInReq, totalMRP) => {
 	var discountOnMrpData = JSON.parse(restaurantInReq.restaurant_branches[0].discount_on_mrp);
 	var discountOnMrp = 0;
 	var selectedMinMrp = 0;
-	totalMRP = parseFloat(totalMRP).toFixed(2);
+	totalMRP = parseFloat(totalMRP);
 	if(discountOnMrpData && discountOnMrpData.length > 0){
 		discountOnMrpData.forEach((data, index) => {
 			var key = Object.keys(data);
@@ -171,8 +171,6 @@ verifyDiscountedPrice= (data, cb) => {
 			]
 		})
 		.then(menuFromDb => {
-			console.log("********menuFromDb******");
-			console.log(menuFromDb);
 			if(menuFromDb){
 				menu['gst'] = menuFromDb.gst;
 				menu['price_includes_gst'] = menuFromDb.price_includes_gst;
@@ -204,18 +202,11 @@ verifyDiscountedPrice= (data, cb) => {
 				}
 				//TODO: Temporarily adding the default_delivery_charge calculation as well on the total amount
 				// we have to revisit this calcualtion once after we have done the proper delivery charge calculation
-
-				// var defaultDeliveryCharge = parseFloat(restaurantInReq.restaurant_website_detail.default_delivery_charge);
-				// var defaultDeliveryCharge = parseFloat(data.deliveryChargeFromFE);
 				var deliveryCharge = calculateDeliveryCharge(restaurantInReq, deliveryDistance, totalPriceFromDb);
-
-				if((data.deliveryChargeFromFE && parseFloat(data.deliveryChargeFromFE).toFixed(2) !== parseFloat(deliveryCharge).toFixed(2))
-				 || (data.deliveryChargeFromFE && !deliveryCharge)
-				 || (!data.deliveryChargeFromFE && deliveryCharge)){
+				if((data.deliveryChargeFromFE && parseFloat(data.deliveryChargeFromFE).toFixed(2) !== parseFloat(deliveryCharge).toFixed(2))){
 				 	console.log("Found mistake inside delivery charge checking");
 					foundMistake = true;
 				}
-
 				totalPriceFromDbWithMrpDiscount = parseFloat(totalPriceFromDbWithMrpDiscount) + (deliveryCharge > 0 ? deliveryCharge : 0);
 
 				//Applying GST & delivery charge on the discounted final price
