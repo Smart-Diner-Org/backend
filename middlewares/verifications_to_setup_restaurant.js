@@ -2,6 +2,10 @@ const Customer = require("../models/Customer");
 const CustomerDetail = require("../models/CustomerDetail");
 const authJwt = require("./auth_jwt.js");
 var constants = require('./../config/constants');
+var RestaurantBranch = require('../models/RestaurantBranch');
+var QuantityValue = require('../models/QuantityValue');
+var MeasureValue = require('../models/MeasureValue');
+var MenuCategory = require('../models/MenuCategory');
 
 exports.checkForAccountHolderName = (req, res, next) => {
 	if(!req.body.name){
@@ -55,32 +59,8 @@ exports.checkAttributesForToCreateRestaurantBranches = (req, res, next) => {
 		if(!branch.branchCityId) return res.status(404).send({ message: "Restaurant branch city missing" });
 		
 	}
-	console.log("inside checkAttributesForToCreateRestaurantBranches");
 	next();
 };
-
-
-	// restaurant_id  NOT NULL,
-    // is_pre_booking_enabled boolean NOT NULL DEFAULT true,
-    // is_pre_booking_time_required boolean NOT NULL DEFAULT true,
-    // is_pick_my_location_enabled boolean NOT NULL DEFAULT true,
-    // is_payment_gateway_enabled boolean NOT NULL DEFAULT true,
-    // is_cod_enabled boolean NOT NULL DEFAULT false,
-    // page_description text COLLATE pg_catalog."default",
-    // slider_images text COLLATE pg_catalog."default",
-    // ga_tracking_id text COLLATE pg_catalog."default",
-    // about_image text COLLATE pg_catalog."default",
-    // pre_order_info_image text COLLATE pg_catalog."default",
-    // is_run_time_booking_enabled boolean NOT NULL DEFAULT true,
-    // pre_book_prior_time integer,
-    // primary_colour_code character varying COLLATE pg_catalog."default",
-    // secondary_colour_code character varying COLLATE pg_catalog."default",
-    // has_customisation_info boolean,
-    // customisation_info_content text COLLATE pg_catalog."default",
-    // cards text COLLATE pg_catalog."default",
-    // is_delivery_available boolean DEFAULT true,
-    // page_title text COLLATE pg_catalog."default",
-
 
 exports.checkAttributesToCreateRestaurantWebsiteDetails = (req, res, next) => {
 	req.body.isPreBookingTimeRequired = false;
@@ -98,7 +78,6 @@ exports.checkAttributesToCreateRestaurantWebsiteDetails = (req, res, next) => {
 	// 	var sliderImage = req.body.sliderImages[0];
 	// 	if(!sliderImage.url) return res.status(404).send({ message: "Restaurant slider image url missing" });
 	// }
-
 	if(req.body.sliderImages && req.body.sliderImages.length > 0){
 		if(!(req.body.sliderImages[0] && req.body.sliderImages[0].url))
 			return res.status(404).send({ message: "Restaurant slider image url missing" });
@@ -122,3 +101,93 @@ exports.canSetupRestaurant = (req, res, next) => {
 		next();
 	}
 };
+
+exports.canAddEditMenuWithCategories = (req, res, next) => {
+	if(!(req.roleId === constants.roles.smartDinerSuperAdmin || req.roleId === constants.roles.superAdmin)){
+		return res.status(403).send({
+        	message: "Required proper role to access. You are not allowed to access."
+      	});
+	}
+	next();
+}
+
+exports.checkAttributesToAddEditMenuWithCategories = async (req, res, next) => {
+	if(!req.body.restaurantBranchId)
+		return res.status(403).send({
+        	message: "Restaurant branch id is missing."
+      	});
+	if(!req.body.menuName)
+		return res.status(403).send({
+        	message: "Menu name is missing."
+      	});
+	if(!(req.body.categoryId || req.body.newCategoryName))
+		return res.status(403).send({
+        	message: "Information about the menu category is missing."
+      	});
+	if((req.body.categoryId && req.body.newCategoryName))
+		return res.status(403).send({
+        	message: "Send either menu category id or new menu category name. Not both."
+      	});
+	if(!(req.body.priceDetails && req.body.priceDetails.length > 0))
+		return res.status(403).send({
+        	message: "Price detail is missing"
+      	});
+	if(!req.body.priceDetails[0].originalPrice)
+		return res.status(403).send({
+        	message: "Original price is missing."
+      	});
+	if(!(req.body.priceDetails[0].quantityValueId || req.body.priceDetails[0].newQuantityValueName))
+		return res.status(403).send({
+        	message: "Information about the quantity value is missing."
+      	});
+	if((req.body.priceDetails[0].quantityValueId && req.body.priceDetails[0].newQuantityValueName))
+		return res.status(403).send({
+        	message: "Send either quantity value id or new quantity value name. Not both."
+      	});
+	if(!(req.body.priceDetails[0].measureValueId || req.body.priceDetails[0].newMeasureValueName))
+		return res.status(403).send({
+        	message: "Information about the measure value is missing."
+      	});
+	if((req.body.priceDetails[0].measureValueId && req.body.priceDetails[0].newMeasureValueName))
+		return res.status(403).send({
+        	message: "Send either measure value id or new measure value name. Not both."
+      	});
+
+	var restaurantBranch = await RestaurantBranch.findOne({
+		where: {
+			id: req.body.restaurantBranchId
+		}
+	});
+	if(!restaurantBranch || restaurantBranch === undefined)
+		return res.status(404).send({ message: "Restaurant branch id mismatch." });
+	var categoryDetail = null, quantityValueDetail = null, measureValueDetail = null;
+	if(req.body.categoryId){
+		categoryDetail = await MenuCategory.findOne({
+			where: {
+				id: req.body.categoryId
+			}
+		});
+		if(!categoryDetail || categoryDetail === undefined)
+			return res.status(404).send({ message: "Menu category id mismatch." });
+	}
+	if(req.body.priceDetails[0].quantityValueId){
+		quantityValueDetail = await QuantityValue.findOne({
+			where: {
+				id: req.body.priceDetails[0].quantityValueId
+			}
+		});
+		if(!quantityValueDetail || quantityValueDetail === undefined)
+			return res.status(404).send({ message: "Quantity value id mismatch." });
+	}
+	if(req.body.priceDetails[0].measureValueId){
+		measureValueDetail = await MeasureValue.findOne({
+			where: {
+				id: req.body.priceDetails[0].measureValueId
+			}
+		});
+		if(!measureValueDetail || measureValueDetail === undefined)
+			return res.status(404).send({ message: "Measure value id mismatch." });
+	}
+	next();
+}
+

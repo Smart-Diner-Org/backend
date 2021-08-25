@@ -125,7 +125,8 @@ Restaurant.findAll({
     menuController.getMenuCategoriesList);
   router.post('/add_menu_categories', [
       cors(corsOptions),
-      authJwt.verifyToken
+      authJwt.verifyToken,
+      verificationsToSetupRestaurant.canAddEditMenuWithCategories
     ],
     menuController.addMenuCategories);
   router.get('/order/:orderId/get_invoice', [
@@ -134,6 +135,29 @@ Restaurant.findAll({
       authJwt.canGetInvoice
     ],
     orderController.getInvoiceForTheOrder);
+
+  router.post('/create_menu_with_category', [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      verificationsToSetupRestaurant.canAddEditMenuWithCategories,
+      verificationsToSetupRestaurant.checkAttributesToAddEditMenuWithCategories
+    ],
+    menuController.createMenuwithCategory);
+  router.post('/update_menu_with_category', [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      verificationsToSetupRestaurant.canAddEditMenuWithCategories,
+      verificationsToSetupRestaurant.checkAttributesToAddEditMenuWithCategories
+    ],
+    menuController.updateMenuwithCategory);
+  router.get('/get_quantity_measure_values', [
+      cors(corsOptions),
+      authJwt.verifyToken
+    ],
+    menuController.getQuantityMeasureValueList);
+
+  // router.post('/uploadToS3',menuController.uploadToS3);
+
   // router.post('/restaurant/setup_without_account_creation', [
   //   // cors(corsOptions),
   //   // authJwt.verifyToken,

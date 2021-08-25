@@ -55,7 +55,7 @@ checkDuplicateMobile = (req, res, next) => {
 
 checkDuplicateMobileOrEmail = (req, res, next) => {
   // Mobile number
-  if(helper.isMobileLoginRole(req.body.roleId)){
+  // if(helper.isMobileLoginRole(req.body.roleId)){
     Customer.findOne({
       where: {
         mobile: req.body.mobile
@@ -67,9 +67,25 @@ checkDuplicateMobileOrEmail = (req, res, next) => {
         });
         return;
       }
-      next();
+
+      if(req.body.email){
+        Customer.findOne({
+          where: {
+            email: req.body.email
+          }
+        }).then(customer2 => {
+          if (customer2) {
+            res.status(400).send({
+              message: "Failed! Email is already in use!"
+            });
+            return;
+          }
+          next();
+        });
+      }
+      else next();
     });
-  }
+  /*}
   else{
     if(req.body.email){
       Customer.findOne({
@@ -92,7 +108,7 @@ checkDuplicateMobileOrEmail = (req, res, next) => {
       });
       return;
     }
-  }
+  }*/
   // User.findOne({
   //   where: {
   //     username: req.body.username

@@ -60,7 +60,7 @@ const RestaurantBranch = db.define('restaurant_branches', {
 		type: Sequelize.BIGINT
 	},
 	discount_on_mrp: {
-		type: Sequelize.DECIMAL
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true
