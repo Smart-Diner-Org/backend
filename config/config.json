@@ -1,23 +1,23 @@
 {
   "development": {
-    "username": "postgres",
-    "password": "postgress",
-    "database": "smartdiner",
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "username": {"ENV": "DB_USER"},
+    "password": {"ENV": "DB_PASSWORD"},
+    "database": {"ENV": "DB_DATABASE"},
+    "host": {"ENV": "DB_HOST"},
+    "dialect": {"ENV": "DB_DIALECT"}
   },
   "test": {
-    "username": "postgres",
-    "password": "postgres",
-    "database": "smartdiner",
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "username": {"ENV": "DB_USER"},
+    "password": {"ENV": "DB_PASSWORD"},
+    "database": {"ENV": "DB_DATABASE"},
+    "host": {"ENV": "DB_HOST"},
+    "dialect": {"ENV": "DB_DIALECT"}
   },
   "production": {
-    "username": "postgres",
-    "password": "postgres",
-    "database": "smartdiner",
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "username": {"ENV": "DB_USER"},
+    "password": {"ENV": "DB_PASSWORD"},
+    "database": {"ENV": "DB_DATABASE"},
+    "host": {"ENV": "DB_HOST"},
+    "dialect": {"ENV": "DB_DIALECT"}
   }
 }
