@@ -30,16 +30,31 @@ getCityId = (passedCityTextValue, passedCityId, cb) => {
 	}
 }
 
-exports.updateCustomerDetails = (req, res) => {
-	Customer.findOne({
+exports.updateCustomerDetails = async (req, res) => {
+
+	var customer = await Customer.findOne({
 		where: {
 			id: req.customerId
 		},
 		include:[
 			{ model: CustomerDetail, as: 'customer_detail', required: false }
 		]
-	})
-	.then(customer => {
+	}).catch(err => {
+		res.status(500).send({ message: err.message });
+	});
+
+	console.log("customer inside updateCustomerDetails...");
+	console.log(customer);
+
+	// Customer.findOne({
+	// 	where: {
+	// 		id: req.customerId
+	// 	},
+	// 	include:[
+	// 		{ model: CustomerDetail, as: 'customer_detail', required: false }
+	// 	]
+	// })
+	// .then(customer => {
 		if (!customer) {
 			return res.status(404).send({ message: "User not found." });
 		}
@@ -49,10 +64,34 @@ exports.updateCustomerDetails = (req, res) => {
 			customerData['name'] = req.body.name;
 		}
 		if(req.body.email){
+
+
+			var user2 = null;
+			
+			user2 = await Customer.findOne({
+				where: {
+					email: req.body.email,
+					role_id: customer.role_id
+				}
+			}).catch((err2) => {
+				console.log(err2);
+				res.status(500).send({ message: err2.message });
+			});
+			if(user2 & user2.id !== customer.id){
+				res.status(400).send({
+	     			message: "Failed! Email is already in use!"
+				});
+				return;
+			}
 			customerData['email'] = req.body.email;
 		}
 		if(customerData && (customerData["name"] || customerData["email"])){
-			newCustomer = customer.update(customerData);
+			try{
+				newCustomer = await customer.update(customerData);
+			}
+			catch(exception) {
+				res.status(500).send({ message: exception });
+			}
 		}
 		var self = this;
 		getCityId(req.body.cityValueInText, req.body.cityId, function(cityId){
@@ -100,10 +139,10 @@ exports.updateCustomerDetails = (req, res) => {
 				});
 			}
 		});
-	})
-	.catch(err => {
-		res.status(500).send({ message: err.message });
-	});
+	// })
+	// .catch(err => {
+	// 	res.status(500).send({ message: err.message });
+	// });
 };
 
 exports.fetchCustomerDetails = (req, res) => {
