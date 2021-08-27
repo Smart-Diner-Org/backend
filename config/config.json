@@ -3,21 +3,21 @@
     "username": {"ENV": "DB_USER"},
     "password": {"ENV": "DB_PASSWORD"},
     "database": {"ENV": "DB_DATABASE"},
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "host": {"ENV": "DB_HOST"},
+    "dialect": {"ENV": "DB_DIALECT"}
   },
   "test": {
     "username": {"ENV": "DB_USER"},
     "password": {"ENV": "DB_PASSWORD"},
     "database": {"ENV": "DB_DATABASE"},
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "host": {"ENV": "DB_HOST"},
+    "dialect": {"ENV": "DB_DIALECT"}
   },
   "production": {
     "username": {"ENV": "DB_USER"},
     "password": {"ENV": "DB_PASSWORD"},
     "database": {"ENV": "DB_DATABASE"},
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "host": {"ENV": "DB_HOST"},
+    "dialect": {"ENV": "DB_DIALECT"}
   }
 }
