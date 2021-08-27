@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": {"ENV": "DB_USER"},
+    "password": {"ENV": "DB_PASSWORD"},
+    "database": {"ENV": "DB_DATABASE"},
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": {"ENV": "DB_USER"},
+    "password": {"ENV": "DB_PASSWORD"},
+    "database": {"ENV": "DB_DATABASE"},
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": {"ENV": "DB_USER"},
+    "password": {"ENV": "DB_PASSWORD"},
+    "database": {"ENV": "DB_DATABASE"},
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
