@@ -1,4 +1,5 @@
 'use strict';
+
 module.exports = {
 up: function (queryInterface, Sequelize) {
 return Promise.all([
@@ -6,7 +7,7 @@ return Promise.all([
       type: Sequelize.BIGINT,
       notNull: false
   }),
-  queryInterface.addColumn('delivery_requests', 'scheduled_time', {
+  queryInterface.addColumn('delivery_requests', 'scheduled_data_time', {
     type:  Sequelize.DATE,
     notNull: false
   }),
@@ -31,5 +32,43 @@ return Promise.all([
       notNull: true,
   })
   ])
- }
+ },
+ down: async (queryInterface, Sequelize) => {
+    /**
+     * Add reverting commands here.
+     *
+     * Example:
+     * await queryInterface.dropTable('users');
+     */
+    return Promise.all([
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'delivery_type'
+      ),
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'scheduled_data_time'
+      ),
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'request_id'
+      ),
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'referrence_id'
+      ),
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'task_id'
+      ),
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'pick_up_details'
+      ),
+      queryInterface.removeColumn(
+        'delivery_requests',
+        'drop_details'
+      )
+    ]);
+  }
 };
