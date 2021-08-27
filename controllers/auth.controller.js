@@ -13,6 +13,8 @@ var constants = require('../config/constants');
 var express = require('express');
 const { deliveryPartnerPortalUrl } = require("../config/constants");
 var app = express();
+var Restaurant = require('../models/Restaurant');
+var RestaurantBranch = require('../models/RestaurantBranch');
 
 exports.checkAccount= async (req, res) => {
 
@@ -86,7 +88,7 @@ exports.signup = (req, res, next = null) => {
             next();
           }
           else
-            return res.status(200).send({ message: "Successfully triggered OTP." });
+            return res.status(200).send({ message: "Successfully triggered OTP.", isNewUser: true });
         }
         else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
       });
@@ -179,13 +181,19 @@ exports.verifyOtp = (req, res) => {
   Customer.findOne({
       where: {
         mobile: req.body.mobile,
-        role_id: 4
+        role_id: req.body.roleId
+        // role_id: 4
       },
       include:[
         { model: CustomerDetail, as: 'customer_detail', required: false,
           include: [
             { model: City, as: 'city' },
             { model: State, as: 'state' }
+          ]
+        },
+        { model: Restaurant, required: false, as: 'restaurants',
+          include:[
+            { model: RestaurantBranch, required:false, as: 'restaurant_branches' }
           ]
         }
       ]
