@@ -226,7 +226,9 @@ exports.verifyOtp = (req, res) => {
 exports.resendOtp = (req, res) => {
   Customer.findOne({
       where: {
-        mobile: req.body.mobile
+        mobile: req.body.mobile,
+        role_id: req.body.roleId
+        // role_id: 4
       }
     })
     .then(user => {
