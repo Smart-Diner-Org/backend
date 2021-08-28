@@ -5,6 +5,7 @@ var beforeLoginAPIRouter = require("./before_login/start");
 var afterLoginAPIRouter = require("./after_login/start");
 var authAPIRouter = require("./auth.routes");
 var userAPIRouter = require("./user.routes");
+var webHooksAPIRouter = require("./web_hooks/start");
 
 
 module.exports = function(app) {
@@ -16,4 +17,5 @@ module.exports = function(app) {
 	app.use('/after_login', afterLoginAPIRouter);
 	app.use('/auth', authAPIRouter);
 	app.use('/usertest', userAPIRouter);
+	app.use('/webhooks', webHooksAPIRouter);
 };
