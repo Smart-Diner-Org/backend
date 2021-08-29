@@ -64,8 +64,6 @@ exports.updateCustomerDetails = async (req, res) => {
 			customerData['name'] = req.body.name;
 		}
 		if(req.body.email){
-
-
 			var user2 = null;
 			
 			user2 = await Customer.findOne({
@@ -77,7 +75,7 @@ exports.updateCustomerDetails = async (req, res) => {
 				console.log(err2);
 				res.status(500).send({ message: err2.message });
 			});
-			if(user2 & user2.id !== customer.id){
+			if(user2 && user2.id !== customer.id){
 				res.status(400).send({
 	     			message: "Failed! Email is already in use!"
 				});

@@ -13,7 +13,28 @@ const DeliveryRequest = db.define('delivery_requests', {
 	},
 	notes: {
 		type: Sequelize.TEXT
-	}
+	},
+	delivery_type: {
+		type: Sequelize.BIGINT
+	},
+	scheduled_data_time: {
+		type: Sequelize.DATE
+	},
+	request_id: {
+      type: Sequelize.TEXT
+  	},
+  	referrence_id: {
+      type: Sequelize.TEXT
+  	},
+  	task_id: {
+      type: Sequelize.TEXT
+  	},
+  	pick_up_details: {
+      type: Sequelize.JSON
+  	},
+  	drop_details: {
+      type: Sequelize.JSON
+  	}
 },{
 	// timestamps: false
 	underscored: true
