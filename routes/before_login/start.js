@@ -19,8 +19,8 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
-  corsOptions = helper.getCorsFunction(urls);
-  //corsOptions='*';
+  //corsOptions = helper.getCorsFunction(urls);
+  corsOptions='*';
   //Define all routes here
     // app.get('/:id', function(req, res){
   router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
