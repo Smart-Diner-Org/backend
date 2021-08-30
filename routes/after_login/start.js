@@ -167,7 +167,14 @@ Restaurant.findAll({
   // ],
   // restaurantController.setUpRestaurant);
 
-  router.post('/app/fcm/token/:customerId/store', cors(corsOptions), fcmController.savePushNotificationTokenWithCustomerId);
+  router.post('/app/fcm/token/:customerId/store',
+    [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      //Need to add role restriction middleware
+    ],
+    fcmController.savePushNotificationTokenWithCustomerId
+  );
 
 })
 .catch(err => console.log(err))
