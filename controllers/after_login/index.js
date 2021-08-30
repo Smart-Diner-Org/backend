@@ -5,6 +5,7 @@ const restaurantController = require("./restaurant.controller");
 var generalController = require("./general.controller");
 const deliveryController = require("./delivery.controller");
 const menuController = require("./menu.controller");
+const fcmController = require("./fcm.controller");
 
 module.exports = {
 	customerController,
@@ -13,5 +14,6 @@ module.exports = {
 	restaurantController,
 	generalController,
 	deliveryController,
-	menuController
+	menuController,
+	fcmController
 };

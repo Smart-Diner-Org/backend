@@ -74,5 +74,10 @@ module.exports = {
 	deliveryPartnerPortalUrl: {
 		testing : 'https://testingdeliverypartner.smartdiner.co/',
 		prod : 'https://deliverypartner.smartdiner.co/'
+	},
+	pushNotificationTokenStatuses: {
+		"active": 1,
+		"unregistered": 2,
+		"invalidArgument": 3
 	}
 }

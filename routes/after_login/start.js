@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
+const { fcmController, customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
 const authController = require("./../../controllers/auth.controller");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
@@ -166,6 +166,9 @@ Restaurant.findAll({
 
   // ],
   // restaurantController.setUpRestaurant);
+
+  router.post('/app/fcm/token/:customerId/store', cors(corsOptions), fcmController.savePushNotificationTokenWithCustomerId);
+
 })
 .catch(err => console.log(err))
 ;
