@@ -27,6 +27,7 @@ var QuantityValue = require('./../../models/QuantityValue');
 var MeasureValue = require('./../../models/MeasureValue');
 var date = require('date-and-time');
 var numWords = require('num-words')
+var PushNotificationController = require('./push_notification.controller');
 // var _ = require('underscore');
 var menus;
 
@@ -338,7 +339,7 @@ exports.placeOrder = async (req, res) => {
 									description: req.body.description,
 									total_price: req.body.total_price,
 									total_mrp_price: req.body.total_mrp_price,
-									delivery_charge: restaurantInRequest.restaurant_website_detail.default_delivery_charge,
+									delivery_charge: req.body.delivery_charge,
 									gst: getGstPercentage(restaurantInRequest),
 									stage_id: req.orderStage.id,
 									payment_status_id: req.paymentStatusId,
@@ -403,6 +404,13 @@ exports.placeOrder = async (req, res) => {
 										// 	"We have got your order request. We will get back to you soon. Till then, please check your order status here " + statusPageUrl,
 										// 	null
 										// );
+
+										PushNotificationController.sendOrderNotification({
+											customerId: req.restaurantData.customer_id,
+											restaurantName: restaurantData.name,
+											orderId: createdOrder.id
+										});
+
 										smsHelper.triggerTransactionalSms(
 											req.customer.mobile,
 											constants.countryDialCode.india,

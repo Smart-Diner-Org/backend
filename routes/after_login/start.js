@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { fcmController, customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
+const { pushNotificationController, customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
 const authController = require("./../../controllers/auth.controller");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
@@ -173,8 +173,12 @@ Restaurant.findAll({
       authJwt.verifyToken,
       //Need to add role restriction middleware
     ],
-    fcmController.savePushNotificationTokenWithCustomerId
+    pushNotificationController.savePushNotificationTokenWithCustomerId
   );
+
+  // router.post('/app/fcm/send_message',
+  //   dunzoController.getToken
+  // );
 
 })
 .catch(err => console.log(err))

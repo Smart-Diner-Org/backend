@@ -9,19 +9,23 @@ var RestaurantBranch = require('./../../models/RestaurantBranch');
 var Restaurant = require('./../../models/Restaurant');
 var DeliveryStage = require('./../../models/DeliveryStage');
 var smsHelper = require('./../../helpers/sms.helper');
+var dunzoController = require('./delivery_integrations/dunzo.controller');
+var PaymentsController = require('./payments.controller');
 
-getDeliveryPartnerId = (preferredId_1, preferredId_2 = null) => {
+getDeliveryPartnerId = (preferredId_1, preferredId_2 = null, cityId = null) => {
 	var deliveryPartnerId = null;
 	switch(parseInt(preferredId_1)){
 		case constants.deliveryPreferences.inHouse:
 			deliveryPartnerId = constants.deliveryPartners.inHouseDelivery;
 			break;
 		case constants.deliveryPreferences.service:
-			deliveryPartnerId = constants.deliveryPartners.kovaiDeliveryBoys;
+			if(constants.delivery.dunzoServiceCities.indexOf(parseInt(cityId)) > -1)
+				deliveryPartnerId = constants.deliveryPartners.dunzo;
+			else deliveryPartnerId = constants.deliveryPartners.kovaiDeliveryBoys;
 			break;
 		case constants.deliveryPreferences.all:
 			if(preferredId_2)
-				deliveryPartnerId = getDeliveryPartnerId(preferredId_2);
+				deliveryPartnerId = getDeliveryPartnerId(preferredId_2, null, cityId);
 			break;
 	}
 	return deliveryPartnerId;
@@ -38,7 +42,12 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 			id: req.params.orderId
 		},
 		include:[
-			{ model: RestaurantBranch, required: true, as: 'restuarant_branch' }
+			{ model: RestaurantBranch, required: true, as: 'restuarant_branch',
+				include:[
+					{ model: Restaurant, required: true, as: 'restaurant' }
+				]
+			},
+			{ model: Customer, required: true, as: 'customer' }
 		]
 	})
 	.then(order => {
@@ -46,7 +55,11 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 			res.status(404).send({ message: "Order does not exist." });
 		}
 		var deliveryPartnerId = null;
-		deliveryPartnerId = getDeliveryPartnerId(order.restuarant_branch.delivery_partner_preference_id, req.body.preferredDelivery);
+		deliveryPartnerId = getDeliveryPartnerId(
+			order.restuarant_branch.delivery_partner_preference_id,
+			req.body.preferredDelivery,
+			order.restuarant_branch.city_id
+		);
 		if(deliveryPartnerId){
 			DeliveryPersonPartnerAssociation.findOne({
 				attributes: ['delivery_person_id'],
@@ -59,14 +72,77 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 					['created_at', 'ASC'],
 				]
 			})
-			.then(deliveryPersonId => {
+			.then(async (deliveryPersonId) => {
+				var specialInstructions = 'Order Id - ' + order.id + ".";
+				// notes = req.body.notes ? (notes + req.body.notes) : notes + ". ";
 				if(deliveryPersonId){
+					var count = 1;
+					var deliveryRequests = await DeliveryRequest.findAll({
+						where: {
+							order_id: order.id
+						}
+					});
+					if(deliveryRequests && deliveryRequests.length > 0){
+						count =  count + deliveryRequests.length;
+					}
 					var deliveryRequestDataToSave = {
 						order_id : req.params.orderId,
 						delivery_person_id : deliveryPersonId.delivery_person_id,
 						delivery_stage_id : constants.deliveryStages.requested,
-						notes : (req.body.notes ? req.body.notes : null)
+						notes : req.body.notes ? req.body.notes : null,
+						request_id: 'sm_delivery_task_request_id_of_order_' + order.id + '_occurance_' + count,
+						referrence_id: 'sm_delivery_task_referrence_id_of_order_' + order.id + '_occurance_' + count,
+						pick_up_details: [{
+							reference_id : 'sm_pick_up_referrence_id_of_order_' + order.id + '_occurance_' + count,
+							"address": {
+								"street_address_1": order.restuarant_branch.address,
+								"lng": parseFloat(order.restuarant_branch.long),
+								"lat": parseFloat(order.restuarant_branch.lat),
+								// "lng": 80.2475274,
+								// "lat": 13.039302,
+								"contact_details": {
+									"name": order.restuarant_branch.restaurant.name,
+									"phone_number": order.restuarant_branch.contact_number
+								}
+							}
+						}],
+						drop_details: [
+							{
+								reference_id : 'sm_drop_referrence_id_of_order_' + order.id + '_occurance_' + count,
+								"address": {
+									"street_address_1": order.delivery_address_one + " " + order.delivery_address_two,
+									"lat": parseFloat(order.lat),
+									"lng": parseFloat(order.long),
+									// "lng": 80.215477,
+									// "lat": 13.0722317,
+									"contact_details": {
+										"name": order.customer.name,
+										"phone_number": order.customer.mobile
+									}
+								},
+								"otp_required": false,
+								"special_instructions": specialInstructions
+							}
+						]
 					};
+					switch(deliveryPartnerId){
+						case constants.deliveryPartners.dunzo:
+							var createdTask = await dunzoController.createTask(deliveryRequestDataToSave);
+							if(createdTask && createdTask['task_id'])
+								deliveryRequestDataToSave["task_id"] = createdTask['task_id'];
+							else if(createdTask && createdTask['code'] === 'unserviceable_location_error'){
+								res.status(404).send({ message: createdTask['message'] + ". Please use your own delivery team" });
+								return;
+							}
+							else{
+								res.status(404).send({ message: "Something happened! Couldn't assign a delievry person. Please try again!" });
+								return;
+							}
+							break;
+						default:
+							var createdTask = true;
+							break;
+					}
 					DeliveryRequest.create(deliveryRequestDataToSave)
 					.then(savedDeliveryRequest => {
 						Customer.findOne({
