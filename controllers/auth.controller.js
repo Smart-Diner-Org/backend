@@ -129,7 +129,7 @@ exports.signin = (req, res) => {
           message: "Invalid Password!"
         });
       }
-      var token = accessTokenHelper.getJwtAccessToken(user.id);
+      var token = accessTokenHelper.getJwtAccessToken(user.id, req.body.application);
       var responseObject = {
         message: 'Login Success!',
         id: user.id,
@@ -209,7 +209,7 @@ exports.verifyOtp = (req, res) => {
             user.update({'mobile_verification': true});
           }
 
-          var token = accessTokenHelper.getJwtAccessToken(user.id);
+          var token = accessTokenHelper.getJwtAccessToken(user.id, req.body.application);
           res.status(200).send({
             customer: user,
             accessToken: token

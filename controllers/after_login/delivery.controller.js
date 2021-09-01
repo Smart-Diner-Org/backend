@@ -361,3 +361,32 @@ exports.getAllRequestsOfDeliveryPartner = (req, res) => {
 	});
 }
 
+exports.taskStatusesToBeChecked = async () => {
+	console.log("Here 1");
+	var deliveryRequests = await DeliveryRequest.findAll({
+		where: {
+			delivery_stage_id : [
+				constants.deliveryStages.requested,
+				constants.deliveryStages.accepted
+			],
+			task_id: {
+				[Op.not]: null
+			}
+		}
+	});
+	console.log("Here 2");
+	if(deliveryRequests && deliveryRequests.length>0){
+		console.log("Here 3");
+		count = 0;
+		getStatusFor = async (index) => {
+			console.log("Here 4");
+			var deliveryStatus = await dunzoController.getStatus(deliveryRequests[index]);
+			console.log("deliveryStatus...");
+			console.log(deliveryStatus);
+			index = index + 1;
+			getStatusFor(index);
+		}
+		getStatusFor(count);
+	}
+}
+

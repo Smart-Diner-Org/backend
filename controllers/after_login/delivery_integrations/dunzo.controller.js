@@ -97,7 +97,66 @@ exports.createTask = async (data) => {
 	}
 };
 
-
+exports.getStatus = async (deliveryRequest) => {
+	console.log("Here 5");
+	console.log("deliveryRequest deliveryRequest deliveryRequest ");
+	console.log(deliveryRequest);
+	console.log(deliveryRequest['order_id']);
+	/*console.log("Here 5");
+	console.log("deliveryRequest deliveryRequest deliveryRequest ");
+	console.log(deliveryRequest);
+	console.log(deliveryRequest['task_id']);
+	try{
+		var accessToken = await this.getToken();
+		if(!accessToken)
+			return null;
+		var output='';
+		var obj;
+		const options = {
+		  hostname: process.env.DUNZO_API_HOST,
+		  path: 'api/v1/tasks/d694a1ec-dcb7-41cb-b9ba-a078bb6e7275/status',
+		  method: 'GET',
+		  headers: {
+		    'Content-Type': 'application/json',
+		    'Accept-Language': 'en_US',
+		    'Authorization': accessToken,
+		    'client-id': process.env.DUNZO_CLIENT_ID,
+		    'client-secret': process.env.DUNZO_CLIENT_PASSWORD
+		  }
+		}
+		return new Promise(resolve => {
+			const req = https.request(options, res => {
+			  res.on('data', d => {
+			  	output += d;
+			    process.stdout.write(d); // printing
+			  })
+			  res.on('end', () => {
+			  	try{
+				  	console.log("******** before parsing in  the dunzo *******");
+					obj = JSON.parse(output);
+					console.log("******** inside the dunzo *******");
+					console.log(obj);
+					resolve(obj);
+				}
+				catch(exception){
+					console.log("Exception happened while getting the status of a task in Dunzo");
+					resolve(null);
+				}
+			   })
+			})
+			req.on('error', error => {
+			  resolve(null);
+			  // response.status(500).send({ message: error.message });
+			})
+			req.end()
+			
+		});
+	}
+	catch(exception){
+		console.log("Exception happened while getting the status of a task in Dunzo");
+		return null;
+	}*/
+};
 
 
 
