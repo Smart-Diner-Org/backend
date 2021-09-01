@@ -13,15 +13,43 @@ var constants = require('../config/constants');
 var express = require('express');
 const { deliveryPartnerPortalUrl } = require("../config/constants");
 var app = express();
+var Restaurant = require('../models/Restaurant');
+var RestaurantBranch = require('../models/RestaurantBranch');
 
-exports.checkAccount= (req, res) => {
-  Customer.findOne({
+exports.checkAccount= async (req, res) => {
+
+  var user = null;
+  user = await Customer.findOne({
     where: {
-      mobile: req.body.mobile
+      mobile: req.body.mobile,
+      role_id: req.body.roleId
     }
-  })
-  .then(user => {
-    if (!user) {
+  }).catch((err) => {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  });
+  var user2 = null;
+  if(req.body.email){
+    user2 = await Customer.findOne({
+      where: {
+        email: req.body.email,
+        role_id: req.body.roleId
+      }
+    }).catch((err2) => {
+      res.status(500).send({ message: err2.message });
+    });
+  }
+
+  // Customer.findOne({
+  //   where: {
+  //     mobile: req.body.mobile,
+  //     role_id: req.body.roleId
+  //   }
+  // })
+  // .then(user => {
+    
+
+    if (!user && !user2) {
       // Should go to signup route
       req.url = '/auth/signup';
     }
@@ -30,10 +58,10 @@ exports.checkAccount= (req, res) => {
       req.url = '/auth/signin';
     }
     return req.app._router.handle(req, res);
-  })
-  .catch(err => {
-    res.status(500).send({ message: err.message });
-  });
+  // })
+  // .catch(err => {
+  //   res.status(500).send({ message: err.message });
+  // });
 }
 
 exports.signup = (req, res, next = null) => {
@@ -60,7 +88,7 @@ exports.signup = (req, res, next = null) => {
             next();
           }
           else
-            return res.status(200).send({ message: "Successfully triggered OTP." });
+            return res.status(200).send({ message: "Successfully triggered OTP.", isNewUser: true });
         }
         else res.status(500).send({ message: "Could not trigger OTP. Please try again." });
       });
@@ -77,7 +105,8 @@ exports.signin = (req, res) => {
       return res.status(404).send({ message: "Password is missing." });
     Customer.findOne({
       where: {
-        email: req.body.email
+        email: req.body.email,
+        role_id: req.body.roleId
       }
     })
     .then(user => {
@@ -100,7 +129,7 @@ exports.signin = (req, res) => {
           message: "Invalid Password!"
         });
       }
-      var token = accessTokenHelper.getJwtAccessToken(user.id);
+      var token = accessTokenHelper.getJwtAccessToken(user.id, req.body.application);
       var responseObject = {
         message: 'Login Success!',
         id: user.id,
@@ -124,7 +153,8 @@ exports.signin = (req, res) => {
   else if(req.body.mobile){
     Customer.findOne({
       where: {
-        mobile: req.body.mobile
+        mobile: req.body.mobile,
+        role_id: req.body.roleId
       }
     })
     .then(user => {
@@ -150,13 +180,20 @@ exports.signin = (req, res) => {
 exports.verifyOtp = (req, res) => {
   Customer.findOne({
       where: {
-        mobile: req.body.mobile
+        mobile: req.body.mobile,
+        role_id: req.body.roleId
+        // role_id: 4
       },
       include:[
         { model: CustomerDetail, as: 'customer_detail', required: false,
           include: [
             { model: City, as: 'city' },
             { model: State, as: 'state' }
+          ]
+        },
+        { model: Restaurant, required: false, as: 'restaurants',
+          include:[
+            { model: RestaurantBranch, required:false, as: 'restaurant_branches' }
           ]
         }
       ]
@@ -172,7 +209,7 @@ exports.verifyOtp = (req, res) => {
             user.update({'mobile_verification': true});
           }
 
-          var token = accessTokenHelper.getJwtAccessToken(user.id);
+          var token = accessTokenHelper.getJwtAccessToken(user.id, req.body.application);
           res.status(200).send({
             customer: user,
             accessToken: token
@@ -189,7 +226,9 @@ exports.verifyOtp = (req, res) => {
 exports.resendOtp = (req, res) => {
   Customer.findOne({
       where: {
-        mobile: req.body.mobile
+        mobile: req.body.mobile,
+        role_id: req.body.roleId
+        // role_id: 4
       }
     })
     .then(user => {

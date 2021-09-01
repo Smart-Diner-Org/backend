@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 // var customerController = require('./../../controllers/after_login/customer.controller');
 // var customerController = require('./../../controllers/after_login/customer.controller');
-const { customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
+const { pushNotificationController, customerController, orderController, paymentsController, restaurantController, generalController, deliveryController, menuController } = require("./../../controllers/after_login");
 const authController = require("./../../controllers/auth.controller");
 var Restaurant = require('./../../models/Restaurant');
 var constants = require('./../../config/constants');
@@ -20,8 +20,8 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
-  corsOptions = helper.getCorsFunction(urls);
-  //corsOptions='*';
+  //corsOptions = helper.getCorsFunction(urls);
+  corsOptions='*';
 
   //Define all routes here
   router.post('/customer/update_details', [ cors(corsOptions), authJwt.verifyToken ], customerController.updateCustomerDetails);
@@ -166,6 +166,20 @@ Restaurant.findAll({
 
   // ],
   // restaurantController.setUpRestaurant);
+
+  router.post('/app/fcm/token/:customerId/store',
+    [
+      cors(corsOptions),
+      authJwt.verifyToken,
+      //Need to add role restriction middleware
+    ],
+    pushNotificationController.savePushNotificationTokenWithCustomerId
+  );
+
+  // router.post('/app/fcm/send_message',
+  //   dunzoController.getToken
+  // );
+
 })
 .catch(err => console.log(err))
 ;

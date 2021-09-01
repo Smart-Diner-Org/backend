@@ -1,6 +1,7 @@
 const express = require("express");
 var router = express.Router();
-var restaurantController = require('./../../controllers/before_login/restaurant.controller');
+// var restaurantController = require('./../../controllers/before_login/restaurant.controller');
+const { pushNotificationController, restaurantController } = require('./../../controllers/before_login');
 const { orderController } = require("./../../controllers/after_login");
 var Restaurant = require('./../../models/Restaurant');
 // var constants = require('./../../config/constants');
@@ -19,14 +20,15 @@ Restaurant.findAll({
 })
 .then((restaurants) => {
   var urls = helper.getCorsUrlsList(restaurants);
-  corsOptions = helper.getCorsFunction(urls);
-  //corsOptions='*';
+  //corsOptions = helper.getCorsFunction(urls);
+  corsOptions='*';
   //Define all routes here
     // app.get('/:id', function(req, res){
   router.get('/restaurant/get_full_details', cors(corsOptions), restaurantController.getRestaurantDetails);
   router.get('/order/:id/status', cors(corsOptions), orderController.getOrderStatus);
   router.post('/restaurant/save_contact_request', cors(corsOptions), restaurantController.saveContactRequest);
   router.post('/restaurant/save_subscription', cors(corsOptions), restaurantController.saveSubscription);
+  router.post('/app/fcm/token/store', cors(corsOptions), pushNotificationController.savePushNotificationTokenWithoutCustomerId);
 })
 .catch(err => console.log(err));
 module.exports = router;

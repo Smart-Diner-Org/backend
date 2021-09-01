@@ -40,7 +40,8 @@ checkForEmail = (req, res, next) => {
 checkDuplicateMobile = (req, res, next) => {
   Customer.findOne({
     where: {
-      mobile: req.body.mobile
+      mobile: req.body.mobile,
+      role_id: req.body.roleId
     }
   }).then(customer => {
     if (customer) {
@@ -58,7 +59,8 @@ checkDuplicateMobileOrEmail = (req, res, next) => {
   // if(helper.isMobileLoginRole(req.body.roleId)){
     Customer.findOne({
       where: {
-        mobile: req.body.mobile
+        mobile: req.body.mobile,
+        role_id: req.body.roleId
       }
     }).then(customer => {
       if (customer) {
@@ -71,7 +73,8 @@ checkDuplicateMobileOrEmail = (req, res, next) => {
       if(req.body.email){
         Customer.findOne({
           where: {
-            email: req.body.email
+            email: req.body.email,
+            role_id: req.body.roleId
           }
         }).then(customer2 => {
           if (customer2) {

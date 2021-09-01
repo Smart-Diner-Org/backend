@@ -60,7 +60,8 @@ module.exports = {
 	deliveryPartners: {
 		"inHouseDelivery" : 1,
 		"kovaiDeliveryBoys" : 2,
-		"individualPartners" : 3
+		"individualPartners" : 3,
+		"dunzo": 4
 	},
 	deliveryStages: {
 		"requested" : 1,
@@ -74,5 +75,26 @@ module.exports = {
 	deliveryPartnerPortalUrl: {
 		testing : 'https://testingdeliverypartner.smartdiner.co/',
 		prod : 'https://deliverypartner.smartdiner.co/'
+	},
+	pushNotificationTokenStatuses: {
+		"active": 1,
+		"unregistered": 2,
+		"invalidArgument": 3
+	},
+	app: {
+		"channels":{
+			'orders': "ORDERS",
+			'offers': "OFFERS"
+		}
+	},
+	delivery: {
+		dunzoServiceCities: [
+			2, //Chennai
+			3, //Bangalore
+			6, //Mumbai
+			7 //Pune
+		]
 	}
 }
+
+

@@ -46,6 +46,11 @@ Restaurant.belongsTo(Customer, {
 	as: 'customer'
 });
 
+Customer.hasMany(Restaurant, {
+	foreignKey: 'customer_id',
+	as: 'restaurants'
+});
+
 Restaurant.hasOne(RestaurantDetail, {
 	foreignKey: 'restaurant_id',
 	as: 'restaurant_detail'

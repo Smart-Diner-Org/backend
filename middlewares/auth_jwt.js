@@ -84,7 +84,7 @@ isSmartDinerSuperAdmin = (req, res) => {
   });
 }
 
-isAdminOrSuperAdmin = (req, res) => {
+isAdminOrSuperAdmin = (req, res, next) => {
   Customer.findByPk(req.customerId).then(customer => {
     customer.getRole().then(role => {
       if (role.name === "Admin" || role.name === "Super Admin") {
