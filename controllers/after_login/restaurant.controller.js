@@ -23,6 +23,7 @@ var RestaurantPaymentGateway = require('./../../models/RestaurantPaymentGateway'
 var RestaurantPaymentType = require('./../../models/RestaurantPaymentType');
 var RestaurantGetLocationAssociation = require('./../../models/RestaurantGetLocationAssociation');
 var DeliveryPartnerPreference = require('./../../models/DeliveryPartnerPreference');
+var DeliveryRequest = require('./../../models/DeliveryRequest');
 
 module.exports.getMenu = (req, res) => {
   Menu.findAll({
@@ -172,6 +173,9 @@ module.exports.getOrdersForBranch = (req, res) => {
       order: [
         ['id', 'DESC'],
         ['created_at', 'DESC'],
+        [
+          { model: DeliveryRequest, as: 'delivery_requests', required: false }, 'created_at', 'DESC',
+        ]
       ],
       include:[
         { model: Customer, required: true, as: 'customer'},
@@ -187,7 +191,12 @@ module.exports.getOrdersForBranch = (req, res) => {
             // }
           ]
         },
-        { model: OrderPreBookDetail, as: 'preBookingDetail'}
+        { model: OrderPreBookDetail, as: 'preBookingDetail'},
+        { model: DeliveryRequest, as: 'delivery_requests',  required: false,
+          include: [
+            { model: Customer, as: 'delivery_person', required: true },
+          ]
+        }
       ]
     })
     .then(orders => {
