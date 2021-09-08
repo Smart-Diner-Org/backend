@@ -1,7 +1,7 @@
 var DeliveryRequest = require('./../../../models/DeliveryRequest');
 var constants = require('./../../../config/constants');
 var Order = require('./../../../models/Order');
-var Customer = require('./../../models/Customer');
+var Customer = require('./../../../models/Customer');
 
 exports.handleTaskStatusWebhook= async (req, res) => {
 	console.log("dunzo webhook handler");
@@ -18,6 +18,7 @@ exports.handleTaskStatusWebhook= async (req, res) => {
 			var deliveryRequestStageId = null;
 			var runnerDetail = null;
 			var orderStageId = null;
+			var price=-1;
 			if(deliveryRequest){
 				switch(req.body.state){
 					case 'runner_accepted': //Save runner detail
@@ -55,6 +56,7 @@ exports.handleTaskStatusWebhook= async (req, res) => {
 						//update order stage as well
 						deliveryRequestStageId = constants.deliveryStages['completed'];
 						orderStageId = constants.orderStatges['delivered'];
+						price = req.body['price'];
 						break;
 					case 'runner_cancelled':
 						deliveryRequestStageId = constants.deliveryStages['runnerCancelled'];
@@ -86,12 +88,15 @@ exports.handleTaskStatusWebhook= async (req, res) => {
 							if(!savedCustomer){
 								console.log("Could not create the customer entry in the dunzo webhook");
 							}
-							else else deliveyPersonId = savedCustomer.id;
+							else deliveyPersonId = savedCustomer.id;
 						}
 						else deliveyPersonId = deliveryAgent.id;
 						if(deliveyPersonId){
 							dataToUpdateDeliveryRequest['delivery_person_id'] = deliveyPersonId;
 						}
+					}
+					if(price > -1){
+						dataToUpdateDeliveryRequest['price'] = price;
 					}
 					var updatedDeliveryRequest = await deliveryRequest.update(dataToUpdateDeliveryRequest);
 					if(!updatedDeliveryRequest){
@@ -99,7 +104,10 @@ exports.handleTaskStatusWebhook= async (req, res) => {
 					}
 				}
 				if(orderStageId){
-					var updatedOrder = await Order.update({ stage_id: req.body.orderStageId }).where({'id': deliveryRequest.order_id});
+					var updatedOrder = await Order.update(
+						{ stage_id: req.body.orderStageId },
+						{ where: { id: deliveryRequest.order_id }}
+					);
 					if(!updatedOrder){
 						console.log("Update Order stage failed in the dunzo webhook");
 					}
