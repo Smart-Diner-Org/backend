@@ -34,6 +34,9 @@ const DeliveryRequest = db.define('delivery_requests', {
   	},
   	drop_details: {
       type: Sequelize.JSON
+  	},
+  	price: {
+  	  type: Sequelize.DECIMAL
   	}
 },{
 	// timestamps: false
