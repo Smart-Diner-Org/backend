@@ -60,6 +60,7 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 			req.body.preferredDelivery,
 			order.restuarant_branch.city_id
 		);
+		console.log("found deliveryPartnerId -- " + deliveryPartnerId);
 		if(deliveryPartnerId){
 			DeliveryPersonPartnerAssociation.findOne({
 				attributes: ['delivery_person_id'],
@@ -73,6 +74,7 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 				]
 			})
 			.then(async (deliveryPersonId) => {
+				console.log("found deliveryPersonId --" + deliveryPersonId);
 				var specialInstructions = 'Order Id - ' + order.id + ".";
 				// notes = req.body.notes ? (notes + req.body.notes) : notes + ". ";
 				if(deliveryPersonId){
@@ -127,9 +129,14 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 					};
 					switch(deliveryPartnerId){
 						case constants.deliveryPartners.dunzo:
+							console.log("Inside switch dunzo");
 							var createdTask = await dunzoController.createTask(deliveryRequestDataToSave);
+							console.log(createdTask);
 							if(createdTask && createdTask['task_id'])
 								deliveryRequestDataToSave["task_id"] = createdTask['task_id'];
+							else if(createdTask && createdTask['code'] === 'duplicate_request' && createdTask['details']['task_id']){
+								deliveryRequestDataToSave["task_id"] = createdTask['details']['task_id'];
+							}
 							else if(createdTask && createdTask['code'] === 'unserviceable_location_error'){
 								res.status(404).send({ message: createdTask['message'] + ". Please use your own delivery team" });
 								return;

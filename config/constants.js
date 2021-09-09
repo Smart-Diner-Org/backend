@@ -70,7 +70,11 @@ module.exports = {
 		"reassigned" : 4,
 		"completed" : 5,
 		"delayed" : 6,
-		"undelivered" : 7
+		"undelivered" : 7,
+		"reachedForPickup": 8,
+		"picked": 9,
+		"reachedForDelivery": 10,
+		"runnerCancelled": 11
 	},
 	deliveryPartnerPortalUrl: {
 		testing : 'https://testingdeliverypartner.smartdiner.co/',
@@ -94,6 +98,17 @@ module.exports = {
 			6, //Mumbai
 			7 //Pune
 		]
+	},
+	orderStatges: {
+		"fresh": 1,
+		"accepted": 2,
+		"preparing": 3,
+		"foodReady": 4,
+		"foodPicked": 5,
+		"outForDelivery": 6,
+		"delivered": 7,
+		"completed": 8,
+		"cancelled": 9,
 	}
 }
 
