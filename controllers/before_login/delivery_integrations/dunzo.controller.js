@@ -105,7 +105,7 @@ exports.handleTaskStatusWebhook= async (req, res) => {
 				}
 				if(orderStageId){
 					var updatedOrder = await Order.update(
-						{ stage_id: req.body.orderStageId },
+						{ stage_id: orderStageId },
 						{ where: { id: deliveryRequest.order_id }}
 					);
 					if(!updatedOrder){
