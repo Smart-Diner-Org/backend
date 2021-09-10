@@ -92,16 +92,16 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 						delivery_person_id : deliveryPersonId.delivery_person_id,
 						delivery_stage_id : constants.deliveryStages.requested,
 						notes : req.body.notes ? req.body.notes : null,
-						request_id: 'sm_delivery_task_request_id_of_order_' + order.id + '_occurance_' + count,
-						referrence_id: 'sm_delivery_task_referrence_id_of_order_' + order.id + '_occurance_' + count,
+						request_id: 'SM_order_id_' + order.id + '_delivery_task_request_id_occurance_' + count,
+						referrence_id: 'SM_order_id_' + order.id + '_delivery_task_referrence_id_occurance_' + count,
 						pick_up_details: [{
-							reference_id : 'sm_pick_up_referrence_id_of_order_' + order.id + '_occurance_' + count,
+							reference_id : 'SM_order_id_' + order.id + '_pick_up_referrence_id_occurance_' + count,
 							"address": {
 								"street_address_1": order.restuarant_branch.address,
 								"lng": parseFloat(order.restuarant_branch.long),
 								"lat": parseFloat(order.restuarant_branch.lat),
-								// "lng": 80.2475274,
-								// "lat": 13.039302,
+								// "lng": 77.611848,
+								// "lat": 12.925561,
 								"contact_details": {
 									"name": order.restuarant_branch.restaurant.name,
 									"phone_number": order.restuarant_branch.contact_number
@@ -110,13 +110,13 @@ exports.assignDeliveryPartnerForOrder = (req, res) => {
 						}],
 						drop_details: [
 							{
-								reference_id : 'sm_drop_referrence_id_of_order_' + order.id + '_occurance_' + count,
+								reference_id : 'SM_order_id_' + order.id + '_drop_referrence_id_occurance_' + count,
 								"address": {
 									"street_address_1": order.delivery_address_one + " " + order.delivery_address_two,
 									"lat": parseFloat(order.lat),
 									"lng": parseFloat(order.long),
-									// "lng": 80.215477,
-									// "lat": 13.0722317,
+									// "lng": 77.6112470,
+									// "lat": 12.9344590,
 									"contact_details": {
 										"name": order.customer.name,
 										"phone_number": order.customer.mobile
