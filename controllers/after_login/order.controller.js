@@ -77,7 +77,7 @@ calculateDeliveryCharge = (restaurantInReq, deliveryDistance, totalMRP) => {
 			if(data["order"] == 0 && data["excempt_limit"] && data["excempt_limit"] >= totalMRP){
 				return true;
 			}
-			else if(distance >= 0.5){
+			else if(distance >= 0.5 || restaurantInReq.is_ecommerce){
 
 				// if(data["distance"] !== 'any'){
 				// 	var tempDistance = parseFloat(data["distance"]);
@@ -114,9 +114,6 @@ calculateDeliveryCharge = (restaurantInReq, deliveryDistance, totalMRP) => {
 
 				// 		break;
 				// }
-
-
-
 				
 			}
 		});

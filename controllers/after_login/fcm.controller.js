@@ -18,7 +18,8 @@ exports.sendOrderPushNotification = async (data) => {
 		},
 		"android": {
 			"notification": {
-				"channel_id": constants.app.channels.orders
+				"channel_id": constants.app.channels.orders,
+				// "sound": 'default'
 			}
         },
         "fcmOptions": {
