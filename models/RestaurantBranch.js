@@ -61,6 +61,9 @@ const RestaurantBranch = db.define('restaurant_branches', {
 	},
 	discount_on_mrp: {
 		type: Sequelize.TEXT
+	},
+	is_running: {
+		type: Sequelize.BOOLEAN
 	}
 },{
 	underscored: true

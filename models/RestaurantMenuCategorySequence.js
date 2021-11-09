@@ -14,6 +14,9 @@ const RestaurantMenuCategorySequence = db.define('restaurant_menu_category_seque
 	},
 	status: {
 		type: Sequelize.BOOLEAN
+	},
+	is_running: {
+		type: Sequelize.BOOLEAN
 	}
 },{
 	// timestamps: false
