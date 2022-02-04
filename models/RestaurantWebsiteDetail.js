@@ -79,6 +79,9 @@ const RestaurantWebsiteDetail = db.define('restaurant_website_details', {
 	},
 	gtag_tracking_id: {
 		type: Sequelize.TEXT
+	},
+	brands: {
+		type: Sequelize.TEXT
 	}
 },{
 	underscored: true
